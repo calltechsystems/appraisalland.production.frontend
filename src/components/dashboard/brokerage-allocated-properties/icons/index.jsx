@@ -159,9 +159,9 @@ const Index = () => {
         return (
           //implment search over this only
           String(property.orderId).toLowerCase().includes(searchTerm) ||
-          property.zipCode.toLowerCase().includes(searchTerm) ||
-          property.city.toLowerCase().includes(searchTerm) ||
-          property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
         );
       });
 

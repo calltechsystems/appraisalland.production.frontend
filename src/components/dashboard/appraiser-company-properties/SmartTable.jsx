@@ -1,30 +1,28 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
-import SVGArrowDown from "./icons/SVGArrowDown";
-import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
-import { FaDownload, FaRedo } from "react-icons/fa";
-import * as XLSX from "xlsx";
-import { useReactToPrint } from "react-to-print";
+import { FaArrowDown, FaArrowUp, FaDownload, FaRedo } from "react-icons/fa";
 import toast from "react-hot-toast";
 import SearchBox from "./SearchBox";
-import FilteringBy from "./FilteringBy";
 import Filtering from "./Filtering";
-import Image from "next/image";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import NoDataFound from "../../common/NoDataFound";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { getTheDownloadView } from "../../common/UserViewPDFDownload";
+import RecordCount from "../../common/PaginationControls/RecordCounts";
+import SmartTableHeaderCell from "../../common/PaginationControls/SmartTableHeaderCell";
 
 function SmartTable(props) {
   const [loading, setLoading] = useState(false);
   const [tableWidth, setTableWidth] = useState(1000);
   const [data, setData] = useState(props.data);
-
   const componentRef = useRef();
-
   const [search, setSearch] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(props.rowsPerPage ?? 10);
   const [rowsPerPageOptions] = useState(
@@ -70,7 +68,7 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-  //this function to download the function  
+  //this function to download the function
   const handlePrint = async () => {
     const headers = [
       ["order_id", "Property ID"],
@@ -87,13 +85,14 @@ function SmartTable(props) {
       ["type_of_appraisal", "Type Of Appraisal"],
       ["purpose", "Purpose"],
       ["lender_information", "Lender Information"],
-    ]
-    
+    ];
+
     getTheDownloadView(
       "appraiserCompany_Datails",
       props.allProperties,
       "Appraiser Company Properties",
-      headers
+      headers,
+      8
     )
       .then((message) => {
         toast.success(message);
@@ -136,48 +135,8 @@ function SmartTable(props) {
     return queryString ? `?${queryString}` : "";
   };
 
-  const debounce = (func, timeout = 300) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        func.apply(this, args);
-      }, timeout);
-    };
-  };
-
-  const handleSearch = debounce((event) => {
-    const { value } = event.target;
-    setSearch(value);
-    if (props.url) {
-      fetchData(buildQueryString(value, page, rowsPerPage));
-    } else {
-      let bool = false;
-      let tempData = props.data.filter((row) => {
-        bool = false;
-        Object.keys(row).forEach((key) => {
-          if (row[key].toLowerCase().includes(value.toLowerCase())) bool = true;
-        });
-        return bool;
-      });
-      setData(tempData);
-    }
-  }, props.searchDebounceTime ?? 800);
-
-
-
-  const getTotalItemsPerPageAvailable = useMemo(() => {
-    if(!props.allProperties)
-       return 0;
-    return Math.min((props.end - props.start) + props.start, props.allProperties.length) ;
-  },[props.start,props.end, props.allProperties])
-
   useEffect(() => {
-    const sortObjectsByOrderIdDescending = (data) => {
-      return data.sort((a, b) => b.order_id - a.order_id);
-    };
-
-    setData(sortObjectsByOrderIdDescending(props.data));
+    setData(props.data);
   }, [props.data]);
 
   return (
@@ -253,40 +212,19 @@ function SmartTable(props) {
                     <tr>
                       {props.headCells.map((headCell, index) => {
                         return (
-                          <th
-                            id={headCell.id}
+                          <SmartTableHeaderCell
                             key={headCell.id}
-                            scope="col"
-                            style={{
-                              width: headCell.width,
-                              backgroundColor: "#2e008b",
-                              color: "white",
-                              position: "sticky",
-                              top: "0", // Keep the header visible when scrolling vertically
-                              left: index === 0 ? "0" : undefined, // Make the first column sticky
-                              zIndex: index === 0 ? "3" : "2", // Ensure layering
-                            }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
+                            headCell={headCell}
+                            index={index}
+                            sortDesc={props.sortDesc}
+                            sortData={(cell) =>
+                              props.sortData(
+                                cell,
+                                props.sortDesc,
+                                props.setSortDesc
+                              )
                             }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? props.sortData(headCell.id)
-                                : {}
-                            }
-                          >
-                            {headCell.label}
-                            {props.sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : props.sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                            )}
-                          </th>
+                          />
                         );
                       })}
                     </tr>
@@ -345,9 +283,12 @@ function SmartTable(props) {
           )}
           {props.noPagination || data.length === 0 || !props.url ? (
             <div className="row">
-              <div className="col-12 text-end p-1">
-                {getTotalItemsPerPageAvailable}{" "}/{" "}{(props.allProperties.length) > 0 ? props.allProperties.length : 0} Records
-              </div>
+              <RecordCount
+                start={props.start}
+                end={props.end}
+                allProperties={props.allProperties}
+                totalCount={props.allProperties?.length}
+              />
             </div>
           ) : (
             <div className="row">

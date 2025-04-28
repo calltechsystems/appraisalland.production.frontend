@@ -2,19 +2,15 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import millify from "millify";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import Modal from "./Modal";
 import { encryptionData } from "../../../utils/dataEncryption";
-import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../data";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
@@ -53,16 +49,16 @@ const Index = () => {
   const [openPlanModal, setOpenPlanModal] = useState(false);
   const [viewPlanData, setViewPlanData] = useState({});
 
-  const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
-
-  const [end, setEnd] = useState(4);
 
   const [openBrokerModal, setOpenBrokerModal] = useState(false);
   const [modalIsPopupOpen, setModalIsPopupOpen] = useState(false);
 
   const [broker, setBroker] = useState({});
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const closeBrokerModal = () => {
     setOpenBrokerModal(false);
@@ -254,13 +250,12 @@ const Index = () => {
           const matchingValues = (prop.properties?.$values || []).filter(
             (element) => {
               const property = element.property;
-
+              const searchTerm = String(searchInput).toLowerCase()
               return (
-                String(property?.orderId) === String(searchInput) ||
-                String(property?.orderId).toLowerCase().includes(searchInput) ||
-                String(property?.zipCode).toLowerCase().includes(searchInput) ||
-                String(property?.city).toLowerCase().includes(searchInput) ||
-                String(property?.province).toLowerCase().includes(searchInput)
+                String(property?.orderId).includes(searchTerm) ||
+                String(property?.zipCode).toLowerCase().includes(searchTerm) ||
+                String(property?.city).toLowerCase().includes(searchTerm) ||
+                String(property?.province).toLowerCase().includes(searchTerm)
               );
             }
           );
@@ -296,7 +291,13 @@ const Index = () => {
     const estimatedDiff =
       gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
 
-    console.log("dayss",searchDate, diff, newDateObj.getDate(), currentObj.getDate());
+    console.log(
+      "dayss",
+      searchDate,
+      diff,
+      newDateObj.getDate(),
+      currentObj.getDate()
+    );
     return estimatedDiff <= diff;
   };
 
@@ -329,13 +330,12 @@ const Index = () => {
         });
 
       default:
-        return tempData; 
+        return tempData;
     }
   };
 
   useEffect(() => {
     const tmpData = filterData(properties);
-    console.log("filterQuery", filterQuery, tmpData, tmpData.length);
     setFilterProperty(tmpData);
   }, [filterQuery]);
 
@@ -346,7 +346,7 @@ const Index = () => {
   const [userData, setUserData] = useState(348);
 
   const [openViewBrokerageModal, setOpenViewBrokerageModal] = useState(false);
-  const [selectedBrokerage, setSelectedBrokerage] = useState({})
+  const [selectedBrokerage, setSelectedBrokerage] = useState({});
   const participateHandler = (val, id) => {
     setLowRangeBid(val);
     setPropertyId(id);
@@ -404,18 +404,16 @@ const Index = () => {
           const property = element.property;
           const searchTerm = searchInput.toLowerCase();
 
-        if (String(property?.orderId) === String(searchTerm)) {
-          return true;
-        }
-        else
-          return (
-            String(property?.orderId).toLowerCase().includes(searchTerm) ||
-            String(property?.zipCode).toLowerCase().includes(searchTerm) ||
-            String(property?.city).toLowerCase().includes(searchTerm) ||
-            String(property?.province).toLowerCase().includes(searchTerm) 
-          );
-        })
-        
+          if (String(property?.orderId) === String(searchTerm)) {
+            return true;
+          } else
+            return (
+              String(property?.orderId).toLowerCase().includes(searchTerm) ||
+              String(property?.zipCode).toLowerCase().includes(searchTerm) ||
+              String(property?.city).toLowerCase().includes(searchTerm) ||
+              String(property?.province).toLowerCase().includes(searchTerm)
+            );
+        });
       });
 
       return filteredProperties;
@@ -430,8 +428,8 @@ const Index = () => {
 
   const closeBrokerageModal = () => {
     setOpenViewBrokerageModal(false);
-    setSelectedBrokerage({})
-  }
+    setSelectedBrokerage({});
+  };
   return (
     <>
       {/* <!-- Main Header Nav --> */}
@@ -563,6 +561,9 @@ const Index = () => {
                           setIsHoldProperty={setIsHoldProperty}
                           setOpenViewBrokerageModal={setOpenViewBrokerageModal}
                           setSelectedBrokerage={setSelectedBrokerage}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
@@ -1168,17 +1169,22 @@ const Index = () => {
             </div>
             {/* End .row */}
 
-            {/* <div className="row">
+            <div className="row">
               <div className="col-lg-12 mt20">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

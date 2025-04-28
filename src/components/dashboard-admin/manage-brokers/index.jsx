@@ -385,7 +385,7 @@ const Index = () => {
       setIsLoading(true);
       toast.loading("Updating the status");
       axios
-        .put("/api/updateIsActiveAppraiser", encryptedData, {
+        .put("/api/updateUserActiveStatus", encryptedData, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
             "Content-Type": "application/json",

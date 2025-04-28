@@ -2,7 +2,6 @@ import Header from "../../common/header/dashboard/HeaderAppraiserCompany";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenu_002";
 import MobileMenu from "../../common/header/MobileMenu_01";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -17,6 +16,7 @@ import Image from "next/image";
 import { FaDownload } from "react-icons/fa";
 import Select from "react-select";
 import CommonLoader from "../../common/CommonLoader/page";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -113,6 +113,8 @@ const Index = () => {
       OrderStatus: Number(orderStatus),
       remark: remark,
       statusDate: statusDate,
+      user_id: data.userId,
+      user_type: data.userType,
     };
 
     const encryptedBody = encryptionData(payload);
@@ -169,8 +171,6 @@ const Index = () => {
 
   const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
-  console.log("allAppraiser", allAppraiser);
-
   const handleStatusSelect = (value) => {
     if (String(value) === "Appraisal Visit Confirmed") {
       setOpenDate(true);
@@ -181,7 +181,6 @@ const Index = () => {
     let selectedValue = 0;
     AppraiserStatusOptions.map((prop, index) => {
       if (String(prop.type) === String(value)) {
-        console.log(prop.type, value, prop.id);
         selectedValue = prop.id;
       }
     });
@@ -294,8 +293,6 @@ const Index = () => {
     };
   }, []);
 
-  console.log("appraiser", allBrokers);
-
   useEffect(() => {
     // Check for inactivity every minute
     const inactivityCheckInterval = setInterval(() => {
@@ -343,9 +340,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -397,7 +394,6 @@ const Index = () => {
 
   useEffect(() => {
     const tmpData = filterData(properties);
-    console.log("filterQuery", filterQuery, tmpData, tmpData.length);
     setFilterProperty(tmpData);
   }, [filterQuery]);
 
@@ -552,7 +548,6 @@ const Index = () => {
     };
   };
 
-  console.log("assignAppraiser", assignAppraiser);
   const PropertyInfoHandler = (orderId) => {
     const printWindow = window.open("", "_blank");
     printWindow.document.write("<html><head><title></title></head><body>");
@@ -656,7 +651,6 @@ const Index = () => {
   };
 
   const participateHandler = (val, id, isUpdate, value, isBidded) => {
-    console.log(val, id, isUpdate, value);
     if (isUpdate) {
       setLowRangeBid(val);
       setIsUpdateBid(isUpdate);
@@ -822,10 +816,12 @@ const Index = () => {
                           openModalBroker={openModalBroker}
                           setSelectedPropertyNew={setSelectedPropertyNew}
                           setIsLoading={setIsLoading}
-                          setfilteredPropertiesCount={setfilteredPropertiesCount}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
-                        {modalIsOpenError && (
+                        {modalIsOpenError ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -897,9 +893,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {openBrokerModal && typeView === 1 && (
+                        {openBrokerModal && typeView === 1 ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1116,7 +1114,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1125,7 +1123,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1136,9 +1134,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {openBrokerModal && typeView === 2 && (
+                        {openBrokerModal && typeView === 2 ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1295,117 +1295,10 @@ const Index = () => {
                                         {selectedBroker.postalCode}
                                       </td>
                                     </tr>
-                                    {/* <tr>
-                                      <td
-                                        style={{
-                                          border: "1px solid grey",
-                                          color: "#2e008b",
-                                        }}
-                                      >
-                                        <span className="text-start">
-                                          Brokerage Name
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          
-                                          width: "250px",
-                                          color: "black",
-                                          paddingLeft:"10px"
-                                        }}
-                                      >
-                                        {selectedBroker.brokerageName
-                                          ? selectedBroker.brokerageName
-                                          : "N.A."}
-                                      </td>
-                                    </tr> */}
-
-                                    {/* <tr>
-                                      <td
-                                        style={{
-                                          border: "1px solid grey",
-                                          color: "#2e008b",
-                                        }}
-                                      >
-                                        <span className="text-start">
-                                          Applicant Name
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          
-                                          width: "250px",
-                                          color: "black",
-                                          paddingLeft:"10px"
-                                        }}
-                                      >
-                                        {selectedBroker.assistantFirstName
-                                          ? selectedBroker.assistantFirstName
-                                          : "N.A."}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td
-                                        style={{
-                                          border: "1px solid grey",
-                                          color: "#2e008b",
-                                        }}
-                                      >
-                                        <span className="text-start">
-                                          Applicant Phone Number
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          border: "1px solid #2e008b",
-                                          width: "250px",
-                                          color: "black",
-                                          paddingLeft:"10px"
-                                        }}
-                                      >
-                                        {selectedBroker.assistantPhoneNumber
-                                          ? selectedBroker.assistantPhoneNumber
-                                          : "N.A."}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td
-                                        style={{
-                                          border: "1px solid grey",
-                                          color: "#2e008b",
-                                        }}
-                                      >
-                                        <span className="text-start">
-                                          Applicant Email Address
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          border: "1px solid #2e008b",
-                                          width: "250px",
-                                          color: "black",
-                                          paddingLeft:"10px"
-                                        }}
-                                      >
-                                        {selectedBroker.assistantEmailAddress
-                                          ? selectedBroker.assistantEmailAddress
-                                          : "N.A."}
-                                      </td>
-                                    </tr> */}
                                   </tbody>
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
-                                  className="btn btn-color"
-                                  style={{ width: "100px" }}
-                                  onClick={() =>
-                                    brokerInfoHandler(broker.orderId)
-                                  }
-                                  title="Download Pdf"
-                                >
-                                  <FaDownload />
-                                </button>
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1416,9 +1309,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {openQuoteView && (
+                        {openQuoteView ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -1507,12 +1402,13 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* End .col */}
 
                 <div className="row">
                   <div className="col-lg-12">
@@ -1532,7 +1428,7 @@ const Index = () => {
                 </div>
               </div>
 
-              {isQuoteModalOpen && (
+              {isQuoteModalOpen ? (
                 <div className="modal">
                   <div className="modal-content">
                     <h3 className="text-center">
@@ -1560,9 +1456,11 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                ""
               )}
 
-              {assignModal && (
+              {assignModal ? (
                 <div className="modal">
                   <div className="modal-content" style={{ width: "30%" }}>
                     <div className="row">
@@ -1671,9 +1569,11 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                ""
               )}
 
-              {isStatusModal && (
+              {isStatusModal ? (
                 <div className="modal">
                   <div className="modal-content" style={{ width: "35%" }}>
                     {showConfirmation ? (
@@ -1885,6 +1785,8 @@ const Index = () => {
                     )}
                   </div>
                 </div>
+              ) : (
+                ""
               )}
 
               <div className="row">

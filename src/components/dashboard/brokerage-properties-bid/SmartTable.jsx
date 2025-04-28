@@ -5,9 +5,6 @@ import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
 import { FaDownload, FaRedo } from "react-icons/fa";
-import Filtering from "./Filtering";
-import SearchBox from "./SearchBox";
-import Image from "next/image";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import NoDataFound from "../../common/NoDataFound";
 import { getTheDownloadView } from "../../common/UserViewPDFDownload";
@@ -26,18 +23,6 @@ function SmartTable(props) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
 
-  const generatePDF = () => {
-    window.print();
-    toast.success("Data added");
-  };
-  console.log("props", props);
-
-  const refreshHandler = () => {
-    const refresh = !props.refresh;
-    props.setRefresh(true);
-  };
-
-  console.log(props.data);
   const fetchData = useCallback(
     async (queryString) => {
       setLoading(true);
@@ -119,11 +104,11 @@ function SmartTable(props) {
 
   const handlePrint = async () => {
     const staticHeaders = [
-      ["appraiser","Appraiser / Appraiser Company"]
-      // ["quote", "Quote Amount ($)"],
-      // ["description", "Remark"],
-      // ["date", "Quote Submitted Date"],
-      // ["quoteAcceptedDate", "Appraisal Accepted Date"],
+      ["appraiser","Appraiser / Appraiser Company"],
+      ["quote", "Quote Amount ($)"],
+      ["description", "Remark"],
+      ["date", "Quote Submitted Date"],
+      ["quoteAcceptedDate", "Appraisal Accepted Date"],
     ];
 
     const allData = props.properties;

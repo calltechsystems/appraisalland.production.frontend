@@ -2,19 +2,15 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import millify from "millify";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import Modal from "./Modal";
-import { encryptionData } from "../../../utils/dataEncryption";
 import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../data";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
@@ -53,11 +49,9 @@ const Index = () => {
   const [openPlanModal, setOpenPlanModal] = useState(false);
   const [viewPlanData, setViewPlanData] = useState({});
 
-  const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
 
-  const [end, setEnd] = useState(4);
   const [viewAppraiserModal, setViewAppraiserModal] = useState(false);
   const [selectedAppraiser, setSelectedAppraiser] = useState({});
 
@@ -65,9 +59,9 @@ const Index = () => {
   const [modalIsPopupOpen, setModalIsPopupOpen] = useState(false);
 
   const [broker, setBroker] = useState({});
-
-  const [openDate, setOpenDate] = useState(false);
-  const [statusDate, setStatusDate] = useState("");
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const openModalBroker = (property, value) => {
     setBroker(property);
@@ -231,7 +225,7 @@ const Index = () => {
           const matchingValues = (prop.properties?.$values || []).filter(
             (element) => {
               const property = element.property;
-              const searchTerm = String(searchInput).toLowerCase()
+              const searchTerm = String(searchInput).toLowerCase();
               return (
                 String(property?.orderId) === String(searchTerm) ||
                 String(property?.orderId).toLowerCase().includes(searchTerm) ||
@@ -305,7 +299,7 @@ const Index = () => {
         });
 
       default:
-        return tempData; 
+        return tempData;
     }
   };
 
@@ -407,8 +401,8 @@ const Index = () => {
 
   const closeBrokerViewModal = () => {
     setViewAppraiserModal(false);
-    setSelectedAppraiser({})
-  }
+    setSelectedAppraiser({});
+  };
   return (
     <>
       <Header userData={userData} />
@@ -522,10 +516,13 @@ const Index = () => {
                           setIsHoldProperty={setIsHoldProperty}
                           setSelectedAppraiser={setSelectedAppraiser}
                           setViewAppraiserModal={setViewAppraiserModal}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
-                          {openPlanModal && (
+                          {openPlanModal ? (
                             <div className="modal">
                               <div className="modal-content">
                                 <div className="row">
@@ -816,9 +813,11 @@ const Index = () => {
                                 </div>
                               </div>
                             </div>
+                          ) : (
+                            ""
                           )}
                         </div>
-                        {modalOpen && (
+                        {modalOpen ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -921,9 +920,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {viewAppraiserModal && (
+                        {viewAppraiserModal ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1019,7 +1020,8 @@ const Index = () => {
                                         </span>
                                       </td>
                                       <td className="table-value">
-                                        {selectedAppraiser.firstName} {selectedAppraiser.lastName}
+                                        {selectedAppraiser.firstName}{" "}
+                                        {selectedAppraiser.lastName}
                                       </td>
                                     </tr>
 
@@ -1074,7 +1076,7 @@ const Index = () => {
                                         </span>
                                       </td>
                                       <td className="table-value">
-                                      {selectedAppraiser.licenseNumber
+                                        {selectedAppraiser.licenseNumber
                                           ? selectedAppraiser.licenseNumber
                                           : "N.A."}
                                       </td>
@@ -1088,8 +1090,10 @@ const Index = () => {
                                       <td className="table-value">
                                         {selectedAppraiser.streetNumber}{" "}
                                         {selectedAppraiser.streetName}{" "}
-                                        {selectedAppraiser.apartmentNumber}, {selectedAppraiser.city}{" "}
-                                        {selectedAppraiser.state}-{selectedAppraiser.postalCode}
+                                        {selectedAppraiser.apartmentNumber},{" "}
+                                        {selectedAppraiser.city}{" "}
+                                        {selectedAppraiser.state}-
+                                        {selectedAppraiser.postalCode}
                                       </td>
                                     </tr>
                                   </tbody>
@@ -1107,6 +1111,8 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
                       </div>
 
@@ -1124,17 +1130,22 @@ const Index = () => {
             </div>
             {/* End .row */}
 
-            {/* <div className="row">
+            <div className="row">
               <div className="col-lg-12 mt20">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

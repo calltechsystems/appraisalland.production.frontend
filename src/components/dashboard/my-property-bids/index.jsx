@@ -185,9 +185,9 @@ const Index = ({ propertyId }) => {
         return (
           //implment search over this only
           String(property.orderId).toLowerCase().includes(searchTerm) ||
-          property.zipCode.toLowerCase().includes(searchTerm) ||
-          property.city.toLowerCase().includes(searchTerm) ||
-          property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
         );
       });
 
@@ -755,7 +755,7 @@ const Index = ({ propertyId }) => {
                     </table>
                   </div>
                   <div className="d-flex justify-content-center gap-2 mt-3">
-                    <button
+                    {/* <button
                       className="btn btn-color"
                       style={{ width: "100px" }}
                       // onClick={() =>
@@ -764,7 +764,7 @@ const Index = ({ propertyId }) => {
                       title="Download Pdf"
                     >
                       <FaDownload />
-                    </button>
+                    </button> */}
                     <button
                       className="btn btn-color"
                       style={{ width: "100px" }}

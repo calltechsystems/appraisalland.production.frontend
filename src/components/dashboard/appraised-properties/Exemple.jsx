@@ -10,6 +10,7 @@ import { FaArchive, FaEye } from "react-icons/fa";
 import { AppraiserStatusOptions } from "../create-listing/data";
 import millify from "millify";
 import Image from "next/image";
+import { sortData, sortTheDataList } from "../../common/PaginationControls/functions";
 
 const headCells = [
   {
@@ -23,6 +24,7 @@ const headCells = [
     numeric: false,
     label: "Property Address",
     width: 200,
+    sortable: false,
   },
   {
     id: "status",
@@ -35,12 +37,14 @@ const headCells = [
     numeric: false,
     label: "Appraisal Status",
     width: 160,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraisal Remark",
     width: 160,
+    sortable: false,
   },
   {
     id: "urgency",
@@ -53,30 +57,35 @@ const headCells = [
     numeric: false,
     label: "Order Submission Date",
     width: 200,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_building",
     numeric: false,
     label: "Type of Property",
     width: 200,
+    sortable: false,
   },
   {
     id: "estimated_value",
     numeric: false,
     label: "Estimated Value / Purchase Price($)",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -84,6 +93,7 @@ const headCells = [
     numeric: false,
     label: "Purpose",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -91,6 +101,7 @@ const headCells = [
     numeric: false,
     label: "Lender Information",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -98,12 +109,14 @@ const headCells = [
     numeric: false,
     label: "Broker Info",
     width: 200,
+    sortable: false,
   },
   {
     id: "property",
     numeric: false,
     label: "Property Info",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -111,6 +124,7 @@ const headCells = [
     numeric: false,
     label: "Action",
     width: 210,
+    sortable: false,
   },
 ];
 
@@ -148,6 +162,7 @@ export default function Exemple({
   refresh,
   setSelectedPropertyNew,
   setIsLoading,
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -169,26 +184,14 @@ export default function Exemple({
   const [selectedWishlistId, setSelectedWishlistId] = useState(null);
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
 
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
+  const [sortDesc, setSortDesc] = useState({});
+
   useEffect(() => {
     if (searchInput === "") {
       setRefresh(true);
     }
   }, [searchInput]);
-
-  // const haveSubscription = userData?.planLimitExceed;
-  // const openLimitModal = () => {
-  //   if (haveSubscription === 1) {
-  //     setIsLimitModalOpen(true); // Open modal
-  //   } else {
-  //     participateHandler(
-  //       property.bidLowerRange,
-  //       property.orderId,
-  //       isBidded.status < 1,
-  //       isBidded.bidAmount,
-  //       isBidded.$id ? true : false
-  //     );
-  //   }
-  // };
 
   const getOrderValue = (val) => {
     let title = "Applicant Contacted by appraiser";
@@ -383,31 +386,6 @@ export default function Exemple({
       });
   };
 
-  const formatLargeNumber = (number) => {
-    // Convert the number to a string
-    const numberString = number.toString();
-
-    // Determine the length of the integer part
-    const integerLength = Math.floor(Math.log10(Math.abs(number))) + 1;
-
-    // Choose the appropriate unit based on the length of the integer part
-    let unit = "";
-
-    if (integerLength >= 10) {
-      unit = "B"; // Billion
-    } else if (integerLength >= 7) {
-      unit = "M"; // Million
-    } else if (integerLength >= 4) {
-      unit = "K"; // Thousand
-    }
-
-    // Divide the number by the appropriate factor
-    const formattedNumber = (number / Math.pow(10, integerLength - 1)).toFixed(
-      2
-    );
-    return `${formattedNumber}${unit}`;
-  };
-
   const openQuoteViewModal = (bid) => {
     setCurrentBiddedView(bid);
     setOpenQuoteView(true);
@@ -489,10 +467,8 @@ export default function Exemple({
     let tempStatusData = [];
     const getData = () => {
       const userData = JSON.parse(localStorage.getItem("user"));
-      const userActivePlans = userData?.userSubscription?.$values;
       let tempData = [];
       properties.map((property, index) => {
-        console.log({ property });
         const isWishlist = checkWishlistedHandler(property);
         const isBidded = filterBidsWithin24Hours(property);
         const anotherBid = alreadyAccepted(property);
@@ -511,9 +487,6 @@ export default function Exemple({
         if (isBidded.orderstatus === 3) return;
 
         if (!isAlreadyArchived) {
-          if (isBidded.status === 1) {
-            console.log(getOrderValue(isBidded.orderstatus));
-          }
 
           const newStatus = {
             status: isBidded.status,
@@ -999,11 +972,19 @@ export default function Exemple({
           tempStatusData.push(newStatus);
         }
       });
-      setUpdatedData(tempData);
-      setStatusData(tempStatusData);
+      setfilteredPropertiesCount(tempData?.length);
+      const filteredData = sortTheDataList(tempData, sortDesc);
+      setUpdatedData(filteredData);
+      setStatusData(filteredData);
     };
     getData();
-  }, [properties, wishlist, bids]);
+  }, [properties, wishlist, bids, sortDesc]);
+
+  useEffect(() => {
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
+
+  console.log({propertiesPerPage})
 
   const refreshHandler = () => {
     setProperties([]);
@@ -1012,6 +993,7 @@ export default function Exemple({
     setRefresh(true);
     setStartLoading(true);
   };
+
   useEffect(() => {
     setProperties([]);
     setWishlist([]);
@@ -1047,72 +1029,72 @@ export default function Exemple({
       });
 
     if (data?.userType === 3) {
-    //   axios
-    //     .get("/api/getAllBids", {
-    //       headers: {
-    //         Authorization: `Bearer ${data.token}`,
-    //       },
-    //       params: {
-    //         email: data.userEmail, // appraiser company email
-    //       },
-    //     })
-    //     .then((res) => {
-    //       let tempBids = res.data.data.$values;
-    //       const updatedBids = tempBids.filter((prop, index) => {
-    //         return true;
-    //       });
-    //       setBids(updatedBids);
+      //   axios
+      //     .get("/api/getAllBids", {
+      //       headers: {
+      //         Authorization: `Bearer ${data.token}`,
+      //       },
+      //       params: {
+      //         email: data.userEmail, // appraiser company email
+      //       },
+      //     })
+      //     .then((res) => {
+      //       let tempBids = res.data.data.$values;
+      //       const updatedBids = tempBids.filter((prop, index) => {
+      //         return true;
+      //       });
+      //       setBids(updatedBids);
 
-    //       // Now call getAllAssignedPropertiesById
-    //       axios
-    //         .get("/api/getAllAssignedPropertiesById", {
-    //           headers: {
-    //             Authorization: `Bearer ${data?.token}`,
-    //             "Content-Type": "application/json",
-    //           },
-    //           params: {
-    //             userId: data.appraiser_Details?.id,
-    //           },
-    //         })
-    //         .then((res) => {
-    //           toast.dismiss();
-    //           setDataFetched(true);
-    //           const prop = res.data.data.properties.$values;
-    //           setProperties(prop);
+      //       // Now call getAllAssignedPropertiesById
+      //       axios
+      //         .get("/api/getAllAssignedPropertiesById", {
+      //           headers: {
+      //             Authorization: `Bearer ${data?.token}`,
+      //             "Content-Type": "application/json",
+      //           },
+      //           params: {
+      //             userId: data.appraiser_Details?.id,
+      //           },
+      //         })
+      //         .then((res) => {
+      //           toast.dismiss();
+      //           setDataFetched(true);
+      //           const prop = res.data.data.properties.$values;
+      //           setProperties(prop);
 
-    //           // Now call appraiserWishlistedProperties
-    //           axios
-    //             .get("/api/appraiserWishlistedProperties", {
-    //               headers: {
-    //                 Authorization: `Bearer ${data?.token}`,
-    //                 "Content-Type": "application/json",
-    //               },
-    //             })
-    //             .then((res) => {
-    //               const tempData = res.data.data.$values;
+      //           // Now call appraiserWishlistedProperties
+      //           axios
+      //             .get("/api/appraiserWishlistedProperties", {
+      //               headers: {
+      //                 Authorization: `Bearer ${data?.token}`,
+      //                 "Content-Type": "application/json",
+      //               },
+      //             })
+      //             .then((res) => {
+      //               const tempData = res.data.data.$values;
 
-    //               const responseData = tempData.filter((prop, index) => {
-    //                 return String(prop.userId) === String(data.userId);
-    //               });
+      //               const responseData = tempData.filter((prop, index) => {
+      //                 return String(prop.userId) === String(data.userId);
+      //               });
 
-    //               setWishlist(responseData);
-    //             })
-    //             .catch((err) => {
-    //               toast.error(err?.response);
-    //               setErrorMessage(err?.response);
-    //               setModalIsOpenError(true);
-    //             });
-    //         })
-    //         .catch((err) => {
-    //           toast.dismiss();
-    //           toast.error(err);
-    //         });
-    //     })
-    //     .catch((err) => {
-    //       setErrorMessage(err?.response?.data?.error);
-    //       setModalIsOpenError(true);
-    //     });
-    // } else {
+      //               setWishlist(responseData);
+      //             })
+      //             .catch((err) => {
+      //               toast.error(err?.response);
+      //               setErrorMessage(err?.response);
+      //               setModalIsOpenError(true);
+      //             });
+      //         })
+      //         .catch((err) => {
+      //           toast.dismiss();
+      //           toast.error(err);
+      //         });
+      //     })
+      //     .catch((err) => {
+      //       setErrorMessage(err?.response?.data?.error);
+      //       setModalIsOpenError(true);
+      //     });
+      // } else {
       axios
         .get("/api/getAllListedProperties", {
           headers: {
@@ -1247,7 +1229,7 @@ export default function Exemple({
           title=""
           setSearchInput={setSearchInput}
           setFilterQuery={setFilterQuery}
-          data={sortObjectsByOrderIdDescending(updatedData)}
+          data={propertiesPerPage}
           headCells={headCells}
           setRefresh={setRefresh}
           setProperties={setProperties}
@@ -1259,11 +1241,16 @@ export default function Exemple({
           filterQuery={filterQuery}
           dataFetched={dataFetched}
           statusData={statusData}
-          properties={sortObjectsByOrderIdDescending(updatedData)}
+          properties={propertiesPerPage}
+          allProperties={updatedData}
           end={end}
+          setUpdatedData={setUpdatedData}
+          sortDesc={sortDesc}
+          setSortDesc={setSortDesc}
+          sortData={sortData}
         />
       )}
-      {archiveModal && (
+      {archiveModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1336,9 +1323,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {wishlistModal && (
+      {wishlistModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1409,9 +1398,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {isWishlistProperty && (
+      {isWishlistProperty ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1483,9 +1474,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {remarkModal && (
+      {remarkModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1548,10 +1541,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {/* Modal */}
-      {isLimitModalOpen && (
+      {isLimitModalOpen ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "25%" }}>
             <div className="row">
@@ -1614,6 +1608,8 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
     </>
   );

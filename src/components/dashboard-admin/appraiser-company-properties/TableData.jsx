@@ -45,9 +45,8 @@ const TableData = ({
   setCurrentBidInfo,
   setSelectedAppraiserCompany,
   setViewAppraiserCompanyModal,
+  setfilteredPropertiesCount
 }) => {
-  const [Id, setId] = useState(-1);
-
   const [rerender, setRerender] = useState(false);
 
   const deletePropertyHandler = (id) => {
@@ -116,6 +115,7 @@ const TableData = ({
           setCurrentBidInfo={setCurrentBidInfo}
           setSelectedAppraiserCompany={setSelectedAppraiserCompany}
           setViewAppraiserCompanyModal={setViewAppraiserCompanyModal}
+          setfilteredPropertiesCount={setfilteredPropertiesCount}
         />
       }
     </>

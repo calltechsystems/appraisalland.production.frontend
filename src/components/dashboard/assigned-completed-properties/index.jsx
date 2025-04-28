@@ -101,6 +101,8 @@ const Index = () => {
       OrderStatus: Number(orderStatus),
       remark: remark,
       statusDate: statusDate,
+      user_id: data.userId,
+      user_type: data.userType
     };
 
     const encryptedBody = encryptionData(payload);
@@ -1219,7 +1221,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1228,7 +1230,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1499,7 +1501,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1508,7 +1510,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1702,7 +1704,7 @@ const Index = () => {
                               </div>
                               <div className="row text-center">
                                 <div className="col-lg-12 d-flex justify-content-center gap-2 mt-3">
-                                  <button
+                                  {/* <button
                                     className="btn btn-color"
                                     style={{ width: "100px" }}
                                     // onClick={() =>
@@ -1711,7 +1713,7 @@ const Index = () => {
                                     title="Download Pdf"
                                   >
                                     <FaDownload />
-                                  </button>
+                                  </button> */}
                                   <button
                                     className="btn btn-color text-center"
                                     style={{ width: "100px" }}

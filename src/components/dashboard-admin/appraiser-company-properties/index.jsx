@@ -2,29 +2,22 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import millify from "millify";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import Modal from "./Modal";
 import { encryptionData } from "../../../utils/dataEncryption";
-import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../data";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [isStatusModal, setIsStatusModal] = useState(false);
   const [userNameSearch, setUserNameSearch] = useState("");
   const [statusSearch, setStatusSearch] = useState(0);
-  const [toggleId, setToggleId] = useState(-1);
-  const [toggleWishlist, setToggleWishlist] = useState(0);
   const [searchResult, setSearchResult] = useState([]);
   const [property, setProperty] = useState("");
   const [typeView, setTypeView] = useState(0);
@@ -41,7 +34,6 @@ const Index = () => {
 
   const [wishlistedProperties, setWishlistedProperties] = useState([]);
   const [updatedCode, setUpdatedCode] = useState(false);
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
   const [modalIsOpenError, setModalIsOpenError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -53,21 +45,20 @@ const Index = () => {
   const [openPlanModal, setOpenPlanModal] = useState(false);
   const [viewPlanData, setViewPlanData] = useState({});
 
-  const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
 
-  const [end, setEnd] = useState(4);
-  const [viewAppraiserCompanyModal, setViewAppraiserCompanyModal] = useState(false);
+  const [viewAppraiserCompanyModal, setViewAppraiserCompanyModal] =
+    useState(false);
   const [selectedAppraiserCompany, setSelectedAppraiserCompany] = useState({});
 
   const [openBrokerModal, setOpenBrokerModal] = useState(false);
   const [modalIsPopupOpen, setModalIsPopupOpen] = useState(false);
 
   const [broker, setBroker] = useState({});
-
-  const [openDate, setOpenDate] = useState(false);
-  const [statusDate, setStatusDate] = useState("");
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const openModalBroker = (property, value) => {
     setBroker(property);
@@ -306,7 +297,7 @@ const Index = () => {
         });
 
       default:
-        return tempData; 
+        return tempData;
     }
   };
 
@@ -408,8 +399,8 @@ const Index = () => {
 
   const closeBrokerViewModal = () => {
     setViewAppraiserCompanyModal(false);
-    setSelectedAppraiserCompany({})
-  }
+    setSelectedAppraiserCompany({});
+  };
   return (
     <>
       <Header userData={userData} />
@@ -439,23 +430,8 @@ const Index = () => {
                     <h3 className="heading-forms">
                       Appraiser Company - Properties
                     </h3>
-
-                    {/* <p>We are glad to see you again!</p>                                                             */}
                   </div>
                 </div>
-                {/* End .col */}
-
-                {/*<div className="row">
-                <div className="col-lg-12 mt20">
-                 <div className="mbp_pagination">
-                   <Pagination
-                     setStart={setStart}
-                     setEnd={setEnd}
-                     properties={properties}
-                   />
-                 </div>
-               </div> 
-              </div>*/}
 
                 <div className="col-lg-12 col-xl-12">
                   {/* <div className="candidate_revew_select style2 mb30-991">
@@ -521,8 +497,15 @@ const Index = () => {
                           archievePropertyHandler={archievePropertyHandler}
                           setIsCancelProperty={setIsCancelProperty}
                           setIsHoldProperty={setIsHoldProperty}
-                          setSelectedAppraiserCompany={setSelectedAppraiserCompany}
-                          setViewAppraiserCompanyModal={setViewAppraiserCompanyModal}
+                          setSelectedAppraiserCompany={
+                            setSelectedAppraiserCompany
+                          }
+                          setViewAppraiserCompanyModal={
+                            setViewAppraiserCompanyModal
+                          }
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
@@ -1020,7 +1003,8 @@ const Index = () => {
                                         </span>
                                       </td>
                                       <td className="table-value">
-                                        {selectedAppraiserCompany.firstName} {selectedAppraiserCompany.lastName}
+                                        {selectedAppraiserCompany.firstName}{" "}
+                                        {selectedAppraiserCompany.lastName}
                                       </td>
                                     </tr>
 
@@ -1075,7 +1059,7 @@ const Index = () => {
                                         </span>
                                       </td>
                                       <td className="table-value">
-                                      {selectedAppraiserCompany.licenseNumber
+                                        {selectedAppraiserCompany.licenseNumber
                                           ? selectedAppraiserCompany.licenseNumber
                                           : "N.A."}
                                       </td>
@@ -1089,8 +1073,12 @@ const Index = () => {
                                       <td className="table-value">
                                         {selectedAppraiserCompany.streetNumber}{" "}
                                         {selectedAppraiserCompany.streetName}{" "}
-                                        {selectedAppraiserCompany.apartmentNumber}, {selectedAppraiserCompany.city}{" "}
-                                        {selectedAppraiserCompany.state}-{selectedAppraiserCompany.postalCode}
+                                        {
+                                          selectedAppraiserCompany.apartmentNumber
+                                        }
+                                        , {selectedAppraiserCompany.city}{" "}
+                                        {selectedAppraiserCompany.state}-
+                                        {selectedAppraiserCompany.postalCode}
                                       </td>
                                     </tr>
                                   </tbody>
@@ -1125,17 +1113,22 @@ const Index = () => {
             </div>
             {/* End .row */}
 
-            {/* <div className="row">
+            <div className="row">
               <div className="col-lg-12 mt20">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

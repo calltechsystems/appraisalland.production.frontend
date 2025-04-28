@@ -3,6 +3,7 @@ import { FaRedo } from "react-icons/fa";
 
 const Filtering = ({ setRefresh, FilterQuery, setFilterQuery }) => {
   const refreshHandler = () => {
+    setFilterQuery(1000);
     setRefresh(true);
   };
   return (
@@ -15,10 +16,10 @@ const Filtering = ({ setRefresh, FilterQuery, setFilterQuery }) => {
               value={FilterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
             >
-              <option value={"All"}>All</option>
-              <option value={"Weekly"}>Last 7 Days</option>
-              <option value={"Monthly"}>Last 30 Days</option>
-              <option value={"Yearly"}>Last 90 Days</option>
+              <option value={1000}>All</option>
+              <option value={7}>Last 7 Days</option>
+              <option value={30}>Last 30 Days</option>
+              <option value={90}>Last 90 Days</option>
             </select>
           </div>
           <div className="col-lg-3">

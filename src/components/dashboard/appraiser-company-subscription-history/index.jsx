@@ -80,7 +80,7 @@ const Index = () => {
 
     toast.loading("Getting Transactions...");
     axios
-      .get("/api/getBrokerTransactions", {
+      .get("/api/getPaymentHistoryOfUser", {
         headers: {
           Authorization: `Bearer ${userData?.token}`,
           "Content-Type": "application/json",
@@ -181,6 +181,7 @@ const Index = () => {
                             userData={userData}
                             setRefresh={setRefresh}
                             setStartLoading={setStartLoading}
+                            setDataFetched={setDataFetched}
                           />
                           {modalIsOpenError && (
                             <div className="modal">

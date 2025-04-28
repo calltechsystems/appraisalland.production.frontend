@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import SearchUser from "./SearchUser";
 import NoDataFound from "../../common/NoDataFound";
 import LoadingSpinner from "../../common/LoadingSpinner";
+import { getTheDownloadView } from "../../common/UserViewPDFDownload";
 
 function SmartTable(props) {
   const [loading, setLoading] = useState(false);
@@ -61,162 +62,28 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-  function extractTextFromReactElement(element) {
-    if (typeof element === "string") {
-      return element;
-    } else if (Array.isArray(element)) {
-      return element
-        .map((child) => extractTextFromReactElement(child))
-        .join("");
-    } else if (typeof element === "object" && element !== null) {
-      return extractTextFromReactElement(element.props.children);
-    } else {
-      return "";
-    }
-  }
-
   const handlePrint = async () => {
-    try {
-      // Fetch data
-      const allData = props.properties;
+    const headers = [
+      ["sno", "S.no"],
+      ["appraisercompany", "Appraiser Company Name"],
+      ["bids", "No of Bids"],
+      ["pending_bids", "Pending Bids"],
+      ["completed_bids", "Completed Bids"],
+      ["status", "Status"],
+    ];
 
-      // Open print window and set up basic structure
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(
-        "<html><head><title>Appraiser Company Dashboard (Admin)</title></head><body>" +
-          // Add CSS styles within the <style> tag
-          "<style>" +
-          // Define your CSS styles here
-          "table { width: 100%; border-collapse: collapse; font-size:12px; font-family:arial;}" +
-          "th, td { border: 1px solid black; padding: 8px; }" +
-          "th { background-color:#2e008b; color:white; }" +
-          "</style>" +
-          "</head><body>"
-      );
-      printWindow.document.write(
-        ' <img width="60" height="45" class="logo1 img-fluid" style="" src="/assets/images/Appraisal_Land_Logo.png" alt="header-logo2.png"/> <span style="color: #2e008b font-weight: bold; font-size: 24px;">Appraisal</span><span style="color: #97d700; font-weight: bold; font-size: 24px;">Land</span>'
-      );
-      printWindow.document.write(
-        "<h3>Appraiser Company Dashboard (Admin)</h3>" +
-          "<style>" +
-          "h3{text-align:center;}" +
-          "</style>"
-      );
-      printWindow.document.write(
-        '<button style="display:none;" onclick="window.print()">Print</button>'
-      );
-
-      // Create a new table element to hold all data
-      const clonedTable = document.createElement("table");
-
-      // Create table headers
-      const tableHeaderRow = document.createElement("tr");
-      const staticHeaders = [
-        ["sno", "S.no"],
-        ["appraiser_company", "Appraiser Company Name"],
-        ["bids", "No of Bids"],
-        ["pending_bids", "Pending Bids"],
-        ["completed_bids", "Completed Bids"],
-        ["status", "Status"],
-      ];
-      staticHeaders.forEach((headerText) => {
-        const th = document.createElement("th");
-        th.textContent = headerText[1];
-        tableHeaderRow.appendChild(th);
+    getTheDownloadView(
+      "appraiserCompany_Datails",
+      props.properties,
+      "Appraiser Company",
+      headers
+    )
+      .then((message) => {
+        toast.success(message);
+      })
+      .catch((error) => {
+        toast.error(error.message);
       });
-      clonedTable.appendChild(tableHeaderRow);
-
-      // Iterate over all data and append rows to the table body
-      const tableBody = document.createElement("tbody");
-      // Iterate over all data and append rows to the table body
-      allData.forEach((item) => {
-        const row = tableBody.insertRow();
-        staticHeaders.forEach((header) => {
-          const cell = row.insertCell();
-          if (header[0].toLowerCase() === "status") {
-            const value = item[header[0].toLowerCase()];
-            const className = value.props.className;
-            const content =
-              header[0].toLowerCase() === "appraisal_status"
-                ? extractTextFromReactElement(value.props.children).split(
-                    "Current Status"
-                  )[0]
-                : value.props.children;
-
-            // Create a span element to contain the content
-            const spanElement = document.createElement("span");
-            spanElement.textContent = content;
-
-            // Apply styles based on className
-            if (className.includes("btn-warning")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#E4A11B";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-            } else if (className.includes("btn-danger")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#DC4C64";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-              // Add more styles as needed
-            } else if (className.includes("btn-success")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#14A44D";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-              // Add more styles as needed
-            } else {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#54B4D3";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-            }
-
-            // Append the span element to the cell
-            cell.appendChild(spanElement);
-          } else if (header[0].toLowerCase() === "assigned_appraiser") {
-            const value = item[header[0].toLowerCase()];
-            const content = value.props.children;
-            const spanElement = document.createElement("span");
-            spanElement.textContent = content;
-            spanElement.style.backgroundColor = "transparent";
-            spanElement.style.border = "0px";
-            spanElement.style.color =
-              content === "Assigned" ? "green" : "black";
-            spanElement.style.textDecoration = "underline";
-
-            cell.appendChild(spanElement);
-          } else {
-            cell.textContent = item[header[0].toLowerCase()];
-          }
-        });
-      });
-
-      clonedTable.appendChild(tableBody);
-      clonedTable.appendChild(tableBody);
-
-      // Write the table to the print window
-      printWindow.document.write(clonedTable.outerHTML);
-      printWindow.document.write("</body></html>");
-      printWindow.document.close();
-
-      // Print and handle post-print actions
-      printWindow.print();
-      printWindow.onafterprint = () => {
-        printWindow.close();
-        toast.success("Saved the data");
-      };
-    } catch (error) {
-      console.error("Error handling print:", error);
-    }
   };
 
   const tableWidthFunc = useCallback(() => {
@@ -295,7 +162,7 @@ function SmartTable(props) {
     "estimated_value",
     "appraiser_company",
     "status",
-    "currentSubscription"
+    "currentSubscription",
   ]; // Add allowed columns
 
   const sortData = (cell) => {
@@ -382,49 +249,40 @@ function SmartTable(props) {
 
   return (
     <div className="col-12 p-0">
-      <div className="col-lg-12">
-        <div
-          className="mb-2"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div className="">
-            <h2
-              style={{
-                color: "#2e008b",
-                fontSize: "28px",
-              }}
-            >
-              Appraiser Company
-            </h2>
-          </div>
-          <div className="d-flex">
-            <SearchUser
-              searchInput={props.searchInput}
-              setSearchInput={props.setSearchInput}
-            />
-            <button
-              className="btn btn-color m-1"
-              onClick={() => handlePrint()}
-              title="Download Pdf"
-            >
-              <FaDownload />
-            </button>
-            <button
-              className="btn btn-color m-1"
-              onClick={() => props.refreshHandler()}
-              title="Refresh"
-            >
-              <FaRedo />
-            </button>
-          </div>
-        </div>
-      </div>
       <div className="smartTable-container row">
         <div className="col-12">
+          <div className="col-lg-12" style={{ marginTop: "10px" }}>
+            <div
+              className="mb-2"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "end",
+              }}
+            >
+              <div className="d-flex">
+                <SearchUser
+                  searchInput={props.searchInput}
+                  setSearchInput={props.setSearchInput}
+                />
+                <button
+                  className="btn btn-color m-1"
+                  onClick={() => handlePrint()}
+                  title="Download Pdf"
+                >
+                  <FaDownload />
+                </button>
+                <button
+                  className="btn btn-color m-1"
+                  onClick={() => props.refreshHandler()}
+                  title="Refresh"
+                >
+                  <FaRedo />
+                </button>
+              </div>
+            </div>
+          </div>
+
           {props?.data?.length > 0 ? (
             <div className="row mt-3">
               <div className="smartTable-tableContainer" id="table-container">

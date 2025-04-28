@@ -70,6 +70,10 @@ const Index = ({
             },
           });
 
+          //TO CHECK IF THE SUBSCRIPTION HISTORY IS EXPIRED
+          if(res3?.data?.data?.messageCD == "002"){
+            toast.error(res3.data.data.description || "Your subscription has been expired.");
+          }
           //TO VERIFY ALL EXISTING USERS
           if (!res3?.data?.data?.messageCD) {
             const value = res3?.data?.data?.upgradeEligible == 1;

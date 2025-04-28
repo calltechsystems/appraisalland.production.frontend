@@ -96,12 +96,7 @@ export default function Exemple({
   data,
   open,
   dataFetched,
-  close,
-  deletePropertyHandler,
-  onWishlistHandler,
-  participateHandler,
-  setErrorMessage,
-  setModalIsOpenError,
+  setDataFetched,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -120,14 +115,6 @@ export default function Exemple({
     return formattedDate;
   };
 
-  const prices = [
-    {
-      lite: 49,
-      Premium: 99,
-      Ultimate: 149,
-    },
-  ];
-
   useEffect(() => {
     if (data.result) {
       if ((data?.result?.$values).length === 0) {
@@ -144,39 +131,10 @@ export default function Exemple({
     });
   };
 
-  const sortFunction = (hisotries) => {
-    const data = hisotries;
-    data?.sort((a, b) => {
-      const startDateA = new Date(a.startDate);
-      const startDateB = new Date(b.startDate);
-
-      if (startDateA < startDateB) return -1;
-      if (startDateA > startDateB) return 1;
-
-      // If start dates are equal, compare by end date
-      const endDateA = new Date(a.endDate);
-      const endDateB = new Date(b.endDate);
-
-      if (endDateA < endDateB) return -1;
-      if (endDateA > endDateB) return 1;
-
-      return 0;
-    });
-    return data;
-  };
-
   useEffect(() => {
     const getData = () => {
       const date = formatDate(new Date());
-      const sortedData = sortFunction(data);
-      sortedData?.map((property, index) => {
-        const propertyCount = 26;
-        const expired =
-          new Date(property.endDate) >= new Date() &&
-          new Date() >= new Date(property.startDate)
-            ? true
-            : false;
-
+      data?.map((property, index) => {
         if (true) {
           const updatedRow = {
             sno: index + 1,
@@ -193,10 +151,19 @@ export default function Exemple({
             remained_prop: `${
               property.usedProperties === null ? 0 : property.usedProperties
             } of ${property.noOfProperties}`,
-            status: !expired ? (
-              <span className="btn btn-info">
-                Will Be Active on {formatDate(property.startDate)}
-              </span>
+            status: !property.isActive ? (
+              (new Date() > new Date(property.startDate) &&
+                property?.planName !== "Top Up") ||
+              (new Date() > new Date(property.endDate) &&
+                property?.planName == "Top Up") ? (
+                <span style={{ color: "red" }}> Expired</span>
+              ) : (
+                <span className="btn btn-info">
+                  {property?.planName == "Top Up"
+                    ? `Will Be Active till ${formatDate(property.endDate)}`
+                    : `Will Be Active on ${formatDate(property.startDate)}}`}
+                </span>
+              )
             ) : (
               <span className="btn btn-success" style={{ width: "50%" }}>
                 Active
@@ -211,14 +178,6 @@ export default function Exemple({
     getData();
   }, [data]);
 
-  // useEffect(() => {
-  //   let tempProperties = [];
-  //   const data = JSON.parse(localStorage.getItem("user"));
-
-  //   const payload = {
-  //     token: userData.token,
-  //   };
-  // }, [data]);
   return (
     <>
       {updatedData && (

@@ -2,7 +2,6 @@ import Header from "../../common/header/dashboard/Header_02";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenu_01";
 import MobileMenu from "../../common/header/MobileMenu_01";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -14,8 +13,8 @@ import Loader from "./Loader";
 import { AppraiserStatusOptions } from "../create-listing/data";
 import Link from "next/link";
 import Image from "next/image";
-import { FaDownload } from "react-icons/fa";
 import CommonLoader from "../../common/CommonLoader/page";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,8 +23,6 @@ const Index = () => {
   const [openQuoteView, setOpenQuoteView] = useState(false);
   const [currentBiddedView, setCurrentBiddedView] = useState({});
   const [isStatusModal, setIsStatusModal] = useState(false);
-  const [toggleId, setToggleId] = useState(-1);
-  const [toggleWishlist, setToggleWishlist] = useState(0);
   const [searchResult, setSearchResult] = useState([]);
   const [property, setProperty] = useState("");
   const [typeView, setTypeView] = useState(0);
@@ -54,8 +51,8 @@ const Index = () => {
 
   const [allBrokers, setAllBrokers] = useState([]);
   const [start, setStart] = useState(0);
-  // const userData = JSON.parse(localStorage.getItem("user"));
-  const [end, setEnd] = useState(4);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const closeErrorModal = () => {
     setModalIsOpenError(false);
@@ -73,6 +70,8 @@ const Index = () => {
       OrderStatus: Number(orderStatus),
       remark: remark,
       statusDate: statusDate,
+      user_id: data.userId,
+      user_type: data.userType,
     };
 
     const encryptedBody = encryptionData(payload);
@@ -178,12 +177,9 @@ const Index = () => {
     let selectedValue = 0;
     AppraiserStatusOptions.map((prop, index) => {
       if (String(prop.type) === String(value)) {
-        console.log(prop.type, value, prop.id);
         selectedValue = prop.id;
       }
     });
-
-    console.log("stats", selectedValue);
 
     setOrderStatus(selectedValue);
   };
@@ -312,20 +308,16 @@ const Index = () => {
         return propertys;
       }
       const filteredProperties = propertys.filter((property) => {
-        // Convert the search input to lowercase for a case-insensitive search
         const searchTerm = searchInput.toLowerCase();
 
         if (String(property.orderId) === String(searchTerm)) {
           return true;
-        }
-        // Check if any of the fields contain the search term
-        else
+        } else
           return (
-            //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -346,7 +338,6 @@ const Index = () => {
     const estimatedDiff =
       gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
 
-    console.log("dayss", diff, newDateObj.getDate(), currentObj.getDate());
     return estimatedDiff <= diff;
   };
 
@@ -376,7 +367,6 @@ const Index = () => {
 
   useEffect(() => {
     const tmpData = filterData(properties);
-    console.log("filterQuery", filterQuery, tmpData, tmpData.length);
     setFilterProperty(tmpData);
   }, [filterQuery]);
 
@@ -606,7 +596,6 @@ const Index = () => {
   const [alreadyBidded, setAlreadyBidded] = useState(false);
 
   const participateHandler = (val, id, isUpdate, value, isBidded) => {
-    console.log(val, id, isUpdate, value);
     if (isUpdate) {
       setLowRangeBid(val);
       setIsUpdateBid(isUpdate);
@@ -657,7 +646,6 @@ const Index = () => {
   }
 
   useEffect(() => {
-    console.log(searchQuery);
     const tempData = properties;
     if (searchInput === "") {
       return;
@@ -742,63 +730,7 @@ const Index = () => {
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row">
-                {/* Start Dashboard Navigation */}
-                {/* <div className="col-lg-12">
-                  <div className="dashboard_navigationbar dn db-1024">
-                    <div className="dropdown">
-                      <button
-                        className="dropbtn"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#DashboardOffcanvasMenu"
-                        aria-controls="DashboardOffcanvasMenu"
-                      >
-                        <i className="fa fa-bars pr10"></i> Dashboard Navigation
-                      </button>
-                    </div>
-                  </div>
-                </div> */}
-                {/* End Dashboard Navigation */}
-
-                {/* <div className="col-lg-12 col-xl-12 mt-1">
-                  <div className="style2 mb30-991">
-                    <h3 className="breadcrumb_title text-center">
-                      Appraised Properties
-                    </h3>
-                  </div>
-                </div> */}
-                {/* End .col */}
-
-                {/*<div className="row">
-                <div className="col-lg-12 mt20">
-                 <div className="mbp_pagination">
-                   <Pagination
-                     setStart={setStart}
-                     setEnd={setEnd}
-                     properties={properties}
-                   />
-                 </div>
-               </div> 
-              </div>*/}
-
-                <div className="col-lg-12 col-xl-12">
-                  {/* <div className="candidate_revew_select style2 mb30-991">
-                    <ul className="mb0">
-                      <li className="list-inline-item">
-                        <Filtering setFilterQuery={setFilterQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <FilteringBy setFilterQuery={setSearchQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox setSearchInput={setSearchInput} />
-                        </div>
-                      </li>
-                    
-                    </ul>
-                  </div> */}
-                </div>
-                {/* End .col */}
+                <div className="col-lg-12 col-xl-12"></div>
 
                 <div className="col-lg-12">
                   <div className="">
@@ -841,9 +773,12 @@ const Index = () => {
                           openModalBroker={openModalBroker}
                           setSelectedPropertyNew={setSelectedPropertyNew}
                           setIsLoading={setIsLoading}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
-                        {modalIsOpenError && (
+                        {modalIsOpenError ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -915,9 +850,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {openBrokerModal && typeView === 1 && (
+                        {openBrokerModal && typeView === 1 ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1134,7 +1071,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1143,7 +1080,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1154,9 +1091,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {openBrokerModal && typeView === 2 && (
+                        {openBrokerModal && typeView === 2 ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1414,7 +1353,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1423,7 +1362,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1434,19 +1373,17 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
                       </div>
-
-                      {/* End .table-responsive */}
-
-                      {/* End .mbp_pagination */}
                     </div>
                     {/* End .property_table */}
                   </div>
                 </div>
                 {/* End .col */}
               </div>
-              {isQuoteModalOpen && (
+              {isQuoteModalOpen ? (
                 <div className="modal">
                   <div className="modal-content">
                     <div className="row">
@@ -1509,9 +1446,11 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                ""
               )}
 
-              {openQuoteView && (
+              {openQuoteView ? (
                 <div className="modal">
                   <div className="modal-content" style={{ width: "30%" }}>
                     <div className="row">
@@ -1594,9 +1533,11 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                ""
               )}
 
-              {assignModal && (
+              {assignModal ? (
                 <div className="modal">
                   <div className="modal-content" style={{ width: "30%" }}>
                     <div className="row">
@@ -1684,8 +1625,10 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                ""
               )}
-              {isStatusModal && (
+              {isStatusModal ? (
                 <div className="modal">
                   <div className="modal-content" style={{ width: "36%" }}>
                     {showConfirmation ? (
@@ -1897,6 +1840,8 @@ const Index = () => {
                     )}
                   </div>
                 </div>
+              ) : (
+                ""
               )}
               <div className="row">
                 <Modal
@@ -1920,32 +1865,25 @@ const Index = () => {
                   setModalIsOpenError={setModalIsOpenError}
                 />
               </div>
-              <div className="row">
-                {/* <div className="col-lg-12 mt20">
-                  <div className="mbp_pagination">
-                    <Pagination
-                      properties={properties}
-                      setProperties={setProperties}
-                    />
-                  </div>
-                </div> */}
-                {/* End paginaion .col */}
-              </div>
-              {/* End .row */}
+              <div className="row"></div>
             </div>
-            {/* End .row */}
 
-            {/* <div className="row">
-              <div className="col-lg-12 mt20">
+            <div className="row">
+              <div className="col-lg-12">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

@@ -36,33 +36,6 @@ const Modal = ({
   const [disable, setDisable] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
 
-  const handleUpload = (result) => {
-    // Handle the image upload result here
-    console.log("handleUpload called", result.info);
-    setSelectedImage({
-      url: result.info.secure_url,
-      name: result.info.original_filename + "." + result.info.format,
-    });
-    // if (result.info.secure_url) {
-    //   setSelectedImage(result.info.secure_url);
-    //   setProfilePhoto(result.info.secure_url);
-    //   // You can also save the URL to your state or do other operations here
-    // } else {
-    //   // Handle the case when the upload failed
-    //   console.error("Image upload failed");
-    // }
-  };
-
-  const onCancelHandler = () => {
-    setToggle(false);
-    setValue(0);
-    setDescription("");
-    closeModal();
-  };
-
-  const handleToggle = () => {
-    setToggle(true);
-  };
 
   const onCloseModalHandler = () => {
     setValue("");

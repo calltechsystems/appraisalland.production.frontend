@@ -1,251 +1,315 @@
-// import './AllStatistics.css';
-// import "font-awesome/css/font-awesome.min.css";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
-const AllStatistics = ({ properties, views, bids, favourites }) => {
-  const {
-    allPropertiesCount,
-    quotesProvidedCount,
-    QuotesInProgressCount,
-    QuotesCompletedCount,
-    QuotesOnHoldCount,
-    CancelledPropertiesCount,
-    OnHoldPropertiesCount,
-    PlanCount,
-    PlanValidityCount,
-    NoOfPropertiesCount,
-    totalNoOfProperties,
-    UsedPropertiesCount,
-    quoteAccepted,
-  } = useMemo(() => {
-    const userData = JSON.parse(localStorage.getItem("user"));
-    let allPropertiesCount = 0;
-    let quotesProvidedCount = 0;
-    let QuotesInProgressCount = 0;
-    let QuotesCompletedCount = 0;
-    let QuotesOnHoldCount = 0;
-    let CancelledPropertiesCount = 0;
-    let OnHoldPropertiesCount = 0;
-    let PlanCount = 0;
-    let PlanValidityCount = 0;
-    let NoOfPropertiesCount = 0;
-    let totalNoOfProperties = 0;
-    let UsedPropertiesCount = 0;
-    let quoteAccepted = 0;
-
-    properties?.forEach((property) => {
-      if (property.userId == userData?.userId) {
-        allPropertiesCount += 1;
-        CancelledPropertiesCount += property?.isoncancel ? 1 : 0;
-        OnHoldPropertiesCount += property?.isonhold ? 1 : 0;
-
-        bids.forEach((bid) => {
-          if (bid.orderId == property?.orderId) {
-            quotesProvidedCount += bid.status <= 1 ? 1 : 0;
-            QuotesInProgressCount += bid?.status == 0 ? 1 : 0;
-            quoteAccepted +=
-              bid.status == 1 && bid?.orderStatus == null ? 1 : 0;
-            QuotesCompletedCount +=
-              bid?.status == 1 && bid?.orderstatus == 3 ? 1 : 0;
-            QuotesOnHoldCount += bid?.orderstatus == 4 ? 1 : 0;
-          }
-        });
-      }
-    });
-
-    //Plan Data
-    const currentPlanInfo = userData?.plans?.$values
-      ? userData?.plans?.$values[0]
-      : {};
-    if (currentPlanInfo) {
-      // PlanValidityCount = currentPlanInfo?.planValidity;
-      PlanCount = currentPlanInfo?.planName;
-      NoOfPropertiesCount = currentPlanInfo?.noOfProperties;
-      UsedPropertiesCount = userData?.usedProperties || 0;
-      totalNoOfProperties = userData?.totalNoOfProperties || 0;
-    }
-
-    // End Date
-    const userPlans = userData?.userSubscription?.$values
-      ? userData?.userSubscription?.$values[0]
-      : {};
-    if (userPlans) {
-      PlanValidityCount = userPlans?.endDate;
-    }
-
-    return {
-      allPropertiesCount,
-      quotesProvidedCount,
-      QuotesInProgressCount,
-      QuotesCompletedCount,
-      QuotesOnHoldCount,
-      CancelledPropertiesCount,
-      OnHoldPropertiesCount,
-      PlanCount,
-      PlanValidityCount,
-      NoOfPropertiesCount,
-      totalNoOfProperties,
-      UsedPropertiesCount,
-      quoteAccepted,
-    };
-  }, [properties, bids]);
+const AllStatistics = ({ dashboardCount, subBrokerDashboardCount }) => {
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const userTypes = Array.isArray(userData?.userType)
+    ? userData.userType
+    : [userData?.userType];
 
   const formatDate = (dateString) => {
+    if (!dateString) return "-";
     const options = {
       year: "numeric",
       month: "short",
       day: "numeric",
-      // hour: "numeric",
-      // minute: "numeric",
-      // second: "numeric",
-      hour12: true, // Set to false for 24-hour format
+      hour12: true,
     };
-
-    const formattedDate = new Date(dateString).toLocaleString("en-US", options);
-    return formattedDate;
+    return new Date(dateString).toLocaleString("en-US", options);
   };
 
-  const allStatistics = useMemo(
-    () => [
+  const allStatistics = useMemo(() => {
+    const stats = [
+      // 🟢 Plan Cards (after merging)
       {
-        id: "allPropertiesCount",
-        blockStyle: "stylecardnew1",
-        icon: "fa fa-home",
-        timer: properties,
-        // icon: "flaticon-house",
-        value: allPropertiesCount,
-        name: "All Properties",
-      },
-      {
-        id: "quotesProvidedCount",
-        blockStyle: "stylecardnew2",
-        icon: "fa fa-file",
-        value: quotesProvidedCount,
-        name: "Quotes Provided",
-      },
-      {
-        id: "quoteAccepted",
-        blockStyle: "stylecardnew3",
-        icon: "fa fa-check",
-        value: quoteAccepted,
-        timer: bids,
-        name: "Quotes Accepted",
-      },
-      {
-        // id: 4,
-        blockStyle: "stylecardnew4",
-        icon: "fa fa-edit",
-        timer: favourites,
-        id: "QuotesInProgressCount",
-        blockStyle: "stylecardnew4",
-        // icon: "flaticon-heart",
-        value: QuotesInProgressCount,
-        name: "Quotes in Progress",
-      },
-      {
-        id: "QuotesCompletedCount",
-        blockStyle: "stylecardnew5",
-        icon: "fa fa-check-circle",
-        timer: favourites,
-        // icon: "flaticon-invoice",
-        value: QuotesCompletedCount,
-        name: "Quotes Completed",
-      },
-      {
-        id: "QuotesOnHoldCount",
-        blockStyle: "stylecardnew6",
-        icon: "fa fa-pause",
-        timer: favourites,
-        name: "Quotes On Hold by Appraiser",
-        // icon: "flaticon-house",
-        value: QuotesOnHoldCount,
-        // name: "Quotes on HOLD",
-      },
-      {
-        id: "CancelledPropertiesCount",
-        blockStyle: "stylecardnew7",
-        icon: "fa fa-times-circle",
-        timer: favourites,
-        // icon: "flaticon-tick",
-        value: CancelledPropertiesCount,
-        name: "Cancelled Properties",
-      },
-      {
-        id: "OnHoldPropertiesCount",
-        blockStyle: "stylecardnew8",
-        icon: "fa fa-pause",
-        timer: favourites,
-        name: "On Hold Properties by Broker",
-        // icon: "flaticon-heart",
-        value: OnHoldPropertiesCount,
-        // name: "On Hold Properties",
-      },
-      {
-        id: "PlanCount",
+        id: "PlanCountAndStatus",
         blockStyle: "stylecardnew9",
         icon: "fa fa-credit-card",
-        timer: favourites,
-        // icon: "flaticon-heart",
-        value: PlanCount,
-        name: "Plan",
+        value: {
+          planName: dashboardCount?.planName || "-",
+          subscriptionStatus: dashboardCount?.subscriptionStatus
+            ? "Active"
+            : "Inactive",
+        },
+        name: "Plan & Subscription",
+        isCombined: true,
+        visibleFor: [2],
+        section: "plan",
       },
       {
         id: "PlanValidityCount",
         blockStyle: "stylecardnew10",
         icon: "fa fa-hourglass-half",
-        // timer: formatDate(planEndDate),
-        name: "Plan validity",
-        // icon: "flaticon-house",
-        value: formatDate(PlanValidityCount),
-        // name: "Plan Validity",
+        value: formatDate(dashboardCount?.planValidity),
+        name: "Plan Validity",
+        visibleFor: [2],
+        section: "plan",
       },
       {
         id: "NoOfPropertiesCount",
         blockStyle: "stylecardnew11",
         icon: "fa fa-building",
-        timer: favourites,
-        // icon: "flaticon-invoice",
-        value: totalNoOfProperties,
+        value: dashboardCount?.noOfProperties || 0,
         name: "No. of Properties",
+        visibleFor: [2],
+        section: "plan",
       },
       {
-        id: "UsedPropertiesCount",
+        id: "RemainingPropertiesCount",
         blockStyle: "stylecardnew12",
         icon: "fa fa-home",
-        timer: favourites,
-        // icon: "flaticon-tick",
-        value: UsedPropertiesCount,
-        name: "Used Properties",
+        value: dashboardCount?.remainingProperties || 0,
+        name: "Remaining Properties",
+        visibleFor: [2],
+        section: "plan",
       },
-    ],
-    [
-      allPropertiesCount,
-      quotesProvidedCount,
-      QuotesInProgressCount,
-      QuotesCompletedCount,
-      QuotesOnHoldCount,
-      CancelledPropertiesCount,
-      OnHoldPropertiesCount,
-      PlanCount,
-      PlanValidityCount,
-      NoOfPropertiesCount,
-      UsedPropertiesCount,
-    ]
+
+      // 🔵 Brokerage Cards
+      {
+        id: "allPropertiesCount",
+        blockStyle: "stylecardnew1",
+        icon: "fa fa-home",
+        value: dashboardCount?.propertiesListed || 0,
+        name: "All Properties",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "QuotesInProgressCount",
+        blockStyle: "stylecardnew4",
+        icon: "fa fa-edit",
+        value: dashboardCount?.brokerageQuotesInProgress || 0,
+        name: "New Quotes",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "quotesProvidedCount",
+        blockStyle: "stylecardnew2",
+        icon: "fa fa-file",
+        value: dashboardCount?.brokerageQuotesProvided || 0,
+        name: "Quotes Received",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "quoteAccepted",
+        blockStyle: "stylecardnew3",
+        icon: "fa fa-hourglass-half",
+        value: dashboardCount?.brokerageQuotesAccepted || 0,
+        name: "Quotes Accepted",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+
+      {
+        id: "QuotesCompletedCount",
+        blockStyle: "stylecardnew5",
+        icon: "fa fa-check",
+        value: dashboardCount?.brokerageQuotesCompleted || 0,
+        name: "Quotes Completed",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "QuotesOnHoldCount",
+        blockStyle: "stylecardnew6",
+        icon: "fa fa-pause",
+        value: dashboardCount?.brokerageQuotesOnHoldByBroker || 0,
+        name: "Properties on Hold",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "CancelledPropertiesCount",
+        blockStyle: "stylecardnew7",
+        icon: "fa fa-times-circle",
+        value: dashboardCount?.brokerageCancelledPropertiesByBroker || 0,
+        name: "Properties Cancelled",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+      {
+        id: "OnHoldPropertiesCount",
+        blockStyle: "stylecardnew8",
+        icon: "fa fa-pause",
+        value: dashboardCount?.brokerageQuotesOnHoldByAppriaser || 0,
+        name: "Properties on Hold By Appraiser",
+        visibleFor: [2],
+        section: "brokerage",
+      },
+
+      // 🟡 Sub-Broker Cards
+      {
+        id: "SubAllPropertiesCount",
+        blockStyle: "stylecardnew1",
+        icon: "fa fa-home",
+        value: subBrokerDashboardCount?.propertiesListed || 0,
+        name: "All Properties",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubQuotesInProgress",
+        blockStyle: "stylecardnew4",
+        icon: "fa fa-edit",
+        value: subBrokerDashboardCount?.quotesInProgress || 0,
+        name: "New Quotes",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubQuotesProvidedCount",
+        blockStyle: "stylecardnew2",
+        icon: "fa fa-file",
+        value: subBrokerDashboardCount?.quotesProvided || 0,
+        name: "Quotes Received",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubQuoteAccepted",
+        blockStyle: "stylecardnew3",
+        icon: "fa fa-hourglass-half",
+        value: subBrokerDashboardCount?.quotesAccepted || 0,
+        name: "Quotes Accepted",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubQuotesCompleted",
+        blockStyle: "stylecardnew5",
+        icon: "fa fa-check",
+        value: subBrokerDashboardCount?.quotesCompleted || 0,
+        name: "Quotes Completed",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubQuotesOnHold",
+        blockStyle: "stylecardnew6",
+        icon: "fa fa-pause",
+        value: subBrokerDashboardCount?.quotesOnHoldByBroker || 0,
+        name: "Properties on Hold",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubCancelledProperties",
+        blockStyle: "stylecardnew7",
+        icon: "fa fa-times-circle",
+        value: subBrokerDashboardCount?.cancelledPropertiesByBroker || 0,
+        name: "Properties Cancelled",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+      {
+        id: "SubHoldByAppraiser",
+        blockStyle: "stylecardnew8",
+        icon: "fa fa-pause",
+        value: subBrokerDashboardCount?.quotesOnHoldByAppriaser || 0,
+        name: "Properties on Hold by Appraiser",
+        visibleFor: [2],
+        section: "subbroker",
+      },
+    ];
+
+    return stats.filter((stat) =>
+      userTypes.some((type) => stat.visibleFor.includes(type))
+    );
+  }, [dashboardCount, subBrokerDashboardCount, userTypes]);
+
+  // 🔽 Group by section
+  const grouped = {
+    plan: allStatistics.filter((s) => s.section === "plan"),
+    brokerage: allStatistics.filter((s) => s.section === "brokerage"),
+    subbroker: allStatistics.filter((s) => s.section === "subbroker"),
+  };
+
+  const getStatusBadge = (status) => {
+    const isActive = status === "Active";
+    return (
+      <span
+        style={{
+          backgroundColor: isActive ? "#28a745" : "#dc3545",
+          color: "white",
+          padding: "2px 8px",
+          borderRadius: "12px",
+          fontSize: "15px",
+          fontWeight: "bold",
+        }}
+      >
+        {status}
+      </span>
+    );
+  };
+
+  const renderSection = (title, items) => (
+    <div style={{ marginBottom: "2rem" }}>
+      <h3
+        className="heading-forms"
+        // style={{
+        //   marginBottom: "1rem",
+        //   borderBottom: "2px solid #ccc",
+        //   paddingBottom: "0.5rem",
+        // }}
+      >
+        {title}
+      </h3>
+      <div className="statistics-container">
+        {items.map((item) => (
+          <div key={item.id} className={`ff_one ${item.blockStyle}`}>
+            <div className="details">
+              {item.isCombined ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "21px",
+                      fontWeight: "bold",
+                      color: "#333",
+                    }}
+                  >
+                    Plan - {item.value.planName}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    Status : {getStatusBadge(item.value.subscriptionStatus)}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="timer">{item.name}</div>
+                  <p>{item.value}</p>
+                </>
+              )}
+              {/* <div className="timer">{item.name}</div>
+              <p>{item.value}</p> */}
+            </div>
+            <div className="icon">
+              <i className={item.icon}></i>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 
   return (
-    <div className="statistics-container">
-      {allStatistics.map((item) => (
-        <div key={item.id} className={`ff_one ${item.blockStyle}`}>
-          <div className="details">
-            <div className="timer">{item.name}</div>
-            <p>{item.value}</p>
-          </div>
-          <div className="icon">
-            <i className={item.icon}></i>
-          </div>
-        </div>
-      ))}
+    <div>
+      {renderSection("Plan Details", grouped.plan)}
+      {renderSection("Brokerage Statistics", grouped.brokerage)}
+      {renderSection("Sub-Broker Statistics", grouped.subbroker)}
     </div>
   );
 };

@@ -2,19 +2,15 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import millify from "millify";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import Modal from "./Modal";
 import { encryptionData } from "../../../utils/dataEncryption";
-import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../data";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
@@ -53,11 +49,9 @@ const Index = () => {
   const [openPlanModal, setOpenPlanModal] = useState(false);
   const [viewPlanData, setViewPlanData] = useState({});
 
-  const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
 
-  const [end, setEnd] = useState(4);
   const [viewBrokerModal, setViewBrokerModal] = useState(false);
   const [selectedBroker, setSelectedBroker] = useState({});
 
@@ -65,9 +59,9 @@ const Index = () => {
   const [modalIsPopupOpen, setModalIsPopupOpen] = useState(false);
 
   const [broker, setBroker] = useState({});
-
-  const [openDate, setOpenDate] = useState(false);
-  const [statusDate, setStatusDate] = useState("");
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const openModalBroker = (property, value) => {
     setBroker(property);
@@ -433,42 +427,10 @@ const Index = () => {
                     <h3 className="heading-forms">
                       Mortgage Broker - Properties
                     </h3>
-
-                    {/* <p>We are glad to see you again!</p>                                                             */}
                   </div>
                 </div>
-                {/* End .col */}
 
-                {/*<div className="row">
-                <div className="col-lg-12 mt20">
-                 <div className="mbp_pagination">
-                   <Pagination
-                     setStart={setStart}
-                     setEnd={setEnd}
-                     properties={properties}
-                   />
-                 </div>
-               </div> 
-              </div>*/}
-
-                <div className="col-lg-12 col-xl-12">
-                  {/* <div className="candidate_revew_select style2 mb30-991">
-                    <ul className="mb0">
-                      <li className="list-inline-item">
-                        <Filtering setFilterQuery={setFilterQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <FilteringBy setFilterQuery={setSearchQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox setSearchInput={setSearchInput} />
-                        </div>
-                      </li>
-                    
-                    </ul>
-                  </div> */}
-                </div>
+                <div className="col-lg-12 col-xl-12"></div>
                 {/* End .col */}
 
                 <div className="col-lg-12">
@@ -517,10 +479,13 @@ const Index = () => {
                           setIsHoldProperty={setIsHoldProperty}
                           setSelectedBroker={setSelectedBroker}
                           setViewBrokerModal={setViewBrokerModal}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
-                          {openPlanModal && (
+                          {openPlanModal ? (
                             <div className="modal">
                               <div className="modal-content">
                                 <div className="row">
@@ -811,9 +776,11 @@ const Index = () => {
                                 </div>
                               </div>
                             </div>
+                          ) : (
+                            ""
                           )}
                         </div>
-                        {modalOpen && (
+                        {modalOpen ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -916,9 +883,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {viewBrokerModal && (
+                        {viewBrokerModal ? (
                           <div className="modal">
                             <div className="modal-content">
                               <div className="row">
@@ -1070,7 +1039,7 @@ const Index = () => {
                                         </span>
                                       </td>
                                       <td className="table-value">
-                                      {selectedBroker.licenseNumber
+                                        {selectedBroker.licenseNumber
                                           ? selectedBroker.licenseNumber
                                           : "N.A."}
                                       </td>
@@ -1105,12 +1074,10 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
                       </div>
-
-                      {/* End .table-responsive */}
-
-                      {/* End .mbp_pagination */}
                     </div>
                     {/* End .property_table */}
                   </div>
@@ -1122,17 +1089,22 @@ const Index = () => {
             </div>
             {/* End .row */}
 
-            {/* <div className="row">
+            <div className="row">
               <div className="col-lg-12 mt20">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

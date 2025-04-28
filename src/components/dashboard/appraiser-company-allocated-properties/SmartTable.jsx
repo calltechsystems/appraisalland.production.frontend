@@ -95,7 +95,7 @@ function SmartTable(props) {
   const handlePrint = async () => {
     const staticHeaders = [
       ["order_id", "Property ID"],
-      // ["appraiser_info", "Appraiser Name"]
+      ["appraiser_info", "Appraiser Name"],
       ["address", "Property Address"],
       ["status", "Quote Status"],
       ["appraisal_status", "Appraisal Status"],
@@ -118,7 +118,8 @@ function SmartTable(props) {
       "appraiserCompany_Datails",
       allData,
       "Appraiser Company Assigned Properties",
-      staticHeaders
+      staticHeaders,
+      7
     )
       .then((message) => {
         toast.success(message);

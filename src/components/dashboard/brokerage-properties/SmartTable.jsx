@@ -1,20 +1,22 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
-import SVGArrowDown from "./icons/SVGArrowDown";
-import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
 import { FaDownload, FaRedo } from "react-icons/fa";
-import * as XLSX from "xlsx";
-import { useReactToPrint } from "react-to-print";
 import toast from "react-hot-toast";
 import SearchBox from "./SearchBox";
-import FilteringBy from "./FilteringBy";
 import Filtering from "./Filtering";
-import Image from "next/image";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import NoDataFound from "../../common/NoDataFound";
 import { getTheDownloadView } from "../../common/UserViewPDFDownload";
+import SmartTableHeaderCell from "../../common/PaginationControls/SmartTableHeaderCell";
+import RecordCount from "../../common/PaginationControls/RecordCounts";
 
 function SmartTable(props) {
   const [loading, setLoading] = useState(false);
@@ -31,19 +33,6 @@ function SmartTable(props) {
   );
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
-  const [changes, setChanges] = useState(false);
-
-  const generatePDF = () => {
-    window.print();
-    toast.success("Data added");
-  };
-
-  const refreshHandler = () => {
-    const refresh = !props.refresh;
-    props.setRefresh(refresh);
-    // toast.loading("Loading....");
-    // window.location.reload();
-  };
 
   const fetchData = useCallback(
     async (queryString) => {
@@ -68,22 +57,6 @@ function SmartTable(props) {
     },
     [props.url]
   );
-
-  function extractTextFromReactElement(element) {
-    if (typeof element === "string") {
-      return element; // If it's a string, return it directly
-    } else if (Array.isArray(element)) {
-      // If it's an array of elements, recursively call this function for each element
-      return element
-        .map((child) => extractTextFromReactElement(child))
-        .join("");
-    } else if (typeof element === "object" && element !== null) {
-      // If it's an object (React element), recursively call this function on its children
-      return extractTextFromReactElement(element.props.children);
-    } else {
-      return ""; // Return an empty string if the element is not recognized
-    }
-  }
 
   const handlePrint = async () => {
     const staticHeaders = [
@@ -173,93 +146,8 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-  const handleSearch = debounce((event) => {
-    const { value } = event.target;
-    setSearch(value);
-    if (props.url) {
-      fetchData(buildQueryString(value, page, rowsPerPage));
-    } else {
-      let bool = false;
-      let tempData = props.data.filter((row) => {
-        bool = false;
-        Object.keys(row).forEach((key) => {
-          if (row[key].toLowerCase().includes(value.toLowerCase())) bool = true;
-        });
-        return bool;
-      });
-      setData(tempData);
-    }
-  }, props.searchDebounceTime ?? 800);
-
-  const extractTextContent = (cellValue) => {
-    if (typeof cellValue === "number") {
-      return cellValue; // If it's a string, return it as is
-    } else if (typeof cellValue === "object" && cellValue.$$typeof) {
-      // If it's a React element, extract text content recursively from children
-      return extractTextContent(cellValue.props.children);
-    } else {
-      return String(cellValue); // Convert other types to string and return
-    }
-  };
-
-  const extractTextContentFromDate = (value) => {
-    const date = new Date(value);
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-    return date;
-  };
-
-  const extractNumericValue = (str) => {
-    const numericStr = str.replace(/[^0-9]/g, "");
-    const numericValue = parseInt(numericStr, 10);
-
-    return numericValue;
-  };
-
-  const sortData = (cell) => {
-    // Clone props.properties to avoid mutating the original data
-    let tempData = [...props.properties];
-
-    // Toggle sorting order for the current cell
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
-
-    // Perform sorting
-    tempData.sort((a, b) => {
-      // Extract text content from cell value (React element or other type)
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
-
-      if (String(cell) === "sub_date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "amount") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-      // Perform comparison based on the sorting order
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
-    });
-
-    // Update state with the new sorting order and sorted data
-    setSortDesc(newSortDesc);
-    setData(tempData);
-  };
-
   useEffect(() => {
-    const sortObjectsByOrderIdDescending = (data) => {
-      return data.sort((a, b) => b.order_id - a.order_id);
-    };
-
-    setData(sortObjectsByOrderIdDescending(props.data));
+    setData(props.data);
   }, [props.data]);
 
   return (
@@ -331,40 +219,19 @@ function SmartTable(props) {
                     <tr>
                       {props.headCells.map((headCell, index) => {
                         return (
-                          <th
-                            id={headCell.id}
+                          <SmartTableHeaderCell
                             key={headCell.id}
-                            scope="col"
-                            style={{
-                              width: headCell.width,
-                              backgroundColor: "#2e008b",
-                              color: "white",
-                              position: "sticky",
-                              top: "0", // Keep the header visible when scrolling vertically
-                              left: index === 0 ? "0" : undefined, // Make the first column sticky
-                              zIndex: index === 0 ? "3" : "2", // Ensure layering
-                            }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
+                            headCell={headCell}
+                            index={index}
+                            sortDesc={props.sortDesc}
+                            sortData={(cell) =>
+                              props.sortData(
+                                cell,
+                                props.sortDesc,
+                                props.setSortDesc
+                              )
                             }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? sortData(headCell.id)
-                                : {}
-                            }
-                          >
-                            {headCell.label}
-                            {sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                            )}
-                          </th>
+                          />
                         );
                       })}
                     </tr>
@@ -423,9 +290,12 @@ function SmartTable(props) {
           )}
           {props.noPagination || data.length === 0 || !props.url ? (
             <div className="row">
-              <div className="col-12 text-end p-3">
-                {props.data.length > 0 ? props.data.length : 0} Records
-              </div>
+              <RecordCount
+                start={props.start}
+                end={props.end}
+                allProperties={props.allProperties}
+                totalCount={props.allProperties?.length}
+              />
             </div>
           ) : (
             <div className="row">

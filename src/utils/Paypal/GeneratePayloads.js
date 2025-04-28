@@ -238,6 +238,7 @@ const generateResponsePayload = (
 ) => {
 
   if (paymentType === "oneTime") {
+    const captureId = response.purchase_units[0].payments.captures[0].id; 
     // Payload for one-time payment
     return {
       createTime: new Date(convertToCanadaTime(new Date())).toISOString(),
@@ -246,7 +247,8 @@ const generateResponsePayload = (
       planAmount: currentSubscription?.planAmount,
       planName: currentSubscription?.planName,
       userId: userData?.userId,
-      paymentId: response?.id,
+      orderId: response?.id,
+      paymentId: captureId,
       topUpId: topUpDetails?.id,
       paymentRequestSent: JSON.stringify(request),
       paymentResponseReceived: JSON.stringify(response),

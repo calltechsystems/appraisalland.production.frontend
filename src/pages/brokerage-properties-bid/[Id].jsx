@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 const Index = () => {
   const router = useRouter();
   const { Id } = router.query;
-  console.log(Id);
   return (
     <>
       <Seo pageTitle="Properties Bids" />

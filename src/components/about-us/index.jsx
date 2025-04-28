@@ -63,7 +63,6 @@ const Index = () => {
       {/* <!-- Inner Page Breadcrumb --> */}
       <BreadCrumbBanner />
 
-      {/* <!-- About Text Content --> */}
       <div className="about-section">
         {/* <div className="container"> */}
         <div className="row">

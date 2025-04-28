@@ -148,6 +148,13 @@ const Checkout = ({
         actionsData: { ...actions.subscription.get() },
       };
 
+      // const subscriptionID = response?.paymentDetails?.subscriptionID;
+      // const res = await axios.post("/api/verify-subscription", {subscriptionID});
+  
+      // console.log("Verification result:", res);
+      // return
+  
+
       const request = generateRequestPayload(
         paymentType,
         topUpDetails,

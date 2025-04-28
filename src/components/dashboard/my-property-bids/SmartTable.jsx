@@ -121,10 +121,10 @@ function SmartTable(props) {
   const handlePrint = async () => {
     const staticHeaders = [
       ["appraiser", "Appraiser / Appraiser Company"],
-      // ["quote", "Quote Amount ($)"],
-      // ["description", "Remark"],
-      // ["date", "Quote Submitted Date"],
-      // ["quoteAcceptedDate", "Appraisal Accepted Date"],
+      ["quote", "Quote Amount ($)"],
+      ["description", "Remark"],
+      ["date", "Quote Submitted Date"],
+      ["quoteAcceptedDate", "Appraisal Accepted Date"],
     ];
 
     const allData = props.properties;

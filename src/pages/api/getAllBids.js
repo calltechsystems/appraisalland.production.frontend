@@ -11,7 +11,6 @@ import CryptoJS from "crypto-js";
     const token = request.headers.authorization;
 
     const email = request.query.email;
-    console.log(email)
 
     const userResponse = await axios.get(`${domain}/com.appraisalland.Bid/getAllQuotesByAppraiser`,
     {

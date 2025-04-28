@@ -35,49 +35,14 @@ const TableData = ({
   currentPage,
   totalPages,
   handlePageChange,
+  setfilteredPropertiesCount,
 }) => {
-  console.log(properties);
-
   const [Id, setId] = useState(-1);
 
   const [rerender, setRerender] = useState(false);
 
   const [data, setData] = useState([]);
 
-  let theadConent = ["Property Title", "Date", "Status", "Bids", "Action"];
-
-  // useEffect(()=>{
-
-  //   const data = (JSON.parse(localStorage.getItem("user")));
-
-  //   const payload = {
-  //     token : userData.token
-  //   };
-
-  //   toast.loading("Getting properties...");
-  //   axios
-  //     .get("/api/getPropertiesById",
-  //      {
-  //       headers: {
-  //         Authorization:`Bearer ${data?.token}`,
-  //         "Content-Type":"application/json"
-  //       },
-  //       params : {
-  //         userId : data?.userId
-  //       }
-  //     })
-  //     .then((res) => {
-
-  //       toast.dismiss();
-
-  //       setProperties(res.data.data.property.$values);
-  //       setRerender(false);
-  //     })
-  //     .catch((err) => {
-  //       toast.dismiss();
-  //       toast.error(err?.response?.data?.error);
-  //     });
-  // },[rerender]);
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -251,6 +216,7 @@ const TableData = ({
           currentPage={currentPage} // Pass current page
           totalPages={totalPages} // Pass total pages
           handlePageChange={handlePageChange} // Pass function
+          setfilteredPropertiesCount={setfilteredPropertiesCount}
         />
       )}
     </>

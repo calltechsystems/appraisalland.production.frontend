@@ -4,7 +4,6 @@ import { api } from "../features/api/api";
 import filterSlice from "../features/filter/filterSlice";
 import propertiesSlice from "../features/properties/propertiesSlice";
 
-
 export const store = configureStore({
     reducer: {
         [api.reducerPath]: api.reducer,

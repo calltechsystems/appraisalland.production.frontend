@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import SmartTable from "./SmartTable";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -10,9 +10,11 @@ import { FaArchive, FaDownload, FaEye } from "react-icons/fa";
 import { AppraiserStatusOptions } from "../create-listing/data";
 import millify from "millify";
 import Image from "next/image";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { extractNumericValue, extractTextContent, extractTextContentFromDate } from "./functions";
+import {
+  sortData,
+  sortTheDataList,
+} from "../../common/PaginationControls/functions";
 
 const headCells = [
   {
@@ -25,7 +27,8 @@ const headCells = [
     id: "address",
     numeric: false,
     label: "Property Address",
-    width: 200,
+    width: 250,
+    sortable: false,
   },
 
   {
@@ -33,6 +36,7 @@ const headCells = [
     numeric: false,
     label: "Assigned Status",
     width: 200,
+    sortable: false,
   },
   {
     id: "status",
@@ -45,48 +49,55 @@ const headCells = [
     numeric: false,
     label: "Appraisal Status",
     width: 160,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraisal Remark",
     width: 160,
+    sortable: false,
   },
   {
     id: "urgency",
     numeric: false,
     label: "Request Type",
-    width: 200,
+    width: 120,
   },
   {
     id: "date",
     numeric: false,
     label: "Order Submission Date",
     width: 200,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_building",
     numeric: false,
     label: "Type of Property",
     width: 200,
+    sortable: false,
   },
   {
     id: "estimated_value",
     numeric: false,
     label: "Estimated Property Value ($)",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -94,6 +105,7 @@ const headCells = [
     numeric: false,
     label: "Purpose",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -101,6 +113,7 @@ const headCells = [
     numeric: false,
     label: "Lender Information",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -108,12 +121,14 @@ const headCells = [
     numeric: false,
     label: "Broker Info",
     width: 200,
+    sortable: false,
   },
   {
     id: "property",
     numeric: false,
     label: "Property Info",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -121,6 +136,7 @@ const headCells = [
     numeric: false,
     label: "Action",
     width: 210,
+    sortable: false,
   },
 ];
 
@@ -159,14 +175,14 @@ export default function Exemple({
   refresh,
   setSelectedPropertyNew,
   setIsLoading,
-  setfilteredPropertiesCount
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [bids, setBids] = useState([]);
   const [hideAction, setHideAction] = useState(false);
   const [hideClass, setHideClass] = useState("");
-  
+
   const [sortDesc, setSortDesc] = useState({});
   const [archiveModal, setArchiveModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -181,7 +197,7 @@ export default function Exemple({
   const [selectedWishlistId, setSelectedWishlistId] = useState(null);
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
 
-  const [propertiesPerPage, setPropertiesPerPage] = useState([])
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -459,10 +475,6 @@ export default function Exemple({
     setAssignModal(true);
   };
 
-  const sortObjectsByOrderIdDescending = (data) => {
-    return data.sort((a, b) => b.order_id - a.order_id);
-  };
-
   const checkData = properties && !updatedData ? true : false;
   useEffect(() => {
     setProperties([]);
@@ -529,7 +541,6 @@ export default function Exemple({
                       <li style={{ fontSize: "15px" }}>
                         {getOrderValue(isBidded.orderstatus)} -{" "}
                         {formatDateTime(isBidded.statusdate)}
-                        {console.log("statusDate:", isBidded.statusDate)}
                       </li>
                     </ul>
                   </div>
@@ -1037,58 +1048,16 @@ export default function Exemple({
           tempData.push(updatedRow);
         }
       });
-      setPropertiesPerPage(tempData.slice(start, end));
       setfilteredPropertiesCount(tempData?.length);
-      setUpdatedData(tempData);
+      const filteredData = sortTheDataList(tempData, sortDesc);
+      setUpdatedData(filteredData);
     };
     getData();
-  }, [properties, wishlist, bids, assignedProperties]);
+  }, [properties, wishlist, bids, assignedProperties, sortDesc]);
 
   useEffect(() => {
-    setPropertiesPerPage(updatedData.slice(start, end))
-  },[start, end, updatedData])
-
-  useEffect(() => {
-    setUpdatedCode(true);
-  }, [updatedData]);
-
-    const sortData = (cell) => {
-    let tempData = [...properties];
-
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
-
-    tempData.sort((a, b) => {
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
-
-      if (String(cell) === "date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "estimated_value") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-
-      if(String(cell) === "order_id"){
-        valueA = parseInt(a[cell]);
-        valueB = parseInt(b[cell]);
-      }
-
-      // Perform comparison based on the sorting order
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
-    });
-
-    setSortDesc(newSortDesc);
-    setProperties([...tempData])
-    // setData(tempData);
-  }
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
 
   const refreshHandler = () => {
     setRefresh(true);
@@ -1137,38 +1106,38 @@ export default function Exemple({
       .then((res) => {
         const archivedList = res.data.data.$values;
         setAllArchive(res.data.data.$values);
-    axios
-      .get("/api/getAllListedProperties", {
-        headers: {
-          Authorization: `Bearer ${data?.token}`,
-          "Content-Type": "application/json",
-        },
-        params: {
-          userId: data?.userId,
-        },
-      })
-      .then((res) => {
-        setDataFetched(true);
-        const temp = res.data.data.properties.$values;
-
-        let tempBids = [];
         axios
-          .get("/api/getAllBids", {
+          .get("/api/getAllListedProperties", {
             headers: {
               Authorization: `Bearer ${data?.token}`,
+              "Content-Type": "application/json",
             },
             params: {
-              email: data.userEmail,
+              userId: data?.userId,
             },
           })
           .then((res) => {
-            tempBids = res.data.data.$values;
-            const updatedBids = tempBids.filter((prop, index) => {
-              return true;
-            });
-            setBids(updatedBids);
+            setDataFetched(true);
+            const temp = res.data.data.properties.$values;
 
-            const updatedPropertiesUnArchived = [];
+            let tempBids = [];
+            axios
+              .get("/api/getAllBids", {
+                headers: {
+                  Authorization: `Bearer ${data?.token}`,
+                },
+                params: {
+                  email: data.userEmail,
+                },
+              })
+              .then((res) => {
+                tempBids = res.data.data.$values;
+                const updatedBids = tempBids.filter((prop, index) => {
+                  return true;
+                });
+                setBids(updatedBids);
+
+                const updatedPropertiesUnArchived = [];
                 temp.map((prop) => {
                   const isArchived = archivedList.filter(
                     (archivedProp) => archivedProp.propertyId == prop.propertyId
@@ -1176,97 +1145,92 @@ export default function Exemple({
                   if (isArchived.length == 0) {
                     updatedPropertiesUnArchived.push(prop);
                   }
-                  
                 });
-                console.log({updatedPropertiesUnArchived})
                 setProperties(updatedPropertiesUnArchived);
-            axios
-              .get("/api/appraiserWishlistedProperties", {
-                headers: {
-                  Authorization: `Bearer ${data?.token}`,
-                  "Content-Type": "application/json",
-                },
-              })
-              .then((res) => {
-                const tempData = res.data.data.$values;
+                axios
+                  .get("/api/appraiserWishlistedProperties", {
+                    headers: {
+                      Authorization: `Bearer ${data?.token}`,
+                      "Content-Type": "application/json",
+                    },
+                  })
+                  .then((res) => {
+                    const tempData = res.data.data.$values;
 
-                const responseData = tempData.filter((prop, index) => {
-                  if (String(prop.userId) === String(data.userId)) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                });
-                
-                setWishlist(responseData);
-                
-              })
-              .catch((err) => {
-                toast.error(err?.response);
-              });
-            axios
-              .get("/api/getAllAssignProperties", {
-                headers: {
-                  Authorization: `Bearer ${data?.token}`,
-                },
-                params: {
-                  userId: data.appraiserCompany_Datails?.appraiserCompanyId,
-                },
-              })
-              .then((res) => {
-                let tempProperties = res.data.data.$values;
-                const temp = res.data.data.$values;
+                    const responseData = tempData.filter((prop, index) => {
+                      if (String(prop.userId) === String(data.userId)) {
+                        return true;
+                      } else {
+                        return false;
+                      }
+                    });
 
-                setAssignedProperties(tempProperties);
+                    setWishlist(responseData);
+                  })
+                  .catch((err) => {
+                    toast.error(err?.response);
+                  });
+                axios
+                  .get("/api/getAllAssignProperties", {
+                    headers: {
+                      Authorization: `Bearer ${data?.token}`,
+                    },
+                    params: {
+                      userId: data.appraiserCompany_Datails?.appraiserCompanyId,
+                    },
+                  })
+                  .then((res) => {
+                    let tempProperties = res.data.data.$values;
+                    const temp = res.data.data.$values;
+
+                    setAssignedProperties(tempProperties);
+                  })
+                  .catch((err) => {});
               })
               .catch((err) => {});
           })
           .catch((err) => {});
-      })
-      .catch((err) => {});
 
-    axios
-      .get("/api/getAllBrokers", {
-        headers: {
-          Authorization: `Bearer ${data?.token}`,
-        },
-      })
-      .then((res) => {
-        let allbroker = res.data.data.$values;
         axios
-          .get("/api/getAllBrokerageCompany", {
+          .get("/api/getAllBrokers", {
             headers: {
               Authorization: `Bearer ${data?.token}`,
             },
           })
           .then((res) => {
-            const allbrokerage = res.data.data.result.$values;
-            let updated = allbroker;
-            allbrokerage.map((user, index) => {
-              updated.push(user);
-            });
+            let allbroker = res.data.data.$values;
+            axios
+              .get("/api/getAllBrokerageCompany", {
+                headers: {
+                  Authorization: `Bearer ${data?.token}`,
+                },
+              })
+              .then((res) => {
+                const allbrokerage = res.data.data.result.$values;
+                let updated = allbroker;
+                allbrokerage.map((user, index) => {
+                  updated.push(user);
+                });
 
-            setAllBrokers(updated);
+                setAllBrokers(updated);
+              })
+              .catch((err) => {});
           })
           .catch((err) => {});
-      })
-      .catch((err) => {});
 
-    axios
-      .get("/api/getAllAppraiserByCompanyId", {
-        headers: {
-          Authorization: `Bearer ${data?.token}`,
-        },
-        params: {
-          userId: data.appraiserCompany_Datails?.appraiserCompanyId,
-        },
-      })
-      .then((res) => {
-        setAssignAppraiser(res.data.data.$values);
-      })
-      .catch((err) => {});
-
-    
+        axios
+          .get("/api/getAllAppraiserByCompanyId", {
+            headers: {
+              Authorization: `Bearer ${data?.token}`,
+            },
+            params: {
+              userId: data.appraiserCompany_Datails?.appraiserCompanyId,
+            },
+          })
+          .then((res) => {
+            setAssignAppraiser(res.data.data.$values);
+          })
+          .catch((err) => {});
       })
       .catch((err) => {
         setDataFetched(false);
@@ -1293,7 +1257,7 @@ export default function Exemple({
           title=""
           setSearchInput={setSearchInput}
           setFilterQuery={setFilterQuery}
-          data={sortObjectsByOrderIdDescending(propertiesPerPage)}
+          data={propertiesPerPage}
           headCells={headCells}
           setRefresh={setRefresh}
           setProperties={setProperties}
@@ -1314,7 +1278,7 @@ export default function Exemple({
         />
       )}
 
-      {archiveModal && (
+      {archiveModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "30%" }}>
             <div className="row">
@@ -1388,9 +1352,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {wishlistModal && (
+      {wishlistModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1464,9 +1430,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {isWishlistProperty && (
+      {isWishlistProperty ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1538,9 +1506,11 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
-      {remarkModal && (
+      {remarkModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -1603,10 +1573,12 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
 
       {/* Modal */}
-      {isLimitModalOpen && (
+      {isLimitModalOpen ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "25%" }}>
             <div className="row">
@@ -1669,6 +1641,8 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
     </>
   );

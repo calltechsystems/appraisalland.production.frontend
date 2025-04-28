@@ -4,8 +4,11 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import axios, { all } from "axios";
 import { AppraiserStatusOptions } from "../data";
-import { FaArchive, FaPause } from "react-icons/fa";
 import Image from "next/image";
+import {
+  sortData,
+  sortTheDataList,
+} from "../../common/PaginationControls/functions";
 const headCells = [
   {
     id: "order_id",
@@ -19,12 +22,14 @@ const headCells = [
     numeric: false,
     label: "Broker Info",
     width: 150,
+    sortable: false,
   },
   {
     id: "address",
     numeric: false,
     label: "Property Address",
     width: 280,
+    sortable: false,
   },
   {
     id: "status",
@@ -37,24 +42,28 @@ const headCells = [
     numeric: false,
     label: "Appraisal Status",
     width: 200,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraiser Remark",
     width: 170,
+    sortable: false,
   },
   {
     id: "sub_date",
     numeric: false,
     label: "Quote Submitted Date",
     width: 220,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 220,
+    sortable: false,
   },
   {
     id: "urgency",
@@ -68,30 +77,35 @@ const headCells = [
     numeric: false,
     label: "Property Type",
     width: 140,
+    sortable: false,
   },
   {
     id: "amount",
     numeric: false,
     label: "Estimated Value / Purchase Price",
     width: 150,
+    sortable: false,
   },
   {
     id: "purpose",
     numeric: false,
     label: "Purpose",
     width: 130,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 160,
+    sortable: false,
   },
   {
     id: "lender_information",
     numeric: false,
     label: "Lender Information",
     width: 160,
+    sortable: false,
   },
 
   {
@@ -99,6 +113,7 @@ const headCells = [
     numeric: false,
     label: "Action",
     width: 80,
+    sortable: false,
   },
 ];
 
@@ -119,6 +134,7 @@ export default function Exemple({
   setSearchInput,
   setSelectedBroker,
   setViewBrokerModal,
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [allBids, setBids] = useState([]);
@@ -128,6 +144,8 @@ export default function Exemple({
   const [remarkModal, setRemarkModal] = useState(false);
   const [remark, setRemark] = useState("N.A.");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [sortDesc, setSortDesc] = useState({});
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
   let tempData = [];
 
   useEffect(() => {
@@ -146,13 +164,8 @@ export default function Exemple({
   }, [searchInput]);
 
   useEffect(() => {
-    console.log("userNameSearch", userNameSearch);
     setIsEdited(true);
   }, [userNameSearch, statusSearch]);
-
-  const sortObjectsByOrderIdDescending = (data) => {
-    return data.sort((a, b) => b.order_id - a.order_id);
-  };
 
   const getOrderValue = (val) => {
     let title = "";
@@ -479,10 +492,24 @@ export default function Exemple({
         });
       });
       setIsEdited(false);
-      setUpdatedData(sortObjectsByOrderIdDescending(tempData));
     };
     getData();
-  }, [properties, allBids, isEdited, allBrokers, userNameSearch]);
+    setfilteredPropertiesCount(tempData?.length);
+    const filteredData = sortTheDataList(tempData, sortDesc);
+    setUpdatedData(filteredData);
+  }, [
+    properties,
+    allBids,
+    isEdited,
+    allBrokers,
+    userNameSearch,
+    statusSearch,
+    sortDesc,
+  ]);
+
+  useEffect(() => {
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
@@ -539,14 +566,19 @@ export default function Exemple({
           setStatusSearch={setStatusSearch}
           setFilterQuery={setFilterQuery}
           setSearchInput={setSearchInput}
-          data={sortObjectsByOrderIdDescending(updatedData)}
+          data={propertiesPerPage}
           headCells={headCells}
           filterQuery={filterQuery}
           refreshHandler={refreshHandler}
           start={start}
           dataFetched={dataFetched}
-          properties={updatedData}
+          properties={propertiesPerPage}
           end={end}
+          allProperties={updatedData}
+          setUpdatedData={setUpdatedData}
+          sortDesc={sortDesc}
+          setSortDesc={setSortDesc}
+          sortData={sortData}
         />
       )}
 

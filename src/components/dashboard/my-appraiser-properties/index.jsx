@@ -2,7 +2,6 @@ import Header from "../../common/header/dashboard/Header_02";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenu_01";
 import MobileMenu from "../../common/header/MobileMenu_01";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -10,8 +9,6 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import Modal from "./Modal";
 import { encryptionData } from "../../../utils/dataEncryption";
-import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../create-listing/data";
 import Link from "next/link";
 import Image from "next/image";
 import { FaDownload } from "react-icons/fa";
@@ -25,7 +22,6 @@ const Index = () => {
   const [disbale, setDisable] = useState(false);
   const [isStatusModal, setIsStatusModal] = useState(false);
   const [toggleId, setToggleId] = useState(-1);
-  const [toggleWishlist, setToggleWishlist] = useState(0);
   const [searchResult, setSearchResult] = useState([]);
   const [property, setProperty] = useState("");
   const [typeView, setTypeView] = useState(0);
@@ -112,6 +108,8 @@ const Index = () => {
       OrderStatus: Number(orderStatus),
       remark: remark,
       statusDate: statusDate,
+      user_id: data.userId,
+      user_type: data.userType
     };
 
     const encryptedBody = encryptionData(payload);
@@ -304,9 +302,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -1101,7 +1099,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1110,7 +1108,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1381,7 +1379,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1390,7 +1388,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}

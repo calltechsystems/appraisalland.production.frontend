@@ -5,9 +5,32 @@ const AllStatistics = ({
   totalCompletedBidsCount,
   totalAcceptBidsCount,
   totalPendingBidsCount,
+  planData
 }) => {
   console.log(totalBids, acceptedBids, totalBidsCount);
   const allStatistics = [
+    // New cards for Plans
+    {
+      id: 9,
+      blockStyle: "stylecardnew9",
+      icon: "fa fa-dollar",
+      timer: planData ? planData[2] : 0, // Ultimate Plan count
+      name: "Ultimate Plans",
+    },
+    {
+      id: 8,
+      blockStyle: "stylecardnew8",
+      icon: "fa fa-star-half",
+      timer: planData ? planData[1] : 0, // Pro Plan count
+      name: "Pro Plans",
+    },
+    {
+      id: 7,
+      blockStyle: "stylecardnew7",
+      icon: "fa fa-star-o",
+      timer: planData ? planData[0] : 0, // Lite Plan count
+      name: "Lite Plans",
+    },
     {
       id: 1,
       blockStyle: "stylecardnew1",
@@ -56,7 +79,7 @@ const AllStatistics = ({
     <>
       {allStatistics.map((item) => (
         // <div className="col-sm-6 col-md-6 col-lg-6 col-xl-3" key={item.id}>
-        <div className="col-lg-6" key={item.id}>
+        <div className="col-lg-4" key={item.id}>
           <div key={item.id} className={`ff_one ${item.blockStyle}`}>
             <div className="details">
               <div className="timer">{item.name}</div>

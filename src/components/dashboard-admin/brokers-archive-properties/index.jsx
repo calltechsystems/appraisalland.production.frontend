@@ -117,15 +117,15 @@ const Index = () => {
             String(property.property?.orderId)
               .toLowerCase()
               .includes(searchTerm) ||
-            property.property?.zipCode?.toLowerCase().includes(searchTerm) ||
-            property.property?.area?.toLowerCase().includes(searchTerm) ||
-            property.property?.city?.toLowerCase().includes(searchTerm) ||
-            property.property?.province?.toLowerCase().includes(searchTerm) ||
-            property.property?.streetName?.toLowerCase().includes(searchTerm) ||
-            property.property?.streetNumber
+            String(property.property?.zipCode)?.toLowerCase().includes(searchTerm) ||
+            String(property.property?.area)?.toLowerCase().includes(searchTerm) ||
+            String(property.property?.city)?.toLowerCase().includes(searchTerm) ||
+            String(property.property?.province)?.toLowerCase().includes(searchTerm) ||
+            String(property.property?.streetName)?.toLowerCase().includes(searchTerm) ||
+            String(property.property?.streetNumber)
               ?.toLowerCase()
               .includes(searchTerm) ||
-            property.property?.typeOfBuilding
+              String(property.property?.typeOfBuilding)
               ?.toLowerCase()
               .includes(searchTerm)
           );

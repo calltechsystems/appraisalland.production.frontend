@@ -4,8 +4,11 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import axios, { all } from "axios";
 import { AppraiserStatusOptions } from "../data";
-import { FaArchive, FaPause } from "react-icons/fa";
 import Image from "next/image";
+import {
+  sortData,
+  sortTheDataList,
+} from "../../common/PaginationControls/functions";
 const headCells = [
   {
     id: "order_id",
@@ -19,12 +22,14 @@ const headCells = [
     numeric: false,
     label: "Appraiser Info",
     width: 150,
+    sortable: false,
   },
   {
     id: "address",
     numeric: false,
     label: "Property Address",
     width: 280,
+    sortable: false,
   },
   {
     id: "status",
@@ -37,24 +42,28 @@ const headCells = [
     numeric: false,
     label: "Appraisal Status",
     width: 200,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraiser Remark",
     width: 170,
+    sortable: false,
   },
   {
     id: "sub_date",
     numeric: false,
     label: "Quote Submitted Date",
     width: 220,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 220,
+    sortable: false,
   },
   {
     id: "urgency",
@@ -68,30 +77,35 @@ const headCells = [
     numeric: false,
     label: "Property Type",
     width: 140,
+    sortable: false,
   },
   {
     id: "amount",
     numeric: false,
     label: "Estimated Value / Purchase Price",
     width: 150,
+    sortable: false,
   },
   {
     id: "purpose",
     numeric: false,
     label: "Purpose",
     width: 130,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 160,
+    sortable: false,
   },
   {
     id: "lender_information",
     numeric: false,
     label: "Lender Information",
     width: 160,
+    sortable: false,
   },
 
   {
@@ -99,6 +113,7 @@ const headCells = [
     numeric: false,
     label: "Action",
     width: 80,
+    sortable: false,
   },
 ];
 
@@ -119,6 +134,7 @@ export default function Exemple({
   setSearchInput,
   setSelectedAppraiser,
   setViewAppraiserModal,
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [isEdited, setIsEdited] = useState(false);
@@ -127,6 +143,9 @@ export default function Exemple({
   const [remarkModal, setRemarkModal] = useState(false);
   const [remark, setRemark] = useState("N.A.");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [sortDesc, setSortDesc] = useState({});
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
+
   let tempData = [];
 
   useEffect(() => {
@@ -146,10 +165,6 @@ export default function Exemple({
   useEffect(() => {
     setIsEdited(true);
   }, [userNameSearch, statusSearch]);
-
-  const sortObjectsByOrderIdDescending = (data) => {
-    return data.sort((a, b) => b.order_id - a.order_id);
-  };
 
   const getOrderValue = (val) => {
     let title = "";
@@ -215,27 +230,20 @@ export default function Exemple({
     let isQuoteProvided = false;
     let isCompleted = false;
     let isAccepted = false;
-      if (
-        bid.status === 1 &&
-        bid.orderStatus === 3 &&
-        !property.isOnCancel &&
-        !property.isOnHold
-      ) {
-        isCompleted = true;
-      }
-      if (
-        bid.status === 1 &&
-        !property.isOnCancel &&
-        !property.isOnHold
-      ) {
-        isAccepted = true;
-      } else if (
-        !property.isOnCancel &&
-        !property.isOnHold
-      ) {
-        isQuoteProvided = true;
-      }
-    
+    if (
+      bid.status === 1 &&
+      bid.orderStatus === 3 &&
+      !property.isOnCancel &&
+      !property.isOnHold
+    ) {
+      isCompleted = true;
+    }
+    if (bid.status === 1 && !property.isOnCancel && !property.isOnHold) {
+      isAccepted = true;
+    } else if (!property.isOnCancel && !property.isOnHold) {
+      isQuoteProvided = true;
+    }
+
     return isCompleted ? 3 : isAccepted ? 2 : isQuoteProvided ? 1 : 0;
   };
 
@@ -281,19 +289,18 @@ export default function Exemple({
 
   function getUniqueHighestStatusBids(props) {
     const allBids = props.bids?.$values || [];
-  
+
     const bidMap = new Map();
-  
-    allBids.forEach(bid => {
+
+    allBids.forEach((bid) => {
       const existing = bidMap.get(bid.bidId);
       if (!existing || bid.status > existing.status) {
         bidMap.set(bid.bidId, bid);
       }
     });
-  
+
     return Array.from(bidMap.values());
   }
-  
 
   useEffect(() => {
     const getData = () => {
@@ -478,10 +485,16 @@ export default function Exemple({
         });
       });
       setIsEdited(false);
-      setUpdatedData(sortObjectsByOrderIdDescending(tempData));
+      setfilteredPropertiesCount(tempData?.length);
+      const filteredData = sortTheDataList(tempData, sortDesc);
+      setUpdatedData(filteredData);
     };
     getData();
-  }, [properties, isEdited, allBrokers, userNameSearch]);
+  }, [properties, isEdited, allBrokers, statusSearch, sortDesc, userNameSearch]);
+
+  useEffect(() => {
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
@@ -523,18 +536,23 @@ export default function Exemple({
           setStatusSearch={setStatusSearch}
           setFilterQuery={setFilterQuery}
           setSearchInput={setSearchInput}
-          data={sortObjectsByOrderIdDescending(updatedData)}
+          data={propertiesPerPage}
           headCells={headCells}
           filterQuery={filterQuery}
           refreshHandler={refreshHandler}
           start={start}
           dataFetched={dataFetched}
-          properties={updatedData}
+          properties={propertiesPerPage}
           end={end}
+          allProperties={updatedData}
+          setUpdatedData={setUpdatedData}
+          sortDesc={sortDesc}
+          setSortDesc={setSortDesc}
+          sortData={sortData}
         />
       )}
 
-      {remarkModal && (
+      {remarkModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -591,6 +609,8 @@ export default function Exemple({
             </div>
           </div>
         </div>
+      ) : (
+        ""
       )}
     </>
   );

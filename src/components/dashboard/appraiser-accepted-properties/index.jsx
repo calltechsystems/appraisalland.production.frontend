@@ -130,6 +130,8 @@ const Index = () => {
       OrderStatus: Number(orderStatus),
       remark: remark,
       statusDate: statusDate,
+      user_id: data.userId,
+      user_type: data.userType
     };
     const encryptedBody = encryptionData(payload);
     toast.loading("Updating order status!!");
@@ -293,9 +295,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -1031,7 +1033,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1040,7 +1042,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1311,7 +1313,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1320,7 +1322,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
