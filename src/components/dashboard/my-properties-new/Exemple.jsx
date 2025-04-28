@@ -4,59 +4,60 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import axios, { all } from "axios";
 import { AppraiserStatusOptions } from "../create-listing/data";
-import {
-  FaArchive,
-  FaPause,
-  FaEye,
-  FaFacebookMessenger,
-  FaSms,
-  FaPlay,
-} from "react-icons/fa";
-// import { Button } from "bootstrap";
+import { FaArchive, FaPause, FaPlay } from "react-icons/fa";
 import Image from "next/image";
+import {
+  sortData,
+  sortTheDataList,
+} from "../../common/PaginationControls/functions";
 
 const headCells = [
   {
     id: "order_id",
     numeric: false,
     label: "Property ID",
-    width: 110,
+    width: 100,
   },
   {
     id: "address",
     numeric: false,
     label: "Property Address",
-    width: 280,
+    width: 270,
+    sortable: false,
   },
   {
     id: "status",
     numeric: false,
     label: "Order Status",
-    width: 170,
+    width: 180,
   },
   {
     id: "appraisal_status",
     numeric: false,
     label: "Appraisal Status",
-    width: 170,
+    width: 180,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraisal Remark",
-    width: 170,
+    width: 120,
+    sortable: false,
   },
   {
     id: "sub_date",
     numeric: false,
     label: "Quote Submitted Date",
     width: 220,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 220,
+    sortable: false,
   },
   {
     id: "urgency",
@@ -70,36 +71,42 @@ const headCells = [
     numeric: false,
     label: "Property Type",
     width: 140,
+    sortable: false,
   },
   {
     id: "amount",
     numeric: false,
     label: "Estimated Value / Purchase Price",
-    width: 150,
+    width: 140,
+    sortable: false,
   },
   {
     id: "purpose",
     numeric: false,
     label: "Purpose",
     width: 130,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 160,
+    sortable: false,
   },
   {
     id: "lender_information",
     numeric: false,
     label: "Lender Information",
     width: 160,
+    sortable: false,
   },
   {
     id: "actions_01",
     numeric: false,
     label: "Actions",
     width: 190,
+    sortable: false,
   },
 ];
 
@@ -129,6 +136,7 @@ export default function Exemple({
   setIsCancelProperty,
   setIsHoldProperty,
   isBidded,
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [allBids, setBids] = useState([]);
@@ -138,6 +146,10 @@ export default function Exemple({
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [remarkModal, setRemarkModal] = useState(false);
   const [remark, setRemark] = useState("N.A.");
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
+
+  const [sortDesc, setSortDesc] = useState({});
+
   let tempData = [];
 
   useEffect(() => {
@@ -229,32 +241,6 @@ export default function Exemple({
     return formattedDate;
   };
 
-  // const formatDateTimeEST = (date) => {
-  //   const d = new Date(date);
-  //   const utcOffset = -5; // EST is UTC-5
-  //   d.setHours(d.getHours() + utcOffset);
-  //   return d.toLocaleString("en-US", {
-  //     dateStyle: "medium",
-  //     timeStyle: "short",
-  //   });
-  // };
-
-  // Only for time
-
-  // const formatDateToEST = (date) => {
-  //   try {
-  //     // Convert input date string to a Date object
-  //     const utcDate = new Date(`${date}T00:00:00Z`); // Treat input as UTC midnight
-  //     return new Intl.DateTimeFormat("en-US", {
-  //       timeZone: "America/Toronto", // EST/Canada timezone
-  //       dateStyle: "medium", // Format only the date
-  //     }).format(utcDate);
-  //   } catch (error) {
-  //     console.error("Error formatting date:", error);
-  //     return "Invalid date";
-  //   }
-  // };
-
   const getBidOfProperty = (orderId) => {
     let Bid = {};
     allBids.map((bid, index) => {
@@ -321,8 +307,7 @@ export default function Exemple({
   };
   useEffect(() => {
     const getData = () => {
-      const tempData = []; // Make sure this is defined to hold the updated data.
-
+      const tempData = [];
       properties.map((property, index) => {
         const isBidded = getBidOfProperty(property.orderId);
         const isHold = property.isonhold;
@@ -588,10 +573,16 @@ export default function Exemple({
           tempData.push(updatedRow);
         }
       });
-      setUpdatedData(tempData);
+      setfilteredPropertiesCount(tempData?.length);
+      const filteredData = sortTheDataList(tempData, sortDesc);
+      setUpdatedData(filteredData);
     };
     getData();
-  }, [properties]);
+  }, [properties, sortDesc]);
+
+  useEffect(() => {
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
@@ -660,18 +651,23 @@ export default function Exemple({
           searchInput={searchInput}
           setFilterQuery={setFilterQuery}
           setSearchInput={setSearchInput}
-          data={sortObjectsByOrderIdDescending(updatedData)}
+          data={propertiesPerPage}
           headCells={headCells}
           filterQuery={filterQuery}
           refreshHandler={refreshHandler}
           start={start}
           dataFetched={dataFetched}
-          properties={updatedData}
+          properties={propertiesPerPage}
+          allProperties={updatedData}
           end={end}
+          setUpdatedData={setUpdatedData}
+          sortDesc={sortDesc}
+          setSortDesc={setSortDesc}
+          sortData={sortData}
         />
       )}
 
-      {archiveModal && (
+      {archiveModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "30%" }}>
             <div className="row">
@@ -745,9 +741,9 @@ export default function Exemple({
             </div>
           </div>
         </div>
-      )}
+      ) : ""}
 
-      {remarkModal && (
+      {remarkModal ? (
         <div className="modal">
           <div className="modal-content" style={{ width: "35%" }}>
             <div className="row">
@@ -810,7 +806,7 @@ export default function Exemple({
             </div>
           </div>
         </div>
-      )}
+      ) : ""}
     </>
   );
 }

@@ -1,13 +1,7 @@
 import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenuAdmin";
-import Filtering from "./Filtering";
-import AllStatistics from "./AllStatistics";
-import StatisticsChart from "./StatisticsChart";
-import StatisticsPieChart from "./StatisticsPieChart";
 import PackageData from "./PackageData";
-import { useRouter } from "next/router";
-import SearchUser from "./SearchUser";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -235,18 +229,9 @@ const Index = () => {
     let filteredData = [];
     allAppraiser.map((appraiser, index) => {
       if (
-        String(appraiser.firstName)
-          .toLowerCase()
-          .includes(String(searchInput).toLowerCase()) ||
-        String(appraiser.lastName)
-          .toLowerCase()
-          .includes(String(searchInput).toLowerCase()) ||
         String(appraiser.brokerageName)
           .toLowerCase()
-          .includes(String(searchInput).toLowerCase()) ||
-        String(appraiser.emailId)
-          .toLowerCase()
-          .includes(String(searchInput).toLowerCase())
+          .includes(String(searchInput).toLowerCase()) 
       ) {
         filteredData.push(appraiser);
       }
@@ -271,22 +256,16 @@ const Index = () => {
   }, [filterQuery]);
 
   const handleStatusUpdateHandler = () => {
-    if (getIfAssignedProperties(selectedUser.id) && selectedUser.isActive) {
-      setModalIsOpenError_01(true);
-      setOpenEditModal(true);
-    } else {
       const userData = JSON.parse(localStorage.getItem("user"));
       setDisable(true);
       const payload = {
         id: selectedUser.userId,
         IsActive: !selectedUser.isActive,
       };
-
-      const encryptedData = encryptionData(payload);
-      setIsLoading(true);
+      // setIsLoading(true);
       toast.loading("Updating the status");
       axios
-        .put("/api/updateIsActiveAppraiser", encryptedData, {
+        .put("/api/updateUserActiveStatus", payload, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
             "Content-Type": "application/json",
@@ -294,18 +273,20 @@ const Index = () => {
         })
         .then((res) => {
           toast.dismiss();
-          setIsLoading(false);
+          // setIsLoading(false);
           toast.success("Successfully Updated!!");
           window.location.reload();
         })
         .catch((err) => {
           toast.dismiss();
-          setIsLoading(false);
+          // setIsLoading(false);
           toast.error(err);
-        });
+        }).
+        finally(() => {
+          setOpenEditModal(false)
+        })
 
       setSelectedUser(-1);
-    }
   };
 
   const closeStatusUpdateHandler = () => {
@@ -483,6 +464,11 @@ const Index = () => {
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row">
+                <div className="col-lg-12 col-xl-12 mb5 mt10">
+                  <div className="style2 mb30-991">
+                    <h3 className="heading-forms">Mortgage Brokerage</h3>
+                  </div>
+                </div>
                 {/* Start Dashboard Navigation */}
                 <div className="col-lg-12">
                   <div className="dashboard_navigationbar dn db-1024">
@@ -619,9 +605,11 @@ const Index = () => {
                           </tr>
                           <tr>
                             <td className="table-header">
-                              <span className="text-start">Email Address</span>
+                              <span className="text-start">Registered UserId</span>
                             </td>
-                            <td className="table-value">{broker?.emailId || "N.A."}</td>
+                            <td className="table-value">
+                              {broker?.emailId || "N.A."}
+                            </td>
                           </tr>
                           <tr>
                             <td className="table-header">
@@ -664,23 +652,17 @@ const Index = () => {
                               <span className="text-start">Address</span>
                             </td>
                             <td className="table-value">
-                              {broker.streetNumber || "N.A."} {broker.streetName || "N.A."}{" "}
-                              {broker.apartmentNumber || "N.A."}, {broker.city || "N.A."}{" "}
-                              {broker.state || "N.A."}-{broker.postalCode || "N.A."}
+                              {broker.streetNumber || "N.A."}{" "}
+                              {broker.streetName || "N.A."}{" "}
+                              {broker.apartmentNumber || "N.A."},{" "}
+                              {broker.city || "N.A."} {broker.state || "N.A."}-
+                              {broker.postalCode || "N.A."}
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                     <div className="d-flex justify-content-center gap-2 mt-3">
-                      <button
-                        className="btn btn-color"
-                        onClick={() => brokerInfoHandler(broker.orderId)}
-                        style={{ width: "100px" }}
-                        title="Download Pdf"
-                      >
-                        <FaDownload />
-                      </button>
                       <button
                         className="btn btn-color"
                         style={{ width: "100px" }}

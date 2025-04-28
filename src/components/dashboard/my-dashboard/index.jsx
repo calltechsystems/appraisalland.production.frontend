@@ -3,30 +3,24 @@ import SidebarMenu from "../../common/header/dashboard/SidebarMenu";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import Filtering from "./Filtering";
 import AllStatistics from "./AllStatistics";
-import StatisticsChart from "./StatisticsChart";
-import StatisticsPieChart from "./StatisticsPieChart";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "react-toast";
 import axios from "axios";
-import Modal from "../../common/header/dashboard/NotificationModal";
 import { Link } from "react-scroll";
 import Image from "next/image";
 import { useModal } from "../../../context/ModalContext";
+import CommonLoader from "../../common/CommonLoader/page";
 
 const Index = () => {
   const [userData, setUserData] = useState({});
   const [showNotification, setShowNotification] = useState(false);
   const [data, setData] = useState([]);
   const [bids, setBids] = useState([]);
-  const [unfilteredData, setUnfilteredData] = useState([]);
   const [showLineGraph, setShowLineGraph] = useState(false);
-  const [filterQuery, setFilterQuery] = useState("All");
-  const [wishlist, setWishlist] = useState([]);
+  const [filterQuery, setFilterQuery] = useState(1000);
   const [lineData, setLineData] = useState([]);
   const [acceptedBids, setAcceptedBids] = useState(0);
-  const [allQuotesBids, setAllQuotesBids] = useState(0);
-  const [allProperties, setAllProperties] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const router = useRouter();
@@ -35,15 +29,15 @@ const Index = () => {
   const [planData, setPlanData] = useState("");
   const { isModalOpen, setIsModalOpen } = useModal();
 
+  const [dashboardCount, setDashboardCount] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    // Simulate an API call to check the user's plan status
     const fetchUserPlan = async () => {
       try {
-        // Replace this with your actual API call
         const userData = JSON.parse(localStorage.getItem("user"));
         const planDetails = userData?.plans?.$values;
         setPlanData(planDetails);
-        console.log("user", userData);
         if (!userData) {
           throw new Error("User not logged in");
         }
@@ -75,30 +69,6 @@ const Index = () => {
 
     fetchUserPlan();
   }, []);
-
-  // const planDetails = userData?.plans?.$values || [];
-  const planDetails = Array.isArray(userData?.plans?.$values)
-    ? userData.plans.$values
-    : [];
-  const planData_01 = planDetails?.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planName: plan.planName,
-    noOfProperties: plan.noOfProperties,
-    price: plan.price,
-    status: plan.status,
-  }));
-  console.log("plan data", planData_01);
-
-  const usedProp = userData?.usedProperties;
-  const userPlans = Array.isArray(userData?.userSubscription?.$values)
-    ? userData.userSubscription.$values
-    : [];
-  const planData_02 = userPlans.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planEndDate: plan.endDate,
-  }));
-
-  console.log("plans", planData_02);
 
   const closePlanErrorModal = () => {
     // setModalIsPlaneError(false);
@@ -148,137 +118,6 @@ const Index = () => {
     return () => clearInterval(inactivityCheckInterval);
   }, [lastActivityTimestamp]);
 
-  const getBiddedTime = (orderId) => {
-    let time = "";
-    bids.map((bid, index) => {
-      if (String(bid.orderId) === String(orderId) && bid.status === 1)
-        [(time = bid.requestTime)];
-    });
-    return time;
-  };
-
-  const getAllBiddedTime = (orderId) => {
-    let time = "";
-    bids.map((bid, index) => {
-      if (String(bid.orderId) === String(orderId)) [(time = bid.requestTime)];
-    });
-    return time;
-  };
-
-  const calculate = (searchDate, diff) => {
-    const newDateObj = new Date(searchDate.addedDatetime);
-    const currentObj = new Date();
-
-    const getMonthsFDiff = currentObj.getMonth() - newDateObj.getMonth();
-    const gettingDiff = currentObj.getDate() - newDateObj.getDate();
-    const gettingYearDiff = currentObj.getFullYear() - newDateObj.getFullYear();
-
-    const estimatedDiff =
-      gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
-
-    if (estimatedDiff <= diff) {
-      console.log("difference", diff, estimatedDiff, searchDate.addedDatetime);
-    }
-    return estimatedDiff <= diff && searchDate?.isArchive === false;
-  };
-
-  const filterData = (tempData) => {
-    const currentDate = new Date();
-    const oneYearAgo = new Date(currentDate);
-    oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
-    let tempAllAcceptedBids = 0;
-    let tempAllQuotesBids = 0;
-    let currentAllProperties = 0;
-
-    switch (filterQuery) {
-      case "Monthly":
-        const oneMonthAgo = new Date(currentDate);
-        oneMonthAgo.setMonth(currentDate.getMonth() - 1);
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneMonthAgo) {
-            tempAllAcceptedBids += 1;
-          }
-
-          if (isAllBid !== "" && new Date(isAllBid) >= oneMonthAgo) {
-            tempAllQuotesBids += 1;
-          }
-
-          if (calculate(item, 30) === true) {
-            currentAllProperties++;
-          }
-
-          return new Date(item.addedDatetime) >= oneMonthAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      case "Yearly":
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneYearAgo) {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "" && new Date(isAllBid) >= oneYearAgo) {
-            tempAllQuotesBids += 1;
-          }
-          if (calculate(item, 90) === true) {
-            currentAllProperties++;
-          }
-          return new Date(item.addedDatetime) >= oneYearAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      case "Weekly":
-        const oneWeekAgo = new Date(currentDate);
-        oneWeekAgo.setDate(currentDate.getDate() - 7);
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneWeekAgo) {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "" && new Date(isAllBid) >= oneWeekAgo) {
-            tempAllQuotesBids++;
-          }
-          if (calculate(item, 7) === true) {
-            currentAllProperties += 1;
-          }
-          return new Date(item.addedDatetime) >= oneWeekAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      default:
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "") {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "") {
-            tempAllQuotesBids += 1;
-          }
-          currentAllProperties++;
-
-          return new Date(item.addedDatetime) >= oneYearAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-    }
-  };
-
   useEffect(() => {
     let acceptedCount = 0;
     data.map((row, index) => {
@@ -293,11 +132,6 @@ const Index = () => {
   }, [data]);
 
   useEffect(() => {
-    const dataTemp = filterData(data);
-    setChartData(dataTemp);
-  }, [filterQuery, bids, data]);
-
-  useEffect(() => {
     setData([]);
     setBids([]);
     const data = JSON.parse(localStorage.getItem("user"));
@@ -307,75 +141,45 @@ const Index = () => {
     } else if (!data?.broker_Details?.firstName) {
       router.push("/my-profile");
     }
+    setRefresh(false);
+  }, [refresh]);
 
+  useEffect(() => {
     const func = () => {
       const data = JSON.parse(localStorage.getItem("user"));
+      if (!data) return;
+      setIsLoading(true);
+
       axios
-        .get("/api/getAllListedProperties", {
+        .get("/api/getBrokerDashboardDetails", {
           headers: {
             Authorization: `Bearer ${data?.token}`,
             "Content-Type": "application/json",
           },
           params: {
             userId: data?.userId,
+            noOfDays: filterQuery,
           },
         })
         .then((res) => {
-          const temp = res.data.data.properties.$values;
-          const pdated = temp.filter((prop, index) => {
-            if (String(prop.userId) === String(data.userId)) return true;
-            else return false;
-          });
-
-          const dataTemp = filterData(pdated);
-          setData(pdated);
-          setChartData(dataTemp);
-          setShowLineGraph(true);
-          setRerender(false);
+          const dashboardData = res.data.data;
+          setDashboardCount(dashboardData);
         })
         .catch((err) => {
-          toast.error(err?.response?.data?.error);
-        });
-
-      axios
-        .get("/api/getAllBids", {
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-          },
-          params: {
-            email: data.userEmail,
-          },
+          toast.error(err?.response?.data?.error || "Dashboard fetch failed");
         })
-        .then((res) => {
-          console.log(res.data.data.$values);
-          const tempBids = res.data.data.$values;
-          let acceptedBid = 0;
-          let allBids = [];
-          tempBids.map((prop, index) => {
-            if (String(prop.userId) === String(data.userId)) {
-              if (prop.status === 1) {
-                acceptedBid += 1;
-              }
-              allBids.push(prop);
-            }
-          });
-          console.log("acceptedBid", acceptedBid);
-          setAcceptedBids(acceptedBid);
-
-          setBids(allBids);
-        })
-        .catch((err) => {
-          toast.error(err);
+        .finally(() => {
+          setIsLoading(false);
         });
     };
+
     func();
-    setRefresh(false);
-  }, [refresh]);
+  }, [filterQuery, refresh]);
 
   useEffect(() => {
     const categorizeDataByMonth = (data) => {
       if (data.length === 0) {
-        return Array(12).fill(0); // Initialize an array with 12 elements, all initialized to 0.
+        return Array(12).fill(0);
       }
 
       const currentMonth = new Date().getMonth();
@@ -420,6 +224,7 @@ const Index = () => {
       </div>
       {/* End sidebar_menu */}
 
+      {isLoading && <CommonLoader />}
       {/* <!-- Our Dashbord --> */}
       <section className="our-dashbord dashbord bgc-f7 pb50">
         <div className="container-fluid ovh">
@@ -454,42 +259,12 @@ const Index = () => {
                   />
                 </div>
               </div>
-              {/* End .row */}
+              
               <div className="row">
                 <AllStatistics
-                  properties={data}
-                  views={allQuotesBids}
-                  bids={bids}
-                  favourites={wishlist.length}
-                  plans={planData_01}
-                  plansNew={planData_02}
-                  usedProp={usedProp}
+                  dashboardCount={dashboardCount}
                 />
               </div>
-              {/* End .row Dashboard top statistics */}
-              {/* <div className="row">
-                <div className="col-xl-6">
-                  <div className="application_statics">
-                    <h4 className="mb-4">Property Statistics</h4>
-                    {data.length > 0 && showLineGraph ? (
-                      <StatisticsChart data={lineData} />
-                    ) : (
-                      <p>Loading...</p>
-                    )}
-                  </div>
-                </div>
-                <div className="col-xl-6">
-                  <div className="application_statics">
-                    <h4 className="mb-4">Plans Statistics</h4>
-                    {data.length > 0 && showLineGraph ? (
-                      <StatisticsPieChart data={lineData} />
-                    ) : (
-                      <p>Loading...</p>
-                    )}
-                  </div>
-                </div>
-              </div> */}
-              {/* End .row  */}
 
               {modalIsPlanError && (
                 <div className="modal">

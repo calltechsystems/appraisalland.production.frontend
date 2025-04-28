@@ -64,7 +64,7 @@ function SmartTable(props) {
 
     getTheDownloadView(
       "appraiser_Details",
-      props.allProperties,
+      props.data,
       "Appraiser Transaction History",
       headers
     )

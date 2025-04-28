@@ -29,34 +29,10 @@ const SearchData = ({
     },
 
     {
-      id: "broker_name",
+      id: "broker",
       numeric: false,
       label: "Broker Name",
       width: 200,
-    },
-    {
-      id: "plan",
-      numeric: false,
-      label: "Plan Info",
-      width: 160,
-    },
-    {
-      id: "firstname",
-      numeric: false,
-      label: "First Name",
-      width: 160,
-    },
-    {
-      id: "lastname",
-      numeric: false,
-      label: "Last Name",
-      width: 160,
-    },
-    {
-      id: "registeredUserId",
-      numeric: false,
-      label: "Registered User Id",
-      width: 220,
     },
     {
       id: "currentSubscription",
@@ -65,9 +41,33 @@ const SearchData = ({
       width: 150,
     },
     {
+      id: "plan",
+      numeric: false,
+      label: "Transaction History",
+      width: 180,
+    },
+    // {
+    //   id: "firstname",
+    //   numeric: false,
+    //   label: "First Name",
+    //   width: 160,
+    // },
+    // {
+    //   id: "lastname",
+    //   numeric: false,
+    //   label: "Last Name",
+    //   width: 160,
+    // },
+    // {
+    //   id: "registeredUserId",
+    //   numeric: false,
+    //   label: "Registered User Id",
+    //   width: 220,
+    // },
+    {
       id: "expiryDateOfSubscirption",
       numeric: false,
-      label: "Valid Upto",
+      label: "Validity",
       width: 150,
     },
 
@@ -131,9 +131,9 @@ const SearchData = ({
   };
 
   const openEditModalHandler = (userId) => {
-    const appraiserCompany =
+    const broker =
       allBrokerData.filter((info) => info.userId == userId)?.[0] || {};
-    setSelectedUser(appraiserCompany);
+    setSelectedUser(broker);
     setOpenEditModal(true);
   };
 
@@ -154,7 +154,7 @@ const SearchData = ({
         const { planName, expiryDate } = getBrokerSubscription(row.userId);
         const newRow = {
           sno: index + 1,
-          broker_name: (
+          broker: (
             <span
               onClick={() => openViewModal(row)}
               style={{
@@ -172,7 +172,7 @@ const SearchData = ({
               color: "#2e008b",
               textDecoration: "underline",
             }}
-            href={`/user-plan-details/${row.userId}`}>
+            href={`/user-transaction-history/${row.userId}`}>
                 <span
                   style={{
                     textDecoration: "underline",
@@ -180,7 +180,7 @@ const SearchData = ({
                     cursor: "pointer",
                   }}
                 >
-                  Plan Details
+                  View History
                 </span>
             </a>
           ),
@@ -203,7 +203,7 @@ const SearchData = ({
               {row.firstName && (
                 <button
                   className="btn btn-color m-1"
-                  onClick={() => openEditModalHandler(data.userId)}
+                  onClick={() => openEditModalHandler(row.userId)}
                 >
                   <i className="flaticon-edit"></i>
                 </button>
@@ -218,7 +218,7 @@ const SearchData = ({
     };
     const resultedArray = getData();
     setUpdatedCode(resultedArray);
-  }, [data, properties]);
+  }, [data, properties, allBids, allSubscriptionHistory]);
 
   const formatDate = (dateString) => {
     if (dateString === "-") {

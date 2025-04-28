@@ -2,30 +2,24 @@ import Header from "../../common/header/dashboard/Header";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenu";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import millify from "millify";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import Modal from "./Modal";
 import { encryptionData } from "../../../utils/dataEncryption";
-import Loader from "./Loader";
-import { AppraiserStatusOptions } from "../create-listing/data";
-import { FaDownload } from "react-icons/fa";
 import { useModal } from "../../../context/ModalContext";
 import CommonLoader from "../../common/CommonLoader/page";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
   const { isModalOpen, setIsModalOpen } = useModal();
   const [searchInput, setSearchInput] = useState("");
   const [isStatusModal, setIsStatusModal] = useState(false);
-  const [toggleId, setToggleId] = useState(-1);
-  const [toggleWishlist, setToggleWishlist] = useState(0);
   const [searchResult, setSearchResult] = useState([]);
   const [property, setProperty] = useState("");
   const [typeView, setTypeView] = useState(0);
@@ -52,22 +46,11 @@ const Index = () => {
 
   const [refresh, setRefresh] = useState(false);
 
-  const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
-
-  const [end, setEnd] = useState(4);
-
-  const closeErrorModal = () => {
-    setModalIsOpenError(false);
-  };
-
-  const handleStatusUpdateHandler = () => {};
-
-  const closeStatusUpdateHandler = () => {
-    setOpenDate(false);
-    setIsStatusModal(false);
-  };
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
 
   const formatPhoneNumber = (number) => {
     if (!number) return ""; // Handle empty input
@@ -93,10 +76,7 @@ const Index = () => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      // hour: "numeric",
-      // minute: "numeric",
-      // second: "numeric",
-      hour12: true, // Set to false for 24-hour format
+      hour12: true,
     };
 
     const formattedDate = new Date(dateString).toLocaleString("en-US", options);
@@ -165,19 +145,15 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    // Check for inactivity every minute
     const inactivityCheckInterval = setInterval(() => {
       const currentTime = Date.now();
       const timeSinceLastActivity = currentTime - lastActivityTimestamp;
 
-      // Check if there has been no activity in the last 10 minutes (600,000 milliseconds)
       if (timeSinceLastActivity > 600000) {
         localStorage.removeItem("user");
         router.push("/login");
       }
-    }, 60000); // Check every minute
-
-    // Cleanup the interval when the component is unmounted
+    }, 60000);
     return () => clearInterval(inactivityCheckInterval);
   }, [lastActivityTimestamp]);
 
@@ -227,7 +203,6 @@ const Index = () => {
     // closeModal();
   };
 
-  // const [propertyId, setPropertyId] = useState(-1);
   const [propValue, setPropValue] = useState({});
 
   const onHoldHandler = () => {
@@ -259,7 +234,6 @@ const Index = () => {
         toast.error(err);
         setIsLoading(false);
       });
-    // closeModal();
     setPropValue({});
 
     setPropertyId(-1);
@@ -294,7 +268,6 @@ const Index = () => {
         toast.error(err);
         setIsLoading(false);
       });
-    // closeModal();
     setPropValue(0);
     setPropertyId(-1);
   };
@@ -322,9 +295,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -345,7 +318,6 @@ const Index = () => {
     const estimatedDiff =
       gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
 
-    console.log("dayss", diff, newDateObj.getDate(), currentObj.getDate());
     return estimatedDiff <= diff;
   };
 
@@ -375,7 +347,6 @@ const Index = () => {
 
   useEffect(() => {
     const tmpData = filterData(properties);
-    console.log("filterQuery", filterQuery, tmpData, tmpData.length);
     setFilterProperty(tmpData);
   }, [filterQuery]);
 
@@ -425,118 +396,6 @@ const Index = () => {
     fetchData();
   }, []);
 
-  const brokerInfoHandler = (orderId) => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(
-      "<html><head><title>Broker Information</title></head><body>"
-    );
-    printWindow.document.write(
-      "<h1>" + `Broker info of order ${orderId}` + "</h1>"
-    );
-    printWindow.document.write(
-      '<button style="display:none;" onclick="window.print()">Print</button>'
-    );
-
-    // Clone the table-container and remove the action column
-    const tableContainer = document.getElementById("broker-info-container");
-    const table = tableContainer.querySelector("table");
-    const clonedTable = table.cloneNode(true);
-    const rows = clonedTable.querySelectorAll("tr");
-    rows.forEach((row) => {
-      const lastCell = row.querySelector("td:last-child");
-    });
-
-    // Remove the action heading from the table
-    const tableHead = clonedTable.querySelector("thead");
-    const tableHeadRows = tableHead.querySelectorAll("tr");
-    tableHeadRows.forEach((row) => {
-      const lastCell = row.querySelector("th:last-child");
-    });
-
-    // Make the table responsive for all fields
-    const tableRows = clonedTable.querySelectorAll("tr");
-    tableRows.forEach((row) => {
-      const firstCell = row.querySelector("td:first-child");
-      if (firstCell) {
-        const columnHeading = tableHeadRows[0].querySelector(
-          "th:nth-child(" + (firstCell.cellIndex + 1) + ")"
-        ).innerText;
-        firstCell.setAttribute("data-th", columnHeading);
-      }
-    });
-
-    printWindow.document.write(clonedTable.outerHTML);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.onafterprint = () => {
-      printWindow.close();
-      toast.success("Saved the data");
-    };
-  };
-
-  const PropertyInfoHandler = (orderId) => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(
-      "<html><head><title>Appraiser Land</title></head><body>"
-    );
-    printWindow.document.write(
-      ' <img width="60" height="45" class="logo1 img-fluid" style="" src="/assets/images/Appraisal_Land_Logo.png" alt="header-logo2.png"/> <span style="color: #2e008b font-weight: bold; font-size: 24px;">Appraisal</span><span style="color: #97d700; font-weight: bold; font-size: 24px;">Land</span>'
-    );
-    printWindow.document.write(
-      "<h3>" +
-        `Properties Information of Order ID ${orderId}` +
-        "</h3>" +
-        "<style>" +
-        "h3{text-align:center;}" +
-        "</style>"
-    );
-    // printWindow.document.write(
-    //   "<h1>" + `Property info of order ${orderId}` + "</h1>"
-    // );
-
-    printWindow.document.write(
-      '<button style="display:none;" onclick="window.print()">Print</button>'
-    );
-
-    // Clone the table-container and remove the action column
-    const tableContainer = document.getElementById("property-info-container");
-    const table = tableContainer.querySelector("table");
-    const clonedTable = table.cloneNode(true);
-    const rows = clonedTable.querySelectorAll("tr");
-    rows.forEach((row) => {
-      const lastCell = row.querySelector("td:last-child");
-    });
-
-    // Remove the action heading from the table
-    const tableHead = clonedTable.querySelector("thead");
-    const tableHeadRows = tableHead.querySelectorAll("tr");
-    tableHeadRows.forEach((row) => {
-      const lastCell = row.querySelector("th:last-child");
-    });
-
-    // Make the table responsive for all fields
-    const tableRows = clonedTable.querySelectorAll("tr");
-    tableRows.forEach((row) => {
-      const firstCell = row.querySelector("td:first-child");
-      if (firstCell) {
-        const columnHeading = tableHeadRows[0].querySelector(
-          "th:nth-child(" + (firstCell.cellIndex + 1) + ")"
-        ).innerText;
-        firstCell.setAttribute("data-th", columnHeading);
-      }
-    });
-
-    printWindow.document.write(clonedTable.outerHTML);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.onafterprint = () => {
-      printWindow.close();
-      toast.success("Saved the data");
-    };
-  };
-
   const participateHandler = (val, id) => {
     setLowRangeBid(val);
     setPropertyId(id);
@@ -569,7 +428,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    console.log(searchQuery);
     const tempData = properties;
     if (searchInput === "") {
       return;
@@ -605,12 +463,9 @@ const Index = () => {
 
   return (
     <>
-      {/* <!-- Main Header Nav --> */}
       <Header userData={userData} />
 
       {isLoading && <CommonLoader />}
-
-      {/* <!--  Mobile Menu --> */}
       <MobileMenu />
 
       <div className="dashboard_sidebar_menu">
@@ -623,15 +478,12 @@ const Index = () => {
           <SidebarMenu />
         </div>
       </div>
-      {/* End sidebar_menu */}
 
-      {/* <!-- Our Dashbord --> */}
       <section className="our-dashbord dashbord bgc-f7 pb50 dashboard-height">
         <div className="container-fluid ovh table-padding container-padding">
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row">
-                {/* Start Dashboard Navigation */}
                 <div className="col-lg-12">
                   <div className="dashboard_navigationbar dn db-1024">
                     <div className="dropdown">
@@ -646,47 +498,12 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-                {/* End Dashboard Navigation */}
 
                 <div className="col-lg-4 col-xl-4 mb10">
-                  <div className="style2 mb30-991">
-                    {/* <h3 className="breadcrumb_title">Appraising Properties</h3> */}
-                    {/* <p>We are glad to see you again!</p>                                                             */}
-                  </div>
+                  <div className="style2 mb30-991"></div>
                 </div>
-                {/* End .col */}
 
-                {/*<div className="row">
-                <div className="col-lg-12 mt20">
-                 <div className="mbp_pagination">
-                   <Pagination
-                     setStart={setStart}
-                     setEnd={setEnd}
-                     properties={properties}
-                   />
-                 </div>
-               </div> 
-              </div>*/}
-
-                <div className="col-lg-12 col-xl-12">
-                  {/* <div className="candidate_revew_select style2 mb30-991">
-                    <ul className="mb0">
-                      <li className="list-inline-item">
-                        <Filtering setFilterQuery={setFilterQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <FilteringBy setFilterQuery={setSearchQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox setSearchInput={setSearchInput} />
-                        </div>
-                      </li>
-                    
-                    </ul>
-                  </div> */}
-                </div>
-                {/* End .col */}
+                <div className="col-lg-12 col-xl-12"></div>
 
                 <div className="col-lg-12">
                   <div className="">
@@ -727,10 +544,13 @@ const Index = () => {
                           archievePropertyHandler={archievePropertyHandler}
                           setIsCancelProperty={setIsCancelProperty}
                           setIsHoldProperty={setIsHoldProperty}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
-                          {modalIsPopupOpen && (
+                          {modalIsPopupOpen ? (
                             <div className="modal">
                               <div className="modal-content">
                                 <div className="col-lg-12">
@@ -961,7 +781,7 @@ const Index = () => {
                                   </table>
                                 </div>
                                 <div className="d-flex justify-content-center gap-2 mt-3">
-                                  <button
+                                  {/* <button
                                     className="btn btn-color"
                                     style={{ width: "100px" }}
                                     onClick={() =>
@@ -972,7 +792,7 @@ const Index = () => {
                                     title="Download Pdf"
                                   >
                                     <FaDownload />
-                                  </button>
+                                  </button> */}
                                   <button
                                     className="btn btn-color"
                                     style={{ width: "100px" }}
@@ -983,9 +803,11 @@ const Index = () => {
                                 </div>
                               </div>
                             </div>
+                          ) : (
+                            ""
                           )}
                         </div>
-                        {modalOpen && (
+                        {modalOpen ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -1094,9 +916,11 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {isModalOpen && (
+                        {isModalOpen ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -1151,7 +975,7 @@ const Index = () => {
                               <p className="fs-5 text-center text-dark mt-4">
                                 You&apos;ve hit your subscription limit.
                                 <br />
-                                Kindly
+                                Kindly{" "}
                                 <span className="text-danger fw-bold">
                                   Top Up.
                                 </span>{" "}
@@ -1166,14 +990,16 @@ const Index = () => {
                                   className="btn btn-color w-25"
                                   onClick={() => setIsModalOpen(false)}
                                 >
-                                  Cancel
+                                  OK
                                 </button>
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
 
-                        {holdModalOpen && (
+                        {holdModalOpen ? (
                           <div className="modal">
                             <div
                               className="modal-content"
@@ -1244,22 +1070,32 @@ const Index = () => {
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          ""
                         )}
                       </div>
-
-                      {/* End .table-responsive */}
-
-                      {/* End .mbp_pagination */}
                     </div>
-                    {/* End .property_table */}
                   </div>
                 </div>
-                {/* End .col */}
-              </div>
 
-              {/* End .row */}
+                <div className="row">
+                  <div className="col-lg-12">
+                    <div className="mbp_pagination">
+                      <Pagination
+                        setStart={setStart}
+                        setEnd={setEnd}
+                        properties={
+                          searchInput === "" && filterQuery === "All"
+                            ? properties
+                            : filterProperty
+                        }
+                        filteredPropertiesCount={filteredPropertiesCount}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            {/* End .row */}
 
             <div className="row mt50">
               <div className="col-lg-12">

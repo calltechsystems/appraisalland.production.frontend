@@ -22,7 +22,7 @@ const SearchData = ({
       id: "sno",
       numeric: false,
       label: "S.no",
-      width: 100,
+      width: 80,
     },
 
     {
@@ -32,40 +32,41 @@ const SearchData = ({
       width: 220,
     },
     {
-      id: "plan",
-      numeric: false,
-      label: "Plan Info",
-      width: 160,
-    },
-    {
-      id: "firstname",
-      numeric: false,
-      label: "First Name",
-      width: 220,
-    },
-    {
-      id: "lastname",
-      numeric: false,
-      label: "Last Name",
-      width: 220,
-    },
-    {
-      id: "registeredUserId",
-      numeric: false,
-      label: "Registered User Id",
-      width: 220,
-    },
-    {
       id: "currentSubscription",
       numeric: false,
       label: "Plan Name",
-      width: 220,
+      width: 140,
     },
+    {
+      id: "plan",
+      numeric: false,
+      label: "Transaction History",
+      width: 180,
+    },
+    // {
+    //   id: "firstname",
+    //   numeric: false,
+    //   label: "First Name",
+    //   width: 220,
+    // },
+    // {
+    //   id: "lastname",
+    //   numeric: false,
+    //   label: "Last Name",
+    //   width: 220,
+    // },
+    // {
+    //   id: "registeredUserId",
+    //   numeric: false,
+    //   label: "Registered User Id",
+    //   width: 220,
+    // },
+    
     {
       id: "expiryDateOfSubscirption",
       numeric: false,
-      label: "Valid Upto",
-      width: 220,
+      label: "Validity",
+      width: 120,
     },
     {
       id: "bids",
@@ -92,20 +93,20 @@ const SearchData = ({
       id: "completed_bids",
       numeric: false,
       label: "Completed Quotes",
-      width: 140,
+      width: 170,
     },
 
     {
       id: "status",
       numeric: false,
       label: "Status",
-      width: 200,
+      width: 140,
     },
     {
       id: "action",
       numeric: false,
       label: "Actions",
-      width: 200,
+      width: 100,
     },
   ];
 
@@ -135,9 +136,9 @@ const SearchData = ({
   };
 
   const openEditModalHandler = (userId) => {
-    const appraiserCompany =
+    const appraiser =
       allAppraiser.filter((info) => info.userId == userId)?.[0] || {};
-    setSelectedUser(appraiserCompany);
+    setSelectedUser(appraiser);
     setOpenEditModal(true);
   };
 
@@ -172,7 +173,7 @@ const SearchData = ({
               color: "#2e008b",
               textDecoration: "underline",
             }}
-            href={`/user-plan-details/${row.userId}`}>
+            href={`/user-transaction-history/${row.userId}`}>
                 <span
                   style={{
                     textDecoration: "underline",
@@ -180,7 +181,7 @@ const SearchData = ({
                     cursor: "pointer",
                   }}
                 >
-                  Plan Details
+                  View History
                 </span>
             </a>
           ),
@@ -193,7 +194,7 @@ const SearchData = ({
           quote_accepted: acceptedBids,
           quote_pending: pendingBids,
           completed_bids: completedBids,
-          status: row.firstName ? (
+          status: row.isActive ? (
             <span className="btn btn-success  w-100">Active</span>
           ) : (
             <span className="btn btn-danger  w-100">In-Active </span>
@@ -203,7 +204,7 @@ const SearchData = ({
               {row.firstName && (
                 <button
                   className="btn btn-color m-1"
-                  onClick={() => openEditModalHandler(data.userId)}
+                  onClick={() => openEditModalHandler(row.userId)}
                 >
                   <i className="flaticon-edit"></i>
                 </button>
@@ -218,7 +219,7 @@ const SearchData = ({
     };
     const resultedArray = getData();
     setUpdatedCode(resultedArray);
-  }, [data, allBids]);
+  }, [data, allBids, allSubscriptionHistory]);
 
   const allBidForUser = (id) => {
     let allBid = 0,

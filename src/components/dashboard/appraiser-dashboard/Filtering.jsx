@@ -2,6 +2,7 @@ import { FaRedo } from "react-icons/fa";
 
 const Filtering = ({ setRefresh , FilteringType , setFilteringType }) => {
   const refreshHandler = () => {
+    setFilteringType(1000);
     setRefresh(true);
   };
   return (
@@ -12,10 +13,10 @@ const Filtering = ({ setRefresh , FilteringType , setFilteringType }) => {
             <select className="selectpicker show-tick form-select c_select"
             value={FilteringType}
             onChange={(e)=>setFilteringType(e.target.value)}>
-              <option value={"All"}>All</option>
-              <option value={"Last 7 days"}>Last 7 Days</option>
-              <option value={"Last 30 Days"}>Last 30 Days</option>
-              <option value={"Last 3 Month"}>Last 90 Days</option>
+              <option value={1000}>All</option>
+              <option value={7}>Last 7 Days</option>
+              <option value={30}>Last 30 Days</option>
+              <option value={90}>Last 90 Days</option>
               
             </select>
           </div>

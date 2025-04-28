@@ -3,15 +3,12 @@ import SidebarMenu from "../../common/header/dashboard/SidebarMenuBrokerage";
 import MobileMenu from "../../common/header/MobileMenu_02";
 import Filtering from "./Filtering";
 import AllStatistics from "./AllStatistics";
-import StatisticsChart from "./StatisticsChart";
-import StatisticsPieChart from "./StatisticsPieChart";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "react-toast";
 import { Link } from "react-scroll";
 import Image from "next/image";
 import axios from "axios";
-import Modal from "../../common/header/dashboard/NotificationModal";
 import { useModal } from "../../../context/ModalContext";
 
 const Index = () => {
@@ -21,7 +18,7 @@ const Index = () => {
   const [bids, setBids] = useState([]);
   const [unfilteredData, setUnfilteredData] = useState([]);
   const [showLineGraph, setShowLineGraph] = useState(false);
-  const [filterQuery, setFilterQuery] = useState("All");
+  const [filterQuery, setFilterQuery] = useState(1000);
   const [wishlist, setWishlist] = useState([]);
   const [lineData, setLineData] = useState([]);
   const [acceptedBids, setAcceptedBids] = useState(0);
@@ -33,6 +30,72 @@ const Index = () => {
   const [modalIsPlanError, setModalIsPlaneError] = useState(false);
   const [message, setMessage] = useState("");
   const { isModalOpen, setIsModalOpen } = useModal();
+  const [dashboardCount, setDashboardCount] = useState(null);
+  const [subBrokerDashboardCount, setSubBrokerDashboardCount] = useState(null);
+
+  useEffect(() => {
+    const func = () => {
+      const data = JSON.parse(localStorage.getItem("user"));
+      if (!data) return;
+      // setIsLoading(true);
+
+      axios
+        .get("/api/getBrokerageCompanyDashboardDetails", {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            userId: data?.userId,
+            noOfDays: filterQuery,
+          },
+        })
+        .then((res) => {
+          const dashboardData = res.data.data;
+          setDashboardCount(dashboardData);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data?.error || "Dashboard fetch failed");
+        })
+        .finally(() => {
+          // setIsLoading(false);
+        });
+    };
+
+    func();
+  }, [filterQuery, refresh]);
+
+  useEffect(() => {
+    const func = () => {
+      const data = JSON.parse(localStorage.getItem("user"));
+      if (!data) return;
+      // setIsLoading(true);
+
+      axios
+        .get("/api/getSubBrokerDashboardDetails", {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            userId: data?.userId,
+            noOfDays: filterQuery,
+          },
+        })
+        .then((res) => {
+          const subBrokerDashboardData = res.data.data;
+          setSubBrokerDashboardCount(subBrokerDashboardData);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data?.error || "Dashboard fetch failed");
+        })
+        .finally(() => {
+          // setIsLoading(false);
+        });
+    };
+
+    func();
+  }, [filterQuery, refresh]);
 
   useEffect(() => {
     // Simulate an API call to check the user's plan status
@@ -40,14 +103,10 @@ const Index = () => {
       try {
         // Replace this with your actual API call
         const userData = JSON.parse(localStorage.getItem("user"));
-        console.log("user", userData);
+
         if (!userData) {
           throw new Error("User not logged in");
         }
-        // if (userData?.userType !== 1) {
-        //   console.log("Not applicable for this user type.");
-        //   return;
-        // }
 
         const userActivePlans = userData?.userSubscription?.$values;
         //  console.log("plans", userActivePlans);
@@ -77,26 +136,6 @@ const Index = () => {
   const planDetails = Array.isArray(userData?.plans?.$values)
     ? userData.plans.$values
     : [];
-  const planData_01 = planDetails.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planName: plan.planName,
-    noOfProperties: plan.noOfProperties,
-    price: plan.price,
-    status: plan.status,
-  }));
-
-  console.log("plan data", planData_01);
-
-  const usedProp = userData?.usedproperty;
-  const userPlans = Array.isArray(userData?.userSubscription?.$values)
-    ? userData.userSubscription.$values
-    : [];
-  const planData_02 = userPlans.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planEndDate: plan.endDate,
-  }));
-
-  console.log("plans", planData_02);
 
   const closePlanErrorModal = () => {
     // setModalIsPlaneError(false);
@@ -146,155 +185,6 @@ const Index = () => {
     return () => clearInterval(inactivityCheckInterval);
   }, [lastActivityTimestamp]);
 
-  // if (!userData) {
-  //   router.push("/login");
-  // } else if (!userData?.broker_Details?.firstName) {
-  //   router.push("/my-profile");
-  // }
-
-  const categorizeDataByMonth = (data) => {
-    if (data.length <= 0) return [];
-    // Initialize an object to store data by month
-    const dataByMonth = {};
-
-    const currentMonth = new Date().getMonth();
-
-    data.forEach((property) => {
-      const createdAtDate = new Date(property.createdAt);
-      const month = createdAtDate.getMonth();
-      if (month <= currentMonth) {
-        if (!dataByMonth[month]) {
-          dataByMonth[month] = [];
-        }
-        dataByMonth[month].push(property);
-      }
-    });
-
-    const categorizedData = Object.entries(dataByMonth)?.map(
-      ([month, properties]) => ({
-        month: parseInt(month, 10),
-        properties,
-      })
-    );
-
-    categorizedData.sort((a, b) => a.month - b.month);
-
-    return categorizedData;
-  };
-
-  const getBiddedTime = (orderId) => {
-    let time = "";
-    bids.map((bid, index) => {
-      if (String(bid.orderId) === String(orderId) && bid.status === 1)
-        [(time = bid.requestTime)];
-    });
-    return time;
-  };
-
-  const getAllBiddedTime = (orderId) => {
-    let time = "";
-    bids.map((bid, index) => {
-      if (String(bid.orderId) === String(orderId)) [(time = bid.requestTime)];
-    });
-    return time;
-  };
-
-  const filterData = (tempData) => {
-    const currentDate = new Date();
-    const oneYearAgo = new Date(currentDate);
-    oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
-    let tempAllAcceptedBids = 0;
-    let tempAllQuotesBids = 0;
-    let currentAllProperties = 0;
-
-    switch (filterQuery) {
-      case "Monthly":
-        const oneMonthAgo = new Date(currentDate);
-        oneMonthAgo.setMonth(currentDate.getMonth() - 1);
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneMonthAgo) {
-            tempAllAcceptedBids += 1;
-          }
-
-          if (isAllBid !== "" && new Date(isAllBid) >= oneMonthAgo) {
-            tempAllQuotesBids += 1;
-          }
-
-          if (new Date(item.addedDatetime) >= oneMonthAgo) {
-            currentAllProperties += 1;
-          }
-
-          return new Date(item.addedDatetime) >= oneMonthAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      case "Yearly":
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneYearAgo) {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "" && new Date(isAllBid) >= oneYearAgo) {
-            tempAllQuotesBids += 1;
-          }
-          if (new Date(item.addedDatetime) >= oneYearAgo) {
-            currentAllProperties += 1;
-          }
-          return new Date(item.addedDatetime) >= oneYearAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      case "Weekly":
-        const oneWeekAgo = new Date(currentDate);
-        oneWeekAgo.setDate(currentDate.getDate() - 7);
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "" && new Date(isBidded) >= oneWeekAgo) {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "" && new Date(isAllBid) >= oneWeekAgo) {
-            tempAllQuotesBids += 1;
-          }
-          if (new Date(item.addedDatetime) >= oneWeekAgo) {
-            currentAllProperties += 1;
-          }
-          return new Date(item.addedDatetime) >= oneWeekAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAcceptedBids(tempAllAcceptedBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-
-      default:
-        tempData = tempData.filter((item) => {
-          const isBidded = getBiddedTime(item?.orderId);
-          const isAllBid = getAllBiddedTime(item?.orderId);
-          if (isBidded !== "") {
-            tempAllAcceptedBids += 1;
-          }
-          if (isAllBid !== "") {
-            tempAllQuotesBids += 1;
-          }
-          currentAllProperties += 1;
-
-          return new Date(item.addedDatetime) >= oneYearAgo;
-        });
-        setAllQuotesBids(tempAllQuotesBids);
-        setAllProperties(currentAllProperties);
-        return tempData;
-    }
-  };
-
   useEffect(() => {
     let acceptedCount = 0;
     data.map((row, index) => {
@@ -309,11 +199,6 @@ const Index = () => {
   }, [data]);
 
   useEffect(() => {
-    const dataTemp = filterData(data);
-    setChartData(dataTemp);
-  }, [filterQuery, bids, data]);
-
-  useEffect(() => {
     setData([]);
     setBids([]);
     const data = JSON.parse(localStorage.getItem("user"));
@@ -324,75 +209,13 @@ const Index = () => {
       router.push("/brokerage-profile");
     }
 
-    const func = () => {
-      const data = JSON.parse(localStorage.getItem("user"));
-      axios
-        .get("/api/getAllListedProperties", {
-          headers: {
-            Authorization: `Bearer ${data?.token}`,
-            "Content-Type": "application/json",
-          },
-          params: {
-            userId: data?.userId,
-          },
-        })
-        .then((res) => {
-          const temp = res.data.data.properties.$values;
-          const pdated = temp.filter((prop, index) => {
-            if (String(prop.userId) === String(data.userId)) return true;
-            else return false;
-          });
-
-          const dataTemp = filterData(pdated);
-          setData(pdated);
-          setChartData(dataTemp);
-          setShowLineGraph(true);
-          setRerender(false);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data?.error);
-        });
-
-      axios
-        .get("/api/getAllBids", {
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-          },
-          params: {
-            email: data.userEmail,
-          },
-        })
-        .then((res) => {
-          console.log(res.data.data.$values);
-          const tempBids = res.data.data.$values;
-          let acceptedBid = 0;
-          let allBids = [];
-          tempBids.map((prop, index) => {
-            if (String(prop.userId) === String(data.userId)) {
-              if (prop.status === 1) {
-                acceptedBid += 1;
-              }
-              allBids.push(prop);
-            }
-          });
-          console.log("acceptedBid", acceptedBid);
-          setAcceptedBids(acceptedBid);
-
-          setBids(allBids);
-        })
-        .catch((err) => {
-          toast.error(err);
-          // setModalIsOpenError(true);
-        });
-    };
-    func();
     setRefresh(false);
   }, [refresh]);
 
   useEffect(() => {
     const categorizeDataByMonth = (data) => {
       if (data.length === 0) {
-        return Array(12).fill(0); // Initialize an array with 12 elements, all initialized to 0.
+        return Array(12).fill(0);
       }
 
       const currentMonth = new Date().getMonth();
@@ -443,23 +266,6 @@ const Index = () => {
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row mb-5">
-                {/* Start Dashboard Navigation */}
-                {/* <div className="col-lg-12">
-                  <div className="dashboard_navigationbar dn db-1024">
-                    <div className="dropdown">
-                      <button
-                        className="dropbtn"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#DashboardOffcanvasMenu"
-                        aria-controls="DashboardOffcanvasMenu"
-                      >
-                        <i className="fa fa-bars pr10"></i> Dashboard Navigation
-                      </button>
-                    </div>
-                  </div>
-                </div> */}
-                {/* End Dashboard Navigation */}
-
                 <div
                   className="dashboard-header col-lg-12 mb-2 pb-2 pt-2"
                   style={{
@@ -499,41 +305,10 @@ const Index = () => {
 
               <div className="row">
                 <AllStatistics
-                  properties={data}
-                  views={allQuotesBids}
-                  bids={bids}
-                  favourites={wishlist.length}
-                  plans={planData_01}
-                  plansNew={planData_02}
-                  usedProp={usedProp}
+                  dashboardCount={dashboardCount}
+                  subBrokerDashboardCount={subBrokerDashboardCount}
                 />
               </div>
-              {/* End .row Dashboard top statistics */}
-
-              {/* <div className="row">
-                <div className="col-xl-6">
-                  <div className="application_statics">
-                    <h4 className="mb-4">Property Statistics</h4>
-                    {data.length > 0 && showLineGraph ? (
-                      <StatisticsChart data={lineData} />
-                    ) : (
-                      <p>Loading...</p>
-                    )}
-                  </div>
-                </div>
-                <div className="col-xl-6">
-                  <div className="application_statics">
-                    <h4 className="mb-4">Plans Statistics</h4>
-                    {data.length > 0 && showLineGraph ? (
-                      <StatisticsPieChart data={lineData} />
-                    ) : (
-                      <p>Loading...</p>
-                    )}
-                  </div>
-                </div>
-              </div> */}
-
-              {/* End .row  */}
 
               {modalIsPlanError && (
                 <div className="modal">

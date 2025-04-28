@@ -3,8 +3,6 @@ import SidebarMenu from "../../common/header/dashboard/SidebarMenu_002";
 import MobileMenu from "../../common/header/MobileMenu_01";
 import Filtering from "./Filtering";
 import AllStatistics from "./AllStatistics";
-import StatisticsPieChart, { tempData } from "./StatisticsPieChart";
-import StatisticsChart from "./StatisticsChart";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -15,20 +13,79 @@ import Image from "next/image";
 const Index = () => {
   const [userData, setUserData] = useState({});
   const router = useRouter();
-  const [properties, setProperties] = useState([]);
   const [refresh, setRefresh] = useState(false);
-  const [FilteringType, setFilteringType] = useState("Monthly");
-  const [allProperties, setAllProperties] = useState([]);
-  const [AllPropertiesCard, setAllPropertiesCard] = useState(0);
-  const [AllWishlistedCards, setAllWishlistedCards] = useState(0);
-  const [AllBiddedCards, setAllBiddedCards] = useState(0);
-  const [bids, setBids] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [chartData, setChartData] = useState([]);
+  const [FilteringType, setFilteringType] = useState("1000");
   const [modalIsOpenError, setModalIsOpenError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [modalIsPlanError, setModalIsPlaneError] = useState(false);
   const [message, setMessage] = useState("");
+  const [dashboardCount, setDashboardCount] = useState(null);
+  const [subAppraiserDashboardCount, setSubAppraiserDashboardCount] =
+    useState(null);
+
+  useEffect(() => {
+    const func = () => {
+      const data = JSON.parse(localStorage.getItem("user"));
+      if (!data) return;
+      // setIsLoading(true);
+
+      axios
+        .get("/api/getAppraiserCompanyDashboardDetails", {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            userId: data?.userId,
+            noOfDays: FilteringType,
+          },
+        })
+        .then((res) => {
+          const dashboardData = res.data.data;
+          setDashboardCount(dashboardData);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data?.error || "Dashboard fetch failed");
+        })
+        .finally(() => {
+          // setIsLoading(false);
+        });
+    };
+
+    func();
+  }, [FilteringType, refresh]);
+
+  useEffect(() => {
+    const func = () => {
+      const data = JSON.parse(localStorage.getItem("user"));
+      if (!data) return;
+      // setIsLoading(true);
+
+      axios
+        .get("/api/getSubAppraiserDashboardDetails", {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            userId: data?.userId,
+            noOfDays: FilteringType,
+          },
+        })
+        .then((res) => {
+          const subAppraiserDashboardData = res.data.data;
+          setSubAppraiserDashboardCount(subAppraiserDashboardData);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data?.error || "Dashboard fetch failed");
+        })
+        .finally(() => {
+          // setIsLoading(false);
+        });
+    };
+
+    func();
+  }, [FilteringType, refresh]);
 
   useEffect(() => {
     // Simulate an API call to check the user's plan status
@@ -70,33 +127,7 @@ const Index = () => {
     fetchUserPlan();
   }, []);
 
-  const planDetails = Array.isArray(userData?.plans?.$values)
-    ? userData.plans.$values
-    : [];
-  const planData_01 = planDetails.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planName: plan.planName,
-    noOfProperties: plan.noOfProperties,
-    price: plan.price,
-    status: plan.status,
-  }));
-
-  console.log("plan data", planData_01);
-
-  const usedProp = userData?.usedProperties;
-  const totalNoOfProperties = userData?.totalNoOfProperties;
-  const userPlans = Array.isArray(userData?.userSubscription?.$values)
-    ? userData.userSubscription.$values
-    : [];
-  const planData_02 = userPlans.map((plan) => ({
-    id: plan.$id, // Replace with actual key names
-    planEndDate: plan.endDate,
-  }));
-
-  console.log("plans", planData_02);
-
   const closePlanErrorModal = () => {
-    // setModalIsPlaneError(false);
     router.push("/appraiser-company-add-subscription");
   };
 
@@ -104,47 +135,7 @@ const Index = () => {
     setModalIsOpenError(false);
   };
 
-  // const [lastActivityTimestamp, setLastActivityTimestamp] = useState(
-  //   Date.now()
-  // );
-
-  // useEffect(() => {
-  //   const activityHandler = () => {
-  //     setLastActivityTimestamp(Date.now());
-  //   };
-
-  //   // Attach event listeners for user activity
-  //   window.addEventListener("mousemove", activityHandler);
-  //   window.addEventListener("keydown", activityHandler);
-  //   window.addEventListener("click", activityHandler);
-
-  //   // Cleanup event listeners when the component is unmounted
-  //   return () => {
-  //     window.removeEventListener("mousemove", activityHandler);
-  //     window.removeEventListener("keydown", activityHandler);
-  //     window.removeEventListener("click", activityHandler);
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   // Check for inactivity every minute
-  //   const inactivityCheckInterval = setInterval(() => {
-  //     const currentTime = Date.now();
-  //     const timeSinceLastActivity = currentTime - lastActivityTimestamp;
-
-  //     // Check if there has been no activity in the last 10 minutes (600,000 milliseconds)
-  //     if (timeSinceLastActivity > 600000) {
-  //       localStorage.removeItem("user");
-  //       router.push("/login");
-  //     }
-  //   }, 60000); // Check every minute
-
-  //   // Cleanup the interval when the component is unmounted
-  //   return () => clearInterval(inactivityCheckInterval);
-  // }, [lastActivityTimestamp]);
-
   useEffect(() => {
-    // userData = JSON.parse(localStorage.getItem("user"));
     const data = JSON.parse(localStorage.getItem("user"));
     setUserData(data);
     if (!data) {
@@ -156,383 +147,9 @@ const Index = () => {
       router.push("/login");
     }
 
-    const func = () => {
-      const data = JSON.parse(localStorage.getItem("user"));
-      axios
-        .get("/api/getAllListedProperties", {
-          headers: {
-            Authorization: `Bearer ${data?.token}`,
-            "Content-Type": "application/json",
-          },
-          params: {
-            userId: data?.userId,
-          },
-        })
-        .then((res) => {
-          const temp = res.data.data.properties.$values;
-
-          setProperties(temp);
-        })
-        .catch((err) => {
-          console.log(err);
-          toast.error(err?.response?.data?.error);
-        });
-
-      axios
-        .get("/api/appraiserWishlistedProperties", {
-          headers: {
-            Authorization: `Bearer ${data?.token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          const tempData = res.data.data.$values;
-
-          // setAllWishlistedProperties(res.data.data.$values);
-          const responseData = tempData.filter((prop, index) => {
-            if (String(prop.userId) === String(data.userId)) {
-              return true;
-            } else {
-              return false;
-            }
-          });
-          console.log("wishlistddd", responseData);
-          const tempId = responseData;
-          setWishlist(responseData);
-        })
-        .catch((err) => {
-          toast.error(err?.response);
-          setErrorMessage(err?.response);
-          setModalIsOpenError(true);
-        });
-
-      axios
-        .get("/api/getAllBids", {
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-          },
-
-          params: {
-            email: data.userEmail,
-          },
-        })
-        .then((res) => {
-          console.log(res.data.data);
-          const tempBids = res.data.data.$values;
-          let updatedBids = [];
-          tempBids.map((bid, index) => {
-            if (String(bid.appraiserUserId) === String(data.userId)) {
-              updatedBids.push(bid);
-            }
-          });
-          setBids(updatedBids);
-        })
-        .catch((err) => {
-          setErrorMessage(err?.response?.data?.error);
-          setModalIsOpenError(true);
-        });
-    };
-    func();
     setRefresh(false);
   }, [refresh]);
 
-  const calculate = (searchDate, diff) => {
-    const newDateObj = new Date(searchDate);
-    const currentObj = new Date();
-
-    const getMonthsFDiff = currentObj.getMonth() - newDateObj.getMonth();
-    const gettingDiff = currentObj.getDate() - newDateObj.getDate();
-    const gettingYearDiff = currentObj.getFullYear() - newDateObj.getFullYear();
-
-    const estimatedDiff =
-      gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
-
-    console.log("dayss", diff, newDateObj.getDate(), currentObj.getDate());
-    return estimatedDiff <= diff;
-  };
-
-  const getWishlishtTime = (orderId) => {
-    let time = "";
-    wishlist.map((bid, index) => {
-      if (String(bid.propertyId) === String(orderId))
-        [(time = bid.addedDateTime)];
-    });
-    return time;
-  };
-
-  const setDefaultCardsValues = (bids, wishlists) => {
-    setAllBiddedCards(bids);
-    setAllWishlistedCards(wishlists);
-  };
-
-  const getBiddedTime = (orderId) => {
-    let time = "";
-    bids.map((bid, index) => {
-      if (String(bid.orderId) === String(orderId)) [(time = bid.requestTime)];
-    });
-    return time;
-  };
-
-  const filterData = (tempData) => {
-    let tempAllBids = 0,
-      tempAllWishlist = 0,
-      tempAllProps = 0;
-    const currentDate = new Date();
-    const oneYearAgo = new Date(currentDate);
-    oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
-
-    let monthlyData = new Array(12).fill(0);
-    let weeklyData = new Array(52).fill(0);
-    let yearlyData = new Array(
-      currentDate.getFullYear() - oneYearAgo.getFullYear() + 1
-    ).fill(0);
-
-    switch (FilteringType) {
-      case "Last 7 days":
-        const sevenDaysAgo = new Date(currentDate);
-        sevenDaysAgo.setDate(currentDate.getDate() - 7);
-        tempData.forEach((item) => {
-          const bidTime = getBiddedTime(item.orderId);
-
-          const wihlistTime = getWishlishtTime(item.propertyId);
-
-          console.log("bidTime", bidTime, wihlistTime);
-          if (bidTime !== "" && calculate(bidTime, 7)) {
-            tempAllBids += 1;
-            weeklyData[new Date(bidTime).getDay()]++;
-          }
-          if (wihlistTime !== "" && calculate(wihlistTime, 7)) {
-            tempAllWishlist++;
-            console.log("wishlists", tempAllWishlist);
-
-            weeklyData[new Date(wihlistTime).getDay()]++;
-          }
-        });
-        setDefaultCardsValues(tempAllBids, tempAllWishlist);
-
-        return {
-          data: weeklyData,
-          labels: Array.from({ length: 7 }, (_, i) => i + 1),
-        }; // Assuming labels are days of the week
-
-      case "Last 30 Days":
-        const thirtyDaysAgo = new Date(currentDate);
-        thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-        tempData.forEach((item) => {
-          const bidTime = getBiddedTime(item?.orderId);
-
-          const wihlistTime = getWishlishtTime(item?.propertyId);
-
-          if (bidTime !== "" && calculate(bidTime, 30)) {
-            tempAllBids += 1;
-            monthlyData[new Date(bidTime).getMonth()]++;
-          }
-          if (wihlistTime !== "" && calculate(wihlistTime, 30)) {
-            tempAllWishlist++;
-            console.log("wishlists", tempAllWishlist);
-
-            monthlyData[new Date(wihlistTime).getMonth()]++;
-          }
-        });
-        setDefaultCardsValues(tempAllBids, tempAllWishlist);
-
-        return {
-          data: monthlyData,
-          labels: Array.from({ length: 30 }, (_, i) => i + 1),
-        }; // Assuming labels are days of the month
-
-      case "Last 3 Month":
-        const threeMonthsAgo = new Date(currentDate);
-        threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
-        tempData.forEach((item) => {
-          const bidTime = getBiddedTime(item?.orderId);
-
-          const wihlistTime = getWishlishtTime(item?.propertyId);
-
-          if (bidTime !== "" && calculate(bidTime, 90)) {
-            tempAllBids += 1;
-            const monthDifference =
-              currentDate.getMonth() - new Date(bidTime).getMonth();
-            yearlyData[
-              yearlyData.length - 1 - Math.floor(monthDifference / 3)
-            ]++;
-          }
-          if (wihlistTime !== "" && calculate(wihlistTime, 90)) {
-            tempAllWishlist++;
-
-            const monthDifference =
-              currentDate.getMonth() - new Date(wihlistTime).getMonth();
-            yearlyData[
-              yearlyData.length - 1 - Math.floor(monthDifference / 3)
-            ]++;
-          } else if (wihlistTime === null) {
-            const monthDifferenceWithNullValue =
-              currentDate.getMonth() - new Date().getMonth();
-            yearlyData[
-              yearlyData.length -
-                1 -
-                Math.floor(monthDifferenceWithNullValue / 3)
-            ]++;
-          }
-        });
-        setDefaultCardsValues(tempAllBids, tempAllWishlist);
-
-        return {
-          data: yearlyData,
-          labels: Array.from({ length: yearlyData.length }, (_, i) => i + 1),
-        }; // Assuming labels are months
-
-      default:
-        const threeMonthssAgo = new Date(currentDate);
-        threeMonthssAgo.setMonth(currentDate.getMonth() - 3);
-        tempData.forEach((item) => {
-          const bidTime = getBiddedTime(item?.orderId);
-
-          const wihlistTime = getWishlishtTime(item?.propertyId);
-
-          if (bidTime !== "" && calculate(bidTime, 90)) {
-            tempAllBids += 1;
-            const monthDifference =
-              currentDate.getMonth() - new Date(bidTime).getMonth();
-            yearlyData[
-              yearlyData.length - 1 - Math.floor(monthDifference / 3)
-            ]++;
-          }
-          if (wihlistTime !== "" && calculate(wihlistTime, 90)) {
-            tempAllWishlist++;
-
-            const monthDifference =
-              currentDate.getMonth() - new Date(wihlistTime).getMonth();
-            yearlyData[
-              yearlyData.length - 1 - Math.floor(monthDifference / 3)
-            ]++;
-          } else if (wihlistTime === null) {
-            const monthDifferenceWithNullValue =
-              currentDate.getMonth() - new Date().getMonth();
-            yearlyData[
-              yearlyData.length -
-                1 -
-                Math.floor(monthDifferenceWithNullValue / 3)
-            ]++;
-          }
-        });
-        setDefaultCardsValues(tempAllBids, tempAllWishlist);
-
-        return {
-          data: yearlyData,
-          labels: Array.from({ length: yearlyData.length }, (_, i) => i + 1),
-        }; // Assuming labels are years
-    }
-  };
-
-  useEffect(() => {
-    const categorizeDataByMonth = () => {
-      const type = FilteringType ? FilteringType : "Monthly";
-      const data = properties;
-      if (data.length === 0) {
-        return Array(12).fill(0); // Initialize an array with 12 elements, all initialized to 0.
-      }
-
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const currentWeek = getWeekNumber(currentDate);
-
-      const counts = {
-        Monthly: Array(12).fill(0),
-        Weekly: Array(52).fill(0),
-        Yearly: Array(currentYear + 1).fill(0),
-      };
-
-      data.forEach((property) => {
-        let isPresent = false;
-        let time = {};
-
-        wishlist.forEach((prop) => {
-          if (String(prop.orderId) === String(property.orderId))
-            time = prop.addedDatetime ? prop.addedDatetime : new Date();
-          isPresent = true;
-        });
-
-        const createdAtDate = new Date(time);
-        const propertyMonth = createdAtDate.getMonth();
-        const propertyYear = createdAtDate.getFullYear();
-        const propertyWeek = getWeekNumber(createdAtDate);
-
-        if (isPresent) {
-          if (
-            type === "Monthly" &&
-            propertyYear === currentYear &&
-            propertyMonth <= currentMonth
-          ) {
-            counts.Monthly[propertyMonth]++;
-          } else if (
-            type === "Weekly" &&
-            propertyYear === currentYear &&
-            propertyWeek <= currentWeek
-          ) {
-            counts.Weekly[propertyWeek - 1]++;
-          } else if (type === "Yearly" && propertyYear <= currentYear) {
-            counts.Yearly[propertyYear]++;
-          }
-        }
-      });
-
-      data.forEach((property) => {
-        let isPresent = false;
-        let time = {};
-
-        bids.forEach((bid) => {
-          if (String(bid.orderId) === String(property.orderId)) {
-            time = bid.requestTime;
-            isPresent = true;
-          }
-        });
-
-        const createdAtDate = new Date(time);
-        const propertyMonth = createdAtDate.getMonth();
-        const propertyYear = createdAtDate.getFullYear();
-        const propertyWeek = getWeekNumber(createdAtDate);
-
-        if (isPresent) {
-          if (
-            type === "Monthly" &&
-            propertyYear === currentYear &&
-            propertyMonth <= currentMonth
-          ) {
-            counts.Monthly[propertyMonth]++;
-          } else if (
-            type === "Weekly" &&
-            propertyYear === currentYear &&
-            propertyWeek <= currentWeek
-          ) {
-            counts.Weekly[propertyWeek - 1]++;
-          } else if (type === "Yearly" && propertyYear <= currentYear) {
-            counts.Yearly[propertyYear]++;
-          } else {
-            counts.Monthly[propertyMonth]++;
-          }
-        }
-      });
-
-      console.log("type", counts);
-      return type === "Monthly"
-        ? counts.Monthly
-        : type === "Weekly"
-        ? counts.Weekly
-        : counts.Yearly;
-    };
-
-    const temp = filterData(properties);
-    
-    setChartData(temp.data);
-  }, [properties, bids, wishlist, FilteringType]);
-
-  function getWeekNumber(date) {
-    const oneJan = new Date(date.getFullYear(), 0, 1);
-    const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
-    return Math.ceil((date.getDay() + 1 + numberOfDays) / 7);
-  }
   return (
     <>
       {/* <!-- Main Header Nav --> */}
@@ -611,14 +228,8 @@ const Index = () => {
 
               <div className="row">
                 <AllStatistics
-                  properties={properties}
-                  views={AllBiddedCards + AllWishlistedCards}
-                  bids={bids}
-                  wishlist={AllWishlistedCards}
-                  plans={planData_01}
-                  plansNew={planData_02}
-                  usedProp={usedProp}
-                  totalNoOfProperties={totalNoOfProperties}
+                  dashboardCount={dashboardCount}
+                  subAppraiserDashboardCount={subAppraiserDashboardCount}
                 />
               </div>
               {/* End .row Dashboard top statistics */}

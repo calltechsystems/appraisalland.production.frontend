@@ -143,6 +143,7 @@ export default function Exemple({
   setRefresh,
   setStartLoading,
   refresh,
+  setRerender
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -366,7 +367,6 @@ export default function Exemple({
 
   const checkWishlistedHandler = (data) => {
     let temp = {};
-    // console.log(wishlist, data);
     wishlist.map((prop, index) => {
       if (
         String(prop.propertyId) === String(data.propertyId) &&
@@ -387,11 +387,6 @@ export default function Exemple({
     return data.sort((a, b) => b.order_id - a.order_id);
   };
 
-  const checkData = properties && !updatedData ? true : false;
-  useEffect(() => {
-    setProperties([]);
-  }, [checkData]);
-
   useEffect(() => {
     let tempProp = [];
     const getData = () => {
@@ -399,12 +394,8 @@ export default function Exemple({
         const isWishlist = checkWishlistedHandler(property);
         const isBidded = filterBidsWithin24Hours(property);
         const isArchive = foundArchiveHandler(property.propertyId);
-
         if (!isArchive && isBidded.status === 1 && isBidded.orderstatus === 3) {
-          console.log(property);
-          if (isBidded.status === 1) {
-            console.log(getOrderValue(isBidded.orderstatus));
-          }
+          
           tempProp.push(property);
           const isWait = property.isonhold || property.isoncancel;
           const updatedRow = {
@@ -668,7 +659,7 @@ export default function Exemple({
     };
     getData();
     setRequiredProp(tempProp);
-  }, [properties, bids, wishlist]);
+  }, [properties, bids, wishlist, refresh]);
 
   useEffect(() => {
     setUpdatedCode(true);
@@ -676,10 +667,10 @@ export default function Exemple({
 
   const refreshHandler = () => {
     setRefresh(true);
+    setRerender(true);
     setStartLoading(true);
   };
   useEffect(() => {
-    setProperties([]);
     setBids([]);
     setFilterQuery("All");
     setSearchInput("");
@@ -711,6 +702,7 @@ export default function Exemple({
             return false;
           }
         });
+        
       })
       .catch((err) => {
         setErrorMessage(err?.response?.data?.error);
@@ -763,7 +755,6 @@ export default function Exemple({
             return false;
           }
         });
-        console.log(updatedBids);
         setBids(updatedBids);
       })
       .catch((err) => {
@@ -822,10 +813,8 @@ export default function Exemple({
         setModalIsOpenError(true);
       });
 
-    console.log("end", bids, properties, wishlist);
     setRefresh(false);
   }, [refresh]);
-  // console.log(sortObjectsByOrderIdDescending(updatedData));
   return (
     <>
       {refresh ? (

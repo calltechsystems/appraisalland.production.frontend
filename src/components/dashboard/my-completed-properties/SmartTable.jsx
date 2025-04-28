@@ -108,7 +108,8 @@ function SmartTable(props) {
       "broker_Details",
       allData,
       "Mortgage Broker Completed Properties",
-      staticHeaders
+      staticHeaders,
+      6
     )
       .then((message) => {
         toast.success(message);

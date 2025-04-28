@@ -821,7 +821,6 @@ export default function Exemple({
 
     getData();
   }, [properties, wishlist, bids, allListedAssignAppraiser]);
-  console.log("updatedDATA", updatedData);
 
   useEffect(() => {
     setUpdatedCode(true);

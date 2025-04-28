@@ -20,7 +20,9 @@ async function handler(request, response) {
       Quoteid,
       remark,
       statusDate,
-      OrderStatus
+      OrderStatus,
+      user_id,
+      user_type
       
     } = body;
 
@@ -28,7 +30,9 @@ async function handler(request, response) {
       Quoteid:Quoteid,
       OrderStatus:OrderStatus,
       remark:remark,
-      statusDate:statusDate
+      statusDate:statusDate,
+      user_id,
+      user_type
     }
 
    

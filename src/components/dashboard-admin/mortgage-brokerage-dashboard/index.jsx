@@ -280,44 +280,6 @@ const Index = () => {
     setAcceptedBids(activeAppraiser);
   }, [filterQuery]);
 
-  const handleStatusUpdateHandler = () => {
-    if (getIfAssignedProperties(selectedUser.id) && selectedUser.isActive) {
-      setModalIsOpenError_01(true);
-      setOpenEditModal(true);
-    } else {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      setDisable(true);
-      const payload = {
-        id: selectedUser.userId,
-        IsActive: !selectedUser.isActive,
-      };
-
-      const encryptedData = encryptionData(payload);
-      setIsLoading(true);
-      toast.loading("Updating the status");
-      axios
-        .put("/api/updateIsActiveAppraiser", encryptedData, {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          toast.dismiss();
-          setIsLoading(false);
-          toast.success("Successfully Updated!!");
-          window.location.reload();
-        })
-        .catch((err) => {
-          toast.dismiss();
-          setIsLoading(false);
-          toast.error(err);
-        });
-
-      setSelectedUser(-1);
-    }
-  };
-
   const closeStatusUpdateHandler = () => {
     setSelectedUser(-1);
     setOpenEditModal(false);
@@ -511,15 +473,7 @@ const Index = () => {
                 {/* End Dashboard Navigation */}
 
                 <div className="col-lg-12 text-center">
-                  <h2
-                    style={{
-                      color: "#2e008b",
-                      fontSize: "28px",
-                      textAlign: "center",
-                    }}
-                  >
-                    Mortgage Brokerage
-                  </h2>
+                  <h2 className="heading-forms">Mortgage Brokerage</h2>
                 </div>
                 <div className="d-flex justify-content-end mb-2">
                   <Filtering
@@ -535,7 +489,7 @@ const Index = () => {
                 <LoadingSpinner />
               ) : (
                 <div className="row">
-                  <div className="col-lg-7">
+                  <div className="col-lg-12">
                     <div className="row">
                       <AllStatistics
                         totalBids={allAppraiser.length}
@@ -548,21 +502,22 @@ const Index = () => {
                         totalCompletedPropertiesCount={
                           totalCompletedPropertiesCount
                         }
+                        planData={planCount}
                       />
                     </div>
                   </div>
-                  <div className="col-lg-5">
+                  {/* <div className="col-lg-5">
                     <div className="application_statics">
                       <h4 className="" style={{ color: "#97d700" }}>
                         Active Plan Wise Mortgage Brokerage
                       </h4>
                       <StatisticsPieChart planData={planCount} />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
 
-              <div className="row mt-5">
+              <div className="row" style={{ marginTop: "100px" }}>
                 <div className="col-lg-12">
                   <div>
                     <div className="col-lg-12">

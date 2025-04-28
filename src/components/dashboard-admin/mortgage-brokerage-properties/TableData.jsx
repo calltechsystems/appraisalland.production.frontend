@@ -42,7 +42,8 @@ const TableData = ({
   setIsCancelProperty,
   setIsHoldProperty,
   setOpenViewBrokerageModal,
-  setSelectedBrokerage
+  setSelectedBrokerage,
+  setfilteredPropertiesCount
 }) => {
   const [rerender, setRerender] = useState(false);
 
@@ -110,6 +111,7 @@ const TableData = ({
           setIsHoldProperty={setIsHoldProperty}
           setOpenViewBrokerageModal={setOpenViewBrokerageModal}
           setSelectedBrokerage={setSelectedBrokerage}
+          setfilteredPropertiesCount={setfilteredPropertiesCount}
         />
       }
     </>

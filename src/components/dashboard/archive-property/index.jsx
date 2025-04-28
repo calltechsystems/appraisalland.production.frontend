@@ -95,21 +95,18 @@ const Index = () => {
   };
 
   const formatPhoneNumber = (number) => {
-    if (!number) return ""; // Handle empty input
-
-    // Remove non-numeric characters
+    if (!number) return "";
     const digits = number.replace(/\D/g, "");
 
-    // Format the number as "416 123-4567"
     if (digits.length <= 3) {
-      return digits; // e.g., "416"
+      return digits;
     } else if (digits.length <= 6) {
       return `${digits.slice(0, 3)} ${digits.slice(3)}`; // e.g., "416 123"
     } else {
       return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(
         6,
         10
-      )}`; // e.g., "416 123-4567"
+      )}`;
     }
   };
 
@@ -118,14 +115,67 @@ const Index = () => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      // hour: "numeric",
-      // minute: "numeric",
-      // second: "numeric",
       hour12: true, // Set to false for 24-hour format
     };
 
     const formattedDate = new Date(dateString).toLocaleString("en-US", options);
     return formattedDate;
+  };
+
+  const PropertyInfoHandler = (orderId) => {
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(
+      "<html><head><title>Appraiser Land</title></head><body>"
+    );
+    printWindow.document.write(
+      ' <img width="60" height="45" class="logo1 img-fluid" style="" src="/assets/images/Appraisal_Land_Logo.png" alt="header-logo2.png"/> <span style="color: #2e008b font-weight: bold; font-size: 24px;">Appraisal</span><span style="color: #97d700; font-weight: bold; font-size: 24px;">Land</span>'
+    );
+    printWindow.document.write(
+      "<h3>" +
+        `Properties Information of Order ID ${orderId}` +
+        "</h3>" +
+        "<style>" +
+        "h3{text-align:center;}" +
+        "</style>"
+    );
+
+    printWindow.document.write(
+      '<button style="display:none;" onclick="window.print()">Print</button>'
+    );
+
+    const tableContainer = document.getElementById("property-info-container");
+    const table = tableContainer.querySelector("table");
+    const clonedTable = table.cloneNode(true);
+    const rows = clonedTable.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const lastCell = row.querySelector("td:last-child");
+    });
+
+    const tableHead = clonedTable.querySelector("thead");
+    const tableHeadRows = tableHead.querySelectorAll("tr");
+    tableHeadRows.forEach((row) => {
+      const lastCell = row.querySelector("th:last-child");
+    });
+
+    const tableRows = clonedTable.querySelectorAll("tr");
+    tableRows.forEach((row) => {
+      const firstCell = row.querySelector("td:first-child");
+      if (firstCell) {
+        const columnHeading = tableHeadRows[0].querySelector(
+          "th:nth-child(" + (firstCell.cellIndex + 1) + ")"
+        ).innerText;
+        firstCell.setAttribute("data-th", columnHeading);
+      }
+    });
+
+    printWindow.document.write(clonedTable.outerHTML);
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.onafterprint = () => {
+      printWindow.close();
+      toast.success("Saved the data");
+    };
   };
 
   function addCommasToNumber(number) {
@@ -676,7 +726,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -685,7 +735,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}

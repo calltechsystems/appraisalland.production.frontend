@@ -9,6 +9,7 @@ import LoadingSpinner from "../../common/LoadingSpinner";
 import NoDataFound from "../../common/NoDataFound";
 import { FaDownload } from "react-icons/fa";
 import { getTheDownloadView } from "../../common/UserViewPDFDownload";
+import toast from "react-hot-toast";
 
 function SmartTable(props) {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,6 @@ function SmartTable(props) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
 
-  console.log(props.data);
   const fetchData = useCallback(
     async (queryString) => {
       setLoading(true);
@@ -63,9 +63,10 @@ function SmartTable(props) {
 
     getTheDownloadView(
       "broker_Details",
-      props.allProperties,
+      props.data,
       "Broker Transaction History",
-      headers
+      headers,
+      16
     )
       .then((message) => {
         toast.success(message);
@@ -94,7 +95,6 @@ function SmartTable(props) {
     tableWidthFunc,
     fetchData,
   ]);
-  console.log(props.data);
 
   const buildQueryString = (search, page, rowsPerPage) => {
     const queries = [];

@@ -2,16 +2,17 @@ const SearchUser = ({ searchInput, setSearchInput }) => {
   return (
     <form className="form-inline d-flex">
       <input
+        style={{width:'500px'}}
         className="form-control"
         type="search"
-        placeholder="Serach Appraiser Company Name or User Id"
+        placeholder="Search by name"
         aria-label="Search"
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
       />
-      {/* <button className="btn" disabled>
+      <button className="btn" type="submit">
         <span className="flaticon-magnifying-glass"></span>
-      </button> */}
+      </button>
     </form>
   );
 };

@@ -25,7 +25,6 @@ function SmartTable(props) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
 
-  console.log(props.data);
   const fetchData = useCallback(
     async (queryString) => {
       setLoading(true);
@@ -64,7 +63,7 @@ function SmartTable(props) {
 
     getTheDownloadView(
       "brokerage_Details",
-      props.allProperties,
+      props.data,
       "Brokerage Transaction History",
       headers
     )

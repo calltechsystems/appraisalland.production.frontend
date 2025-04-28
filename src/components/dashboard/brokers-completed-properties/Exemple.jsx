@@ -705,13 +705,16 @@ export default function Exemple({
       .then((res) => {
         toast.dismiss();
         const temp = res.data.data.$values;
+        let allbroker = [];
         let requiredRows = [];
         temp.map((row, index) => {
+          allbroker.push(row.broker);
           const data = row?.properties.$values;
           data.map((prop, idx) => {
             requiredRows.push(prop);
           });
         });
+        setAllBrokers(allbroker);
 
         axios
           .get("/api/getAllBids", {
@@ -728,18 +731,6 @@ export default function Exemple({
             toast.error(err);
           });
       });
-    axios
-      .get("/api/getAllBrokers", {
-        headers: {
-          Authorization: `Bearer ${data.token}`,
-        },
-      })
-      .then((res) => {
-        let allbroker = res.data.data.$values;
-
-        setAllBrokers(allbroker);
-      })
-      .catch((err) => {});
 
     let tempBids = [];
 

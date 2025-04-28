@@ -167,15 +167,15 @@ const Index = () => {
             String(property.property?.orderId)
               .toLowerCase()
               .includes(searchTerm) ||
-            property.property?.zipCode?.toLowerCase().includes(searchTerm) ||
-            property.property?.area?.toLowerCase().includes(searchTerm) ||
-            property.property?.city?.toLowerCase().includes(searchTerm) ||
-            property.property?.province?.toLowerCase().includes(searchTerm) ||
-            property.property?.streetName?.toLowerCase().includes(searchTerm) ||
-            property.property?.streetNumber
+              String(property.property?.zipCode)?.toLowerCase().includes(searchTerm) ||
+              String(property.property?.area)?.toLowerCase().includes(searchTerm) ||
+              String(property.property?.city)?.toLowerCase().includes(searchTerm) ||
+              String(property.property?.province)?.toLowerCase().includes(searchTerm) ||
+              String(property.property?.streetName)?.toLowerCase().includes(searchTerm) ||
+              String(property.property?.streetNumber)
               ?.toLowerCase()
               .includes(searchTerm) ||
-            property.property?.typeOfBuilding
+              String(property.property?.typeOfBuilding)
               ?.toLowerCase()
               .includes(searchTerm)
           );
@@ -663,7 +663,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -672,7 +672,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}

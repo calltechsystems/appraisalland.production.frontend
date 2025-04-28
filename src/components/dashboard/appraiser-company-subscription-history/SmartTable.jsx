@@ -43,9 +43,10 @@ function SmartTable(props) {
 
     getTheDownloadView(
       "appraiserCompany_Datails",
-      props.allProperties,
+      props.data,
       "Appraiser Company Transaction History",
-      headers
+      headers,
+      16
     )
       .then((message) => {
         toast.success(message);

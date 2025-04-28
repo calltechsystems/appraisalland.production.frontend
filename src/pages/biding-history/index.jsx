@@ -5,7 +5,7 @@ import BidingHistory from "../../components/dashboard/biding-history";
 const index = () => {
   return (
     <>
-      <Seo pageTitle="Biding History" />
+      <Seo pageTitle="Appraiser Quotes History" />
       <BidingHistory />
     </>
   );

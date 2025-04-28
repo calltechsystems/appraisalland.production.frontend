@@ -135,6 +135,8 @@ const Index = () => {
         OrderStatus: Number(orderStatus),
         remark: remark,
         statusDate: statusDate,
+        user_id: data.userId,
+        user_type: data.userType
       };
 
       const encryptedBody = encryptionData(payload);
@@ -193,7 +195,6 @@ const Index = () => {
     let selectedValue = 0;
     AppraiserStatusOptions.map((prop, index) => {
       if (String(prop.type) === String(value)) {
-        console.log(prop.type, value, prop.id);
         selectedValue = prop.id;
       }
     });
@@ -287,9 +288,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -310,7 +311,6 @@ const Index = () => {
     const estimatedDiff =
       gettingDiff + getMonthsFDiff * 30 + gettingYearDiff * 365;
 
-    console.log("dayss", diff, newDateObj.getDate(), currentObj.getDate());
     return estimatedDiff <= diff;
   };
 
@@ -340,7 +340,6 @@ const Index = () => {
 
   useEffect(() => {
     const tmpData = filterData(properties);
-    console.log("filterQuery", filterQuery, tmpData, tmpData.length);
     setFilterProperty(tmpData);
   }, [filterQuery]);
 
@@ -564,7 +563,6 @@ const Index = () => {
   const [bidAmount, setbidAmount] = useState(0);
 
   const participateHandler = (val, id, isUpdate, value) => {
-    console.log(val, id, isUpdate, value);
     if (isUpdate) {
       setLowRangeBid(val);
       setIsUpdateBid(isUpdate);
@@ -606,7 +604,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    console.log(searchQuery);
     const tempData = properties;
     if (searchInput === "") {
       return;
@@ -1106,7 +1103,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1115,7 +1112,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
@@ -1386,7 +1383,7 @@ const Index = () => {
                                 </table>
                               </div>
                               <div className="d-flex justify-content-center gap-2 mt-3">
-                                <button
+                                {/* <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}
                                   onClick={() =>
@@ -1395,7 +1392,7 @@ const Index = () => {
                                   title="Download Pdf"
                                 >
                                   <FaDownload />
-                                </button>
+                                </button> */}
                                 <button
                                   className="btn btn-color"
                                   style={{ width: "100px" }}

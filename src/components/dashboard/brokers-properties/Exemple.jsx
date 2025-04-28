@@ -167,8 +167,7 @@ export default function Exemple({
     let selectedBroker = {};
     AllBrokers.map((broker, index) => {
       if (
-        String(broker.userId) === String(id) ||
-        String(broker.id) === String(id)
+        String(broker.userId) === String(id)
       ) {
         selectedBroker = broker;
       }
@@ -593,55 +592,9 @@ export default function Exemple({
                     </span>
                   </li>
                 )}
-                {/* )} */}
-
-                {/* {isEditable && (
-                  <li title="Edit Property">
-                    <Link href="#">
-                      <span className="btn btn-color w-100 mb-1">
-                        {" "}
-                        On Hold{" "}
-                      </span>
-                    </Link>{" "}
-                    <Link
-                      className="btn btn-color-table"
-                      href={`/create-listing/${property.propertyId}`}
-                    >
-                      <span className="flaticon-edit"></span>
-                    </Link>
-                  </li>
-                )} */}
-
-                {/* {!isEditable && (
-                <li
-                  className="list-inline-item"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="Archive Property"
-                >
-                  <span
-                    className="btn btn-color-table"
-                    onClick={() => archievePropertyHandler(property.propertyId)}
-                  >
-                    <Link className="color-light" href={`/archive-property`}>
-                      <span className="flaticon-box"></span>
-                    </Link>
-                  </span>
-                </li>
-              )} */}
 
                 <li title="Archive Property">
-                  {/* <Link
-                      href="#"
-                      onClick={() =>
-                        archievePropertyHandler(property.propertyId)
-                      }
-                    >
-                      <span className="btn btn-color w-100">
-                        {" "}
-                        Archive Property{" "}
-                      </span>
-                    </Link> */}
+                  
                   <span
                     className="btn btn-color-table"
                     onClick={() => openArchiveModal(property)}
@@ -654,7 +607,6 @@ export default function Exemple({
                   </span>
                 </li>
 
-                {/* End li */}
               </ul>
             ),
           };
@@ -673,10 +625,6 @@ export default function Exemple({
     setFilterQuery("All");
     setSearchInput("");
     const data = JSON.parse(localStorage.getItem("user"));
-
-    const payload = {
-      token: userData.token,
-    };
 
     axios
       .get("/api/getAllListedProperties", {
@@ -711,13 +659,17 @@ export default function Exemple({
       .then((res) => {
         toast.dismiss();
         const temp = res.data.data.$values;
+        let allbroker = [];
         let requiredRows = [];
         temp.map((row, index) => {
+          allbroker.push(row.broker);
           const data = row?.properties.$values;
           data.map((prop, idx) => {
             requiredRows.push(prop);
           });
         });
+
+        setAllBrokers(allbroker);
 
         axios
           .get("/api/getAllBids", {
@@ -734,18 +686,6 @@ export default function Exemple({
             toast.error(err);
           });
       });
-    axios
-      .get("/api/getAllBrokers", {
-        headers: {
-          Authorization: `Bearer ${data.token}`,
-        },
-      })
-      .then((res) => {
-        let allbroker = res.data.data.$values;
-
-        setAllBrokers(allbroker);
-      })
-      .catch((err) => {});
 
     let tempBids = [];
 

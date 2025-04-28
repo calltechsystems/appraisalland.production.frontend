@@ -119,7 +119,6 @@ const TableData = ({
       .then((res) => {
         toast.dismiss();
 
-        console.log("props", res.data.data.properties.$values);
         setProperties(res.data.data.properties.$values);
         setRerender(false);
       })
@@ -321,6 +320,7 @@ const TableData = ({
           setAllBrokers={setAllBrokers}
           setCurrentBid={setCurrentBid}
           setOpenAssignModal={setOpenAssignModal}
+          setRerender={setRerender}
           end={end}
         />
       )}

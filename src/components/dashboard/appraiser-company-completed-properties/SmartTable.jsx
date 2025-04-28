@@ -118,7 +118,8 @@ function SmartTable(props) {
       "appraiserCompany_Datails",
       allData,
       "Appraiser Company Completed Properties",
-      staticHeaders
+      staticHeaders,
+      6
     )
       .then((message) => {
         toast.success(message);

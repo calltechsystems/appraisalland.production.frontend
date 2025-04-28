@@ -76,25 +76,18 @@ const Index = () => {
     setDisable(true);
 
     const payload = {
-      brokerageId: userData?.brokerage_Details?.id,
-      brokerId: selectedBroker.id,
+      id: selectedBroker.id,
       IsActive: !selectedBroker.isActive,
     };
 
-    const encryptedData = encryptionData(payload);
-
     try {
       toast.loading("Updating the status...");
-      const response = await axios.put(
-        "/api/UpdateIsActiveBroker",
-        encryptedData,
-        {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.put("/api/updateUserActiveStatus", payload, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       toast.dismiss();
       setIsLoading(false);
@@ -256,9 +249,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 

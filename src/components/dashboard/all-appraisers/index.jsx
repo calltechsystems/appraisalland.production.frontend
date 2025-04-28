@@ -135,11 +135,10 @@ const Index = () => {
         IsActive: !selectedAppraiser.isActive,
       };
 
-      const encryptedData = encryptionData(payload);
       setIsLoading(true);
       toast.loading("Updating the status");
       axios
-        .put("/api/updateIsActiveAppraiser", encryptedData, {
+        .put("/api/updateUserActiveStatus", payload, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
             "Content-Type": "application/json",
@@ -204,8 +203,6 @@ const Index = () => {
   const [lastActivityTimestamp, setLastActivityTimestamp] = useState(
     Date.now()
   );
-
-  console.log(closeRegisterModal);
 
   const submitEditHandler = () => {
     const userData = JSON.parse(localStorage.getItem("user"));
@@ -305,9 +302,9 @@ const Index = () => {
         return (
           //implment search over this only
           String(property.orderId).toLowerCase().includes(searchTerm) ||
-          property.zipCode.toLowerCase().includes(searchTerm) ||
-          property.city.toLowerCase().includes(searchTerm) ||
-          property.province.toLowerCase().includes(searchTerm)
+          String(property.zipCode).toLowerCase().includes(searchTerm) ||
+          String(property.city).toLowerCase().includes(searchTerm) ||
+          String(property.province).toLowerCase().includes(searchTerm)
         );
       });
 
@@ -441,7 +438,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    console.log(searchQuery);
     const tempData = properties;
     if (searchInput === "") {
       return;

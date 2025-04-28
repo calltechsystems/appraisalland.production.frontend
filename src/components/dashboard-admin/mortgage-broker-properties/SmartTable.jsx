@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import SVGArrowDown from "./icons/SVGArrowDown";
-import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
 import { FaDownload, FaRedo } from "react-icons/fa";
 import * as XLSX from "xlsx";
-import { useReactToPrint } from "react-to-print";
 import toast from "react-hot-toast";
 import SearchBox from "./SearchBox";
 import FilteringBy from "./FilteringBy";
@@ -14,10 +11,12 @@ import Filtering from "./Filtering";
 import SearchUser from "./SearchUser";
 import NoDataFound from "../../common/NoDataFound";
 import LoadingSpinner from "../../common/LoadingSpinner";
+import { getTheDownloadView } from "../../common/UserViewPDFDownload";
+import SmartTableHeaderCell from "../../common/PaginationControls/SmartTableHeaderCell";
+import RecordCount from "../../common/PaginationControls/RecordCounts";
 
 function SmartTable(props) {
   const [loading, setLoading] = useState(false);
-  const [sortDesc, setSortDesc] = useState({});
   const [tableWidth, setTableWidth] = useState(1000);
   const [data, setData] = useState(props.data);
 
@@ -30,19 +29,6 @@ function SmartTable(props) {
   );
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
-  const [changes, setChanges] = useState(false);
-
-  const generatePDF = () => {
-    window.print();
-    toast.success("Data added");
-  };
-
-  const refreshHandler = () => {
-    const refresh = !props.refresh;
-    props.setRefresh(refresh);
-    // toast.loading("Loading....");
-    // window.location.reload();
-  };
 
   const fetchData = useCallback(
     async (queryString) => {
@@ -83,181 +69,37 @@ function SmartTable(props) {
       return ""; // Return an empty string if the element is not recognized
     }
   }
-
   const handlePrint = async () => {
-    try {
-      // Fetch data
-      const allData = props.properties;
+    const headers = [
+      ["order_id", "Order Id"],
+      ["broker", "Broker Info"],
+      // ["plan", "Plan Info"],
+      ["address", "Property Address"],
+      ["status", "Order Status"],
+      ["appraisal_status", "Appraisal Status"],
+      ["remark", "Remark"],
+      ["sub_date", "Submission Date"],
+      ["quote_required_by", "Appraisal Report Required By"],
+      ["urgency", "Request Type"],
+      ["type_of_building", "Property Type"],
+      ["amount", "Estimated Value ($)"],
+      ["purpose", "Purpose"],
+      ["type_of_appraisal", "Type Of Appraisal"],
+      ["lender_information", "Lender Information"],
+    ];
 
-      // Open print window and set up basic structure
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(
-        "<html><head><title>Brokers Properties</title></head><body>" +
-          // Add CSS styles within the <style> tag
-          "<style>" +
-          // Define your CSS styles here
-          "table { width: 100%; border-collapse: collapse; font-size:12px; font-family:arial;}" +
-          "th, td { border: 1px solid black; padding: 8px; }" +
-          "th { background-color:#2e008b; color:white; }" +
-          "</style>" +
-          "</head><body>"
-      );
-      printWindow.document.write(
-        ' <img width="60" height="45" class="logo1 img-fluid" style="" src="/assets/images/Appraisal_Land_Logo.png" alt="header-logo2.png"/> <span style="color: #2e008b font-weight: bold; font-size: 24px;">Appraisal</span><span style="color: #97d700; font-weight: bold; font-size: 24px;">Land</span>'
-      );
-      printWindow.document.write(
-        "<h3>Broker's Properties</h3>" +
-          "<style>" +
-          "h3{text-align:center;}" +
-          "</style>"
-      );
-      printWindow.document.write(
-        '<button style="display:none;" onclick="window.print()">Print</button>'
-      );
-
-      // Create a new table element to hold all data
-      const clonedTable = document.createElement("table");
-
-      // Create table headers
-      const tableHeaderRow = document.createElement("tr");
-      const staticHeaders = [
-        ["order_id", "Order Id"],
-        ["address", "Property Address"],
-        ["status", "Order Status"],
-        ["appraisal_status", "Appraisal Status"],
-        ["remark", "Remark"],
-        ["sub_date", "Submission Date"],
-        ["quote_required_by", "Appraisal Report Required By"],
-        ["urgency", "Request Type"],
-        ["type_of_building", "Property Type"],
-        ["amount", "Estimated Value ($)"],
-        ["purpose", "Purpose"],
-        ["type_of_appraisal", "Type Of Appraisal"],
-        ["lender_information", "Lender Information"],
-      ];
-      staticHeaders.forEach((headerText) => {
-        const th = document.createElement("th");
-        th.textContent = headerText[1];
-        tableHeaderRow.appendChild(th);
+    getTheDownloadView(
+      "appraiserCompany_Datails",
+      props.allProperties,
+      "Mortgage Broker - Properties",
+      headers
+    )
+      .then((message) => {
+        toast.success(message);
+      })
+      .catch((error) => {
+        toast.error(error.message);
       });
-      clonedTable.appendChild(tableHeaderRow);
-
-      // Iterate over all data and append rows to the table body
-      const tableBody = document.createElement("tbody");
-      // Iterate over all data and append rows to the table body
-      allData.forEach((item) => {
-        const row = tableBody.insertRow();
-        staticHeaders.forEach((header) => {
-          const cell = row.insertCell();
-          if (
-            header[0].toLowerCase() === "appraisal_status" ||
-            header[0].toLowerCase() === "status"
-          ) {
-            const value = item[header[0].toLowerCase()];
-            const className = value.props.className;
-            const content =
-              header[0].toLowerCase() === "appraisal_status"
-                ? extractTextFromReactElement(value.props.children).split(
-                    "Current Status"
-                  )[0]
-                : value.props.children;
-
-            const spanElement = document.createElement("span");
-            spanElement.textContent = content;
-
-            if (className.includes("btn-warning")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#E4A11B";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-            } else if (className.includes("btn-danger")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#DC4C64";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-              // Add more styles as needed
-            } else if (className.includes("btn-success")) {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#14A44D";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-              // Add more styles as needed
-            } else {
-              spanElement.style.backgroundColor = "";
-              spanElement.style.color = "#54B4D3";
-              spanElement.style.height = "max-content";
-              spanElement.style.width = "120px";
-              spanElement.style.padding = "8px";
-              spanElement.style.fontWeight = "bold";
-            }
-
-            // Append the span element to the cell
-            cell.appendChild(spanElement);
-          } else {
-            cell.textContent = item[header[0].toLowerCase()];
-          }
-        });
-      });
-
-      clonedTable.appendChild(tableBody);
-      clonedTable.appendChild(tableBody);
-
-      // Write the table to the print window
-      printWindow.document.write(clonedTable.outerHTML);
-      printWindow.document.write("</body></html>");
-      printWindow.document.close();
-
-      // Print and handle post-print actions
-      printWindow.print();
-      printWindow.onafterprint = () => {
-        printWindow.close();
-        toast.success("Saved the data");
-      };
-    } catch (error) {
-      console.error("Error handling print:", error);
-    }
-  };
-
-  const handleExcelPrint = () => {
-    const twoDData = props.data.map((item, index) => {
-      return [item.bid, item.date, item.title, item.urgency];
-    });
-
-    const filteredTwoDData = twoDData.filter((row) => row.length > 0);
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(filteredTwoDData);
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
-    const blob = XLSX.write(wb, {
-      bookType: "xlsx",
-      bookSST: false,
-      type: "blob",
-    });
-
-    const excelWindow = window.open("", "_blank");
-
-    excelWindow.document.write(
-      "<html><head><title>AllBrokerProperties</title></head><body>"
-    );
-    excelWindow.document.write("<h1>" + props.title + "</h1>");
-    excelWindow.document.write(
-      '<a id="download-link" download="your_excel_file.xlsx" href="#">Download Excel</a>'
-    );
-
-    const url = URL.createObjectURL(blob);
-    const downloadLink = excelWindow.document.getElementById("download-link");
-    downloadLink.href = url;
-    downloadLink.click();
-
-    excelWindow.document.write("</body></html>");
-    excelWindow.document.close();
   };
 
   const tableWidthFunc = useCallback(() => {
@@ -292,16 +134,6 @@ function SmartTable(props) {
     return queryString ? `?${queryString}` : "";
   };
 
-  const debounce = (func, timeout = 300) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        func.apply(this, args);
-      }, timeout);
-    };
-  };
-
   const [showNoData, setShowNoData] = useState(false);
 
   useEffect(() => {
@@ -314,93 +146,14 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-  const handleSearch = debounce((event) => {
-    const { value } = event.target;
-    setSearch(value);
-    if (props.url) {
-      fetchData(buildQueryString(value, page, rowsPerPage));
-    } else {
-      let bool = false;
-      let tempData = props.data.filter((row) => {
-        bool = false;
-        Object.keys(row).forEach((key) => {
-          if (row[key].toLowerCase().includes(value.toLowerCase())) bool = true;
-        });
-        return bool;
-      });
-      setData(tempData);
-    }
-  }, props.searchDebounceTime ?? 800);
-
-  const extractTextContent = (cellValue) => {
-    if (typeof cellValue === "string") {
-      return cellValue;
-    } else if (typeof cellValue === "object" && cellValue.$$typeof) {
-      return extractTextContent(cellValue.props.children);
-    } else {
-      return String(cellValue);
-    }
-  };
-
-  const extractTextContentFromDate = (value) => {
-    const date = new Date(value);
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-    return date;
-  };
-
-  const extractNumericValue = (str) => {
-    const numericStr = str.replace(/[^0-9]/g, "");
-    const numericValue = parseInt(numericStr, 10);
-
-    return numericValue;
-  };
-
-  const sortData = (cell) => {
-    let tempData = [...props.properties];
-
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
-
-    tempData.sort((a, b) => {
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
-
-      if (String(cell) === "sub_date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "amount") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
-    });
-
-    setSortDesc(newSortDesc);
-    setData(tempData);
-  };
-
   useEffect(() => {
-    const sortObjectsByOrderIdDescending = (data) => {
-      return data.sort((a, b) => b.order_id - a.order_id);
-    };
-
-    setData(sortObjectsByOrderIdDescending(props.data));
+    setData(props.data);
   }, [props.data]);
   return (
     <div className="col-12 p-1">
       <div className="smartTable-container row">
         <div className="candidate_revew_select style2 mb30-991">
-        <ul className="mb0 mt-0">
+          <ul className="mb0 mt-0">
             <li className="list-inline-item">
               <Filtering
                 filterQuery={props.filterQuery}
@@ -478,40 +231,19 @@ function SmartTable(props) {
                     <tr>
                       {props.headCells.map((headCell, index) => {
                         return (
-                          <th
-                            id={headCell.id}
+                          <SmartTableHeaderCell
                             key={headCell.id}
-                            scope="col"
-                            style={{
-                              width: headCell.width,
-                              backgroundColor: "#2e008b",
-                              color: "white",
-                              position: "sticky",
-                              top: "0", // Keep the header visible when scrolling vertically
-                              left: index === 0 ? "0" : undefined, // Make the first column sticky
-                              zIndex: index === 0 ? "3" : "2", // Ensure layering
-                            }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
+                            headCell={headCell}
+                            index={index}
+                            sortDesc={props.sortDesc}
+                            sortData={(cell) =>
+                              props.sortData(
+                                cell,
+                                props.sortDesc,
+                                props.setSortDesc
+                              )
                             }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? sortData(headCell.id)
-                                : {}
-                            }
-                          >
-                            {headCell.label}
-                            {sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                            )}
-                          </th>
+                          />
                         );
                       })}
                     </tr>
@@ -570,9 +302,12 @@ function SmartTable(props) {
           )}
           {props.noPagination || data.length === 0 || !props.url ? (
             <div className="row">
-              <div className="col-12 text-end p-3">
-                {props.data.length > 0 ? props.data.length : 0} Records
-              </div>
+              <RecordCount
+                start={props.start}
+                end={props.end}
+                allProperties={props.allProperties}
+                totalCount={props.allProperties?.length}
+              />
             </div>
           ) : (
             <div className="row">

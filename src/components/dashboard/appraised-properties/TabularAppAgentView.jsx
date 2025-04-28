@@ -10,6 +10,10 @@ import { FaArchive } from "react-icons/fa";
 import { AppraiserStatusOptions } from "../create-listing/data";
 import millify from "millify";
 import Image from "next/image";
+import {
+  sortData,
+  sortTheDataList,
+} from "../../common/PaginationControls/functions";
 
 const headCells = [
   {
@@ -23,6 +27,7 @@ const headCells = [
     numeric: false,
     label: "Property Address",
     width: 200,
+    sortable: false,
   },
   {
     id: "status",
@@ -35,12 +40,14 @@ const headCells = [
     numeric: false,
     label: "Appraisal Status",
     width: 160,
+    sortable: false,
   },
   {
     id: "remarkButton",
     numeric: false,
     label: "Appraisal Remark",
     width: 160,
+    sortable: false,
   },
   {
     id: "urgency",
@@ -53,30 +60,35 @@ const headCells = [
     numeric: false,
     label: "Order Submission Date",
     width: 200,
+    sortable: false,
   },
   {
     id: "quote_required_by",
     numeric: false,
     label: "Appraisal Report Required By",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_building",
     numeric: false,
     label: "Type of Property",
     width: 200,
+    sortable: false,
   },
   {
     id: "estimated_value",
     numeric: false,
     label: "Estimated Value / Purchase Price($)",
     width: 200,
+    sortable: false,
   },
   {
     id: "type_of_appraisal",
     numeric: false,
     label: "Type Of Appraisal",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -84,6 +96,7 @@ const headCells = [
     numeric: false,
     label: "Purpose",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -91,6 +104,7 @@ const headCells = [
     numeric: false,
     label: "Lender Information",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -98,12 +112,14 @@ const headCells = [
     numeric: false,
     label: "Broker Info",
     width: 200,
+    sortable: false,
   },
   {
     id: "property",
     numeric: false,
     label: "Property Info",
     width: 200,
+    sortable: false,
   },
 
   {
@@ -111,6 +127,7 @@ const headCells = [
     numeric: false,
     label: "Action",
     width: 110,
+    sortable: false,
   },
 ];
 
@@ -147,6 +164,7 @@ export default function Exemple({
   setStartLoading,
   setSelectedPropertyNew,
   refresh,
+  setfilteredPropertiesCount,
 }) {
   const [updatedData, setUpdatedData] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -166,6 +184,9 @@ export default function Exemple({
   const [wishlistModal, setWishlistModal] = useState(false);
   const [isWishlistProperty, setIsWishlistProperty] = useState(0);
   const [selectedWishlistId, setSelectedWishlistId] = useState(null);
+
+  const [propertiesPerPage, setPropertiesPerPage] = useState([]);
+  const [sortDesc, setSortDesc] = useState({});
 
   useEffect(() => {
     if (searchInput === "") {
@@ -419,20 +440,6 @@ export default function Exemple({
       }
     });
     return temp;
-  };
-
-  const checkCanBidAgainHandler = (data) => {
-    let temp = true;
-    return temp;
-  };
-
-  const openAssignModalHandler = (property) => {
-    setAssignPropertyId(property.$id);
-    setAssignModal(true);
-  };
-
-  const sortObjectsByOrderIdDescending = (data) => {
-    return data.sort((a, b) => b.order_id - a.order_id);
   };
 
   const checkData = properties && !updatedData ? true : false;
@@ -909,11 +916,17 @@ export default function Exemple({
           tempStatusData.push(newStatus);
         }
       });
-      setUpdatedData(tempData);
+      setfilteredPropertiesCount(tempData?.length);
+      const filteredData = sortTheDataList(tempData, sortDesc);
+      setUpdatedData(filteredData);
       setStatusData(tempStatusData);
     };
     getData();
-  }, [properties, wishlist, bids]);
+  }, [properties, wishlist, bids, sortDesc]);
+
+  useEffect(() => {
+    setPropertiesPerPage(updatedData.slice(start, end));
+  }, [start, end, updatedData]);
 
   const refreshHandler = () => {
     setProperties([]);
@@ -1134,7 +1147,7 @@ export default function Exemple({
           title=""
           setSearchInput={setSearchInput}
           setFilterQuery={setFilterQuery}
-          data={sortObjectsByOrderIdDescending(updatedData)}
+          data={propertiesPerPage}
           headCells={headCells}
           setRefresh={setRefresh}
           setProperties={setProperties}
@@ -1146,8 +1159,13 @@ export default function Exemple({
           filterQuery={filterQuery}
           dataFetched={dataFetched}
           statusData={statusData}
-          properties={updatedData}
+          properties={propertiesPerPage}
+          allProperties={updatedData}
           end={end}
+          setUpdatedData={setUpdatedData}
+          sortDesc={sortDesc}
+          setSortDesc={setSortDesc}
+          sortData={sortData}
         />
       )}
       {archiveModal && (

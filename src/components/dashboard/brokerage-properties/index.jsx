@@ -2,7 +2,6 @@ import Header from "../../common/header/dashboard/HeaderBrokerage";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuBrokerage";
 import MobileMenu from "../../common/header/MobileMenu_01";
 import TableData from "./TableData";
-import Pagination from "./Pagination";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -18,6 +17,7 @@ import { AppraiserStatusOptions } from "../create-listing/data";
 import { FaDownload } from "react-icons/fa";
 import { useModal } from "../../../context/ModalContext";
 import CommonLoader from "../../common/CommonLoader/page";
+import Pagination from "../../common/PaginationControls/PaginationFooter";
 
 const Index = () => {
   const [disable, setDisable] = useState(false);
@@ -49,20 +49,10 @@ const Index = () => {
   const [start, setStart] = useState(0);
   const [isHoldProperty, setIsHoldProperty] = useState(0);
   const [isCancelProperty, setIsCancelProperty] = useState(0);
-  const [end, setEnd] = useState(4);
+  const [end, setEnd] = useState(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE || 20);
   const [holdModalOpen, setHoldModalOpen] = useState(false);
 
-  const closeErrorModal = () => {
-    setModalIsOpenError(false);
-  };
-
-  const handleStatusUpdateHandler = () => {};
-
-  const closeStatusUpdateHandler = () => {
-    setOpenDate(false);
-    setIsStatusModal(false);
-  };
-
+  const [filteredPropertiesCount, setfilteredPropertiesCount] = useState(0);
   const [openBrokerModal, setOpenBrokerModal] = useState(false);
   const [modalIsPopupOpen, setModalIsPopupOpen] = useState(false);
 
@@ -346,9 +336,9 @@ const Index = () => {
           return (
             //implment search over this only
             String(property.orderId).toLowerCase().includes(searchTerm) ||
-            property.zipCode.toLowerCase().includes(searchTerm) ||
-            property.city.toLowerCase().includes(searchTerm) ||
-            property.province.toLowerCase().includes(searchTerm)
+            String(property.zipCode).toLowerCase().includes(searchTerm) ||
+            String(property.city).toLowerCase().includes(searchTerm) ||
+            String(property.province).toLowerCase().includes(searchTerm)
           );
       });
 
@@ -654,60 +644,7 @@ const Index = () => {
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row">
-                {/* Start Dashboard Navigation */}
-                {/* <div className="col-lg-12">
-                  <div className="dashboard_navigationbar dn db-1024">
-                    <div className="dropdown">
-                      <button
-                        className="dropbtn"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#DashboardOffcanvasMenu"
-                        aria-controls="DashboardOffcanvasMenu"
-                      >
-                        <i className="fa fa-bars pr10"></i> Dashboard Navigation
-                      </button>
-                    </div>
-                  </div>
-                </div> */}
-                {/* End Dashboard Navigation */}
-
-                {/* <div className="col-lg-4 col-xl-4 mb10">
-                  <div className="style2 mb30-991">
-                 
-                   
-                  </div>
-                </div> */}
-
-                {/*<div className="row">
-                <div className="col-lg-12 mt20">
-                 <div className="mbp_pagination">
-                   <Pagination
-                     setStart={setStart}
-                     setEnd={setEnd}
-                     properties={properties}
-                   />
-                 </div>
-               </div> 
-              </div>*/}
-
-                <div className="col-lg-12 col-xl-12">
-                  {/* <div className="candidate_revew_select style2 mb30-991">
-                    <ul className="mb0">
-                      <li className="list-inline-item">
-                        <Filtering setFilterQuery={setFilterQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <FilteringBy setFilterQuery={setSearchQuery} />
-                      </li>
-                      <li className="list-inline-item">
-                        <div className="candidate_revew_search_box course fn-520">
-                          <SearchBox setSearchInput={setSearchInput} />
-                        </div>
-                      </li>
-                    
-                    </ul>
-                  </div> */}
-                </div>
+                <div className="col-lg-12 col-xl-12"></div>
                 {/* End .col */}
 
                 <div className="col-lg-12">
@@ -752,7 +689,10 @@ const Index = () => {
                           setHoldModalOpen={setHoldModalOpen}
                           currentPage={currentPage} // Pass current page
                           totalPages={totalPages} // Pass total pages
-                          handlePageChange={handlePageChange} // Pass function
+                          handlePageChange={handlePageChange}
+                          setfilteredPropertiesCount={
+                            setfilteredPropertiesCount
+                          }
                         />
 
                         <div>
@@ -987,7 +927,7 @@ const Index = () => {
                                   </table>
                                 </div>
                                 <div className="d-flex justify-content-center gap-2 mt-3">
-                                  <button
+                                  {/* <button
                                     className="btn btn-color"
                                     style={{ width: "100px" }}
                                     onClick={() =>
@@ -998,7 +938,7 @@ const Index = () => {
                                     title="Download Pdf"
                                   >
                                     <FaDownload />
-                                  </button>
+                                  </button> */}
                                   <button
                                     className="btn btn-color"
                                     style={{ width: "100px" }}
@@ -1282,38 +1222,22 @@ const Index = () => {
             </div>
             {/* End .row */}
 
-            {/* <div className="pagination">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-
-              <span>
-                {" "}
-                Page {currentPage} of {totalPages}{" "}
-              </span>
-
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div> */}
-
-            {/* <div className="row">
+            <div className="row">
               <div className="col-lg-12 mt20 mb100">
                 <div className="mbp_pagination">
                   <Pagination
                     setStart={setStart}
                     setEnd={setEnd}
-                    properties={properties}
+                    properties={
+                      searchInput === "" && filterQuery === "All"
+                        ? properties
+                        : filterProperty
+                    }
+                    filteredPropertiesCount={filteredPropertiesCount}
                   />
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="row mt50">
               <div className="col-lg-12">

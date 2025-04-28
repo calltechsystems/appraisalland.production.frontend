@@ -16,6 +16,7 @@ const Index = () => {
   const { isModalOpen, setIsModalOpen } = useModal();
   let userData = {};
 
+  const [dataFetched, setDataFetched] = useState(false);
   const [lastActivityTimestamp, setLastActivityTimestamp] = useState(
     Date.now()
   );
@@ -82,7 +83,7 @@ const Index = () => {
 
     toast.loading("Getting Transactions...");
     axios
-      .get("/api/getBrokerTransactions", {
+      .get("/api/getPaymentHistoryOfUser", {
         headers: {
           Authorization: `Bearer ${userData?.token}`,
           "Content-Type": "application/json",
@@ -165,7 +166,12 @@ const Index = () => {
                     <div className="col-lg-12">
                       <div className="property_table">
                         <div className="mt0">
-                          <Exemple data={data} userData={userData} />
+                          <Exemple
+                            data={data}
+                            userData={userData}
+                            dataFetched={dataFetched}
+                            setDataFetched={setDataFetched}
+                          />
                           {modalIsOpenError && (
                             <div className="modal">
                               <div

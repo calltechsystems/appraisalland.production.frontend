@@ -117,7 +117,8 @@ function SmartTable(props) {
       "appraiser_Details",
       allData,
       "Appraiser Completed Properties",
-      staticHeaders
+      staticHeaders,
+      6
     )
       .then((message) => {
         toast.success(message);
@@ -189,7 +190,6 @@ function SmartTable(props) {
     tableWidthFunc,
     fetchData,
   ]);
-  console.log(props.data);
 
   const buildQueryString = (search, page, rowsPerPage) => {
     const queries = [];

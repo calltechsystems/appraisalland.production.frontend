@@ -26,34 +26,10 @@ const SearchData = ({
     },
 
     {
-      id: "appraiser_company",
+      id: "appraisercompany",
       numeric: false,
       label: "Appraiser Company Name",
       width: 250,
-    },
-    {
-      id: "plan",
-      numeric: false,
-      label: "Plan Info",
-      width: 160,
-    },
-    {
-      id: "firstname",
-      numeric: false,
-      label: "First Name",
-      width: 160,
-    },
-    {
-      id: "lastname",
-      numeric: false,
-      label: "Last Name",
-      width: 160,
-    },
-    {
-      id: "registeredUserId",
-      numeric: false,
-      label: "Registered User Id",
-      width: 220,
     },
     {
       id: "currentSubscription",
@@ -62,9 +38,34 @@ const SearchData = ({
       width: 140,
     },
     {
+      id: "plan",
+      numeric: false,
+      label: "Transaction History",
+      width: 180,
+    },
+    // {
+    //   id: "firstname",
+    //   numeric: false,
+    //   label: "First Name",
+    //   width: 160,
+    // },
+    // {
+    //   id: "lastname",
+    //   numeric: false,
+    //   label: "Last Name",
+    //   width: 160,
+    // },
+    // {
+    //   id: "registeredUserId",
+    //   numeric: false,
+    //   label: "Registered User Id",
+    //   width: 220,
+    // },
+    
+    {
       id: "expiryDateOfSubscirption",
       numeric: false,
-      label: "Valid Upto",
+      label: "Validity",
       width: 120,
     },
     {
@@ -166,7 +167,7 @@ const SearchData = ({
         );
         const newRow = {
           sno: index + 1,
-          appraiser_company: (
+          appraisercompany: (
             <span
               onClick={() => openViewModal(row)}
               style={{
@@ -186,7 +187,7 @@ const SearchData = ({
               color: "#2e008b",
               textDecoration: "underline",
             }}
-            href={`/user-plan-details/${row.userId}`}>
+            href={`/user-transaction-history/${row.userId}`}>
               <span
                 style={{
                   textDecoration: "underline",
@@ -194,7 +195,7 @@ const SearchData = ({
                   cursor: "pointer",
                 }}
               >
-                Plan Details
+                View History
               </span>
             </a>
           ),
@@ -207,7 +208,7 @@ const SearchData = ({
           quote_accepted: acceptedBids,
           quote_pending: pendingBids,
           completed_bids: completedBids,
-          status: row.firstName ? (
+          status: row.isActive ? (
             <span className="btn btn-success  w-100">Active</span>
           ) : (
             <span className="btn btn-danger  w-100">In-Active </span>
@@ -217,7 +218,7 @@ const SearchData = ({
               {row.firstName && (
                 <button
                   className="btn btn-color m-1"
-                  onClick={() => openEditModalHandler(data.userId)}
+                  onClick={() => openEditModalHandler(row.userId)}
                 >
                   <i className="flaticon-edit"></i>
                 </button>
@@ -232,7 +233,7 @@ const SearchData = ({
     };
     const resultedArray = getData();
     setUpdatedCode(resultedArray);
-  }, [data, allBids]);
+  }, [data, allBids, allSubscirptionHistory]);
 
   const allBidForUser = (id) => {
     let allBid = 0,

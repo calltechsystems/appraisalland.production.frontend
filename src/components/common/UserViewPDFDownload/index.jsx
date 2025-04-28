@@ -1,9 +1,9 @@
+import toast from "react-hot-toast";
 function extractTextFromReactElement(element) {
-  if (typeof element === "string") {
-    return element; // Base case: Direct text value
-  } else if (Array.isArray(element)) {
-    return element.map(extractTextFromReactElement).join(" "); // Handle multiple children
-  } else if (element && typeof element === "object" && element.$$typeof) {
+  if (typeof element === "string") return element;
+  if (Array.isArray(element))
+    return element.map(extractTextFromReactElement).join(" ");
+  if (element && typeof element === "object" && element.$$typeof) {
     return element.props?.children
       ? extractTextFromReactElement(element.props.children)
       : "";
@@ -11,20 +11,17 @@ function extractTextFromReactElement(element) {
   return "";
 }
 
-
 const getCreatedByName = (userFieldType) => {
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
-  if (userFieldType === "appraiserCompany_Datails") {
-    return `${userInfo?.[userFieldType]?.firstName || "John"} ${
-      userInfo?.[userFieldType]?.lastName || "Doe"
-    }`;
-  }
-  if (userFieldType === "broker_Details") {
-    return `${userInfo?.[userFieldType]?.firstName || "John"} ${
-      userInfo?.[userFieldType]?.lastName || "Doe"
-    }`;
-  }
-  if (userFieldType === "appraiser_Details") {
+  const defaultName = "John Doe";
+
+  if (
+    [
+      "appraiserCompany_Datails",
+      "broker_Details",
+      "appraiser_Details",
+    ].includes(userFieldType)
+  ) {
     return `${userInfo?.[userFieldType]?.firstName || "John"} ${
       userInfo?.[userFieldType]?.lastName || "Doe"
     }`;
@@ -34,42 +31,67 @@ const getCreatedByName = (userFieldType) => {
       userInfo?.[userFieldType]?.assistantLastName || "Doe"
     }`;
   }
-  return `John Doe`;
+
+  return defaultName;
 };
 
-function getFormattedDate() {
+// function getFormattedDate() {
+//   const date = new Date();
+//   return date.toLocaleDateString("en-GB", {
+//     day: "2-digit",
+//     month: "short",
+//     year: "numeric",
+//   });
+// }
+
+function getFormattedDateTime() {
   const date = new Date();
-  return date.toLocaleDateString("en-GB", {
+  const formattedDate = date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
+
+  const formattedTime = date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return `${formattedDate} ${formattedTime}`;
 }
 
+
 function UserNameLinkData(element) {
-  if (!element || typeof element !== "object") return undefined;
-  if (element.props?.children) {
-    if (typeof element.props.children === "string") {
-      return element.props.children;
-    } else if (typeof element.props.children === "object") {
-      return UserNameLinkData(element.props.children); 
-    }
+  if (typeof element === "string") {
+    return element;
   }
 
+  if (Array.isArray(element)) {
+    return element
+      .map((child) => UserNameLinkData(child))
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  if (element && typeof element === "object" && element.props?.children) {
+    return UserNameLinkData(element.props.children);
+  }
   return undefined;
 }
 
-
-export const getTheDownloadView = (userFieldType, allData, pdfTitle, staticHeaders) => {
+export const getTheDownloadView = (
+  userFieldType,
+  allData,
+  pdfTitle,
+  staticHeaders,
+  rowsPerPage = 9 // default fallback
+) => {
   return new Promise((resolve, reject) => {
     try {
       const printContent = `
-
         <html>
           <head>
-            <script>
-              document.title = "PDF";
-            </script>
             <style>
               @media print {
                 @page {
@@ -82,54 +104,98 @@ export const getTheDownloadView = (userFieldType, allData, pdfTitle, staticHeade
                   right: 0;
                   bottom: 0;
                 }
-                .table-container {
-                  margin-bottom: 100px;
+                thead {
+                  display: table-header-group;
+                }
+                .page-break {
+                  page-break-after: always;
                 }
               }
+
+              body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+              }
+
               .pdf-container {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 width: 100%;
               }
-              .header {
-                width: 100%;
-                padding: 10px;
-                text-align: center;
-              }
-              .logo {
-                height: 70px;
-                width: 80px;
-              }
+
               .table-container {
                 width: 100%;
               }
+
               table {
                 width: 100%;
                 border-collapse: collapse;
+                font-size: 12px;
+                font-family: Arial;
               }
+
               th, td {
-                border: 1px solid #ddd;
-                padding: 10px;
-                text-align: left;
+                border: 1px solid #000;
+                padding: 8px;
               }
+
+              .header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom:10px;
+              }
+
+              .logo {
+                height: 70px;
+                width: 80px;
+                margin-bottom: 4px;
+              }
+
               .footer {
                 width: 100%;
                 text-align: center;
                 padding-top: 10px;
                 font-size: 12px;
               }
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.05;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.watermark img {
+  width: 400px;
+  height: auto;
+}
+
             </style>
           </head>
           <body>
+          <div class="watermark">
+  <img src="/assets/images/Appraisal_Land_Logo.png" alt="Watermark Logo" />
+</div>
+
             <div class="pdf-container">
-              <div class="header">
-                <img src="/assets/images/Appraisal_Land_Logo.png" alt="Company Logo" class="logo" />
-                <h3>${pdfTitle}</h3>
-              </div>
               <div class="table-container">
                 <table>
                   <thead>
+                    <tr>
+                      <th colspan="${
+                        staticHeaders.length
+                      }" style="text-align: center; border: none;">
+                        <div class="header">
+                          <img src="/assets/images/Appraisal_Land_Logo.png" alt="Company Logo" class="logo" />
+                          <h3 style="margin: 0;">${pdfTitle}</h3>
+                        </div>
+                      </th>
+                    </tr>
                     <tr>
                       ${staticHeaders
                         .map((header) => `<th>${header[1]}</th>`)
@@ -138,101 +204,152 @@ export const getTheDownloadView = (userFieldType, allData, pdfTitle, staticHeade
                   </thead>
                   <tbody>
                     ${allData
-                      .map((item) => `
-                        <tr>
-                          ${staticHeaders
-                            .map((header) => {
-                              if (
-                                header[0].toLowerCase() === "appraisal_status" ||
-                                header[0].toLowerCase() === "status" ||
-                                header[0]?.toLowerCase() === "assigned_appraiser"
-                              ) {
-                                const value = item[header[0].toLowerCase()];
-                                const className = value.props.className;
-                                const content = header[0].toLowerCase() === "appraisal_status" &&
-                                  !String(value.props.children).toLowerCase().includes("n.a")
-                                  ? extractTextFromReactElement(value.props.children)?.split("Current Status")[0]
-                                  : value.props.children;
-                                const color = className.includes("btn-warning")
-                                  ? "#E4A11B"
-                                  : className.includes("btn-danger")
-                                  ? "#DC4C64"
-                                  : className.includes("btn-success")
-                                  ? "#14A44D"
-                                  : "#54B4D3";
-                                return `<td style="color: ${color};">${content}</td>`;
-                              }if (
-                                header[0].toLowerCase() === "broker" 
-                              ) {
-                                const value = item[header[0].toLowerCase()];
-                                // const className = value.props.className;
-                                const content = UserNameLinkData(value);
-                                const color = "#54B4D3";
-                                return `<td style="color: ${color};">${content}</td>`;
-                              } else {
-                                const updatedValue = item[header[0].toLowerCase()];
-                                return `<td>${updatedValue == undefined ? "N.A." : updatedValue}</td>`;
-                              }
-                            })
-                            .join("")}
-                        </tr>
-                      `)
+                      .map((item, index) => {
+                        const rowHtml = `
+                          <tr>
+                            ${staticHeaders
+                              .map((header) => {
+                                const key = header[0].toLowerCase();
+                                const value = item[key];
+                                if (
+                                  [
+                                    "appraisal_status",
+                                    "status",
+                                    "assigned_appraiser",
+                                  ].includes(key)
+                                ) {
+                                  const className =
+                                    value?.props?.className || "";
+                                  const content =
+                                    key === "appraisal_status" &&
+                                    !String(value?.props?.children)
+                                      ?.toLowerCase()
+                                      .includes("n.a")
+                                      ? extractTextFromReactElement(
+                                          value?.props?.children
+                                        ).split("Current Status")[0]
+                                      : value?.props?.children;
+
+                                  const color = className.includes(
+                                    "btn-warning"
+                                  )
+                                    ? "#E4A11B"
+                                    : className.includes("btn-danger")
+                                    ? "#DC4C64"
+                                    : className.includes("btn-success")
+                                    ? "#14A44D"
+                                    : "#54B4D3";
+
+                                  return `<td style="color: ${color};">${content}</td>`;
+                                }
+
+                                if (
+                                  [
+                                    "broker",
+                                    "appraiser",
+                                    "brokerage",
+                                    "appraiser_info",
+                                    "appraiserCompany",
+                                    "appraisercompany"
+                                  ].includes(key)
+                                ) {
+                                  const content = UserNameLinkData(value);
+                                  return `<td style="color: #54B4D3;">${content}</td>`;
+                                }
+
+                                const updatedValue = item[key];
+                                return `<td>${
+                                  updatedValue == undefined
+                                    ? "N.A."
+                                    : updatedValue
+                                }</td>`;
+                              })
+                              .join("")}
+                          </tr>
+                        `;
+                        // const isPageBreak =
+                        //   (index + 1) % 9 === 0
+                        //     ? '<tr class="page-break"></tr>'
+                        //     : "";
+                        const isPageBreak =
+                          (index + 1) % rowsPerPage === 0
+                            ? '<tr class="page-break"></tr>'
+                            : "";
+                        return rowHtml + isPageBreak;
+                      })
                       .join("")}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="${staticHeaders.length}">
+                        <div class="footer" style="margin-top:10px">
+                          <p>© ${new Date().getFullYear()} 
+                            <a href="https://appraisalland.ca/" target="_blank" style="color: #2e008b; text-decoration: none; font-size:12px;">
+                              Appraisal Land
+                            </a>. All Rights Reserved.
+                            <span>Created by: ${getCreatedByName(
+                              userFieldType
+                            )}</span>
+                            <span>Created on: ${getFormattedDateTime()}</span>
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
-              </div>
-              <div class="footer">
-                <p>© ${new Date().getFullYear()} 
-                  <a href="https://appraisalland.ca/" target="_blank" style="color: #2e008b; text-decoration: none">
-                    Appraisal Land
-                  </a>. All Rights Reserved. 
-                  <span>Created by: ${getCreatedByName(userFieldType)}</span>
-                  <span>Created on: ${getFormattedDate()}</span>
-                </p>
               </div>
             </div>
           </body>
         </html>
       `;
 
-      const printWindow = window.open("", "", "width=1200,height=800");
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+      document.body.appendChild(iframe);
 
-      if (!printWindow) {
-        reject(new Error("Failed to open print window"));
+      const doc = iframe.contentWindow?.document;
+      if (!doc) {
+        reject(new Error("Failed to access iframe document"));
         return;
       }
 
-      printWindow.document.open();
-      printWindow.document.write(printContent);
-      printWindow.document.close();
+      doc.open();
+      doc.write(printContent);
+      doc.close();
 
-      printWindow.onload = function () {
-        printWindow.print();
+      iframe.onload = () => {
+        try {
+          const printWindow = iframe.contentWindow;
+          if (!printWindow) throw new Error("Print window not found");
 
-        // Track when the print dialog is opened
-        printWindow.onbeforeprint = () => {
-          console.log("Print dialog opened");
-        };
+          printWindow.focus();
+          printWindow.print();
 
-        // Track when the print dialog is closed (printed or canceled)
-        printWindow.onafterprint = () => {
-          console.log("Print dialog closed");
-          printWindow.close(); // Close the popup
-          resolve("Print dialog closed");
-        };
+          let alreadyHandled = false;
+          const checkClose = () => {
+            if (alreadyHandled) return;
+            alreadyHandled = true;
+            document.body.removeChild(iframe);
+            resolve("Print dialog closed.");
+          };
 
-        // Fallback: Close the window if the user cancels manually
-        setTimeout(() => {
-          if (!printWindow.closed) {
-            printWindow.close();
-            resolve("Print dialog closed");
-          }
-        }, 500); // Close after 5 seconds if still open
+          printWindow.onafterprint = checkClose;
+
+          setTimeout(() => {
+            checkClose();
+          }, 10000);
+        } catch (e) {
+          reject(new Error("Error during iframe print"));
+        }
       };
     } catch (error) {
       console.error({ error });
-      reject(new Error("Error handling print"));
+      reject(new Error("Error handling print via iframe"));
     }
   });
 };
-
