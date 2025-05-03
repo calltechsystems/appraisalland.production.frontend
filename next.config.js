@@ -13,9 +13,9 @@ const nextConfig = {
     AWS_REGION: "us-east-1",
     AUTO_RELOADING_DELAY:180000,
     BACKEND_DOMAIN:
-      "http://appraisalland.ca-central-1.elasticbeanstalk.com/api",
+      "https://prodapi.appraisalland.ca/api",
     BACKEND_DOMAIN2:
-      "http://appraisalland.ca-central-1.elasticbeanstalk.com/api",
+      "https://prodapi.appraisalland.ca/api",
   },
   images: {
     domains: [
