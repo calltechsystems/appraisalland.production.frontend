@@ -14,19 +14,12 @@ import CommonLoader from "../../common/CommonLoader/page";
 const Index = () => {
   const [userData, setUserData] = useState({});
   const router = useRouter();
-  const [properties, setProperties] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [FilteringType, setFilteringType] = useState(1000);
-  const [AllWishlistedCards, setAllWishlistedCards] = useState(0);
-  const [AllBiddedCards, setAllBiddedCards] = useState(0);
-  const [bids, setBids] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [chartData, setChartData] = useState([]);
   const [modalIsOpenError, setModalIsOpenError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [modalIsPlanError, setModalIsPlaneError] = useState(false);
   const [message, setMessage] = useState("");
-
   const [dashboardCount, setDashboardCount] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -105,41 +98,6 @@ const Index = () => {
   const closeErrorModal = () => {
     setModalIsOpenError(false);
   };
-
-  const [lastActivityTimestamp, setLastActivityTimestamp] = useState(
-    Date.now()
-  );
-
-  useEffect(() => {
-    const activityHandler = () => {
-      setLastActivityTimestamp(Date.now());
-    };
-
-    // Attach event listeners for user activity
-    window.addEventListener("mousemove", activityHandler);
-    window.addEventListener("keydown", activityHandler);
-    window.addEventListener("click", activityHandler);
-
-    // Cleanup event listeners when the component is unmounted
-    return () => {
-      window.removeEventListener("mousemove", activityHandler);
-      window.removeEventListener("keydown", activityHandler);
-      window.removeEventListener("click", activityHandler);
-    };
-  }, []);
-
-  useEffect(() => {
-    const inactivityCheckInterval = setInterval(() => {
-      const currentTime = Date.now();
-      const timeSinceLastActivity = currentTime - lastActivityTimestamp;
-
-      if (timeSinceLastActivity > 600000) {
-        localStorage.removeItem("user");
-        router.push("/login");
-      }
-    }, 60000);
-    return () => clearInterval(inactivityCheckInterval);
-  }, [lastActivityTimestamp]);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));

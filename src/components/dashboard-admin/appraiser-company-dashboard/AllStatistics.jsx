@@ -1,91 +1,61 @@
-const AllStatistics = ({
-  totalBids,
-  acceptedBids,
-  totalBidsCount,
-  totalCompletedBidsCount,
-  totalAcceptBidsCount,
-  totalPendingBidsCount,
-  planData,
-}) => {
-  console.log(totalBids, acceptedBids, totalBidsCount);
+const AllStatistics = ({ dashboardCount }) => {
   const allStatistics = [
     // New cards for Plans
     {
       id: 9,
       blockStyle: "stylecardnew9",
       icon: "fa fa-dollar",
-      timer: planData ? planData[2] : 0, // Ultimate Plan count
+      timer: dashboardCount?.ultimatePlan, // Ultimate Plan count
       name: "Ultimate Plans",
     },
     {
       id: 8,
       blockStyle: "stylecardnew8",
       icon: "fa fa-star-half",
-      timer: planData ? planData[1] : 0, // Pro Plan count
+      timer: dashboardCount?.proPlan, // Pro Plan count
       name: "Pro Plans",
     },
     {
       id: 7,
       blockStyle: "stylecardnew7",
       icon: "fa fa-star-o",
-      timer: planData ? planData[0] : 0, // Lite Plan count
+      timer: dashboardCount?.litePlan, // Lite Plan count
       name: "Lite Plans",
     },
     {
       id: 1,
       blockStyle: "stylecardnew1",
       icon: "fa fa-user",
-      timer: totalBids,
-      name: "Total Appraisers",
+      timer: dashboardCount?.totalappriaserscompany,
+      name: "Total Appraisers Company",
     },
     {
       id: 2,
       blockStyle: "stylecardnew2",
       icon: "fa fa-users",
-      timer: acceptedBids,
-      name: "Total Active Appraisers",
-    },
-    {
-      id: 4,
-      blockStyle: "stylecardnew4",
-      icon: "fa fa-check",
-      timer: totalAcceptBidsCount,
-      name: "Total Quotes Received",
+      timer: dashboardCount?.totalactiveappriasercompany,
+      name: "Total Active Appraisers Company",
     },
     {
       id: 3,
       blockStyle: "stylecardnew3",
       icon: "fa fa-file",
-      timer: totalBidsCount,
+      timer: dashboardCount?.totalquotesprovided,
       name: "Total Quotes Provided",
     },
-    // {
-    //   id: 4,
-    //   blockStyle: "stylecardnew4",
-    //   icon: "fa fa-check",
-    //   timer: totalAcceptBidsCount,
-    //   name: "Total Quotes Accepted",
-    // },
-    // {
-    //   id: 5,
-    //   blockStyle: "stylecardnew5",
-    //   icon: "fa fa-edit",
-    //   timer: totalPendingBidsCount,
-    //   name: " Total Quotes Pending",
-    // },
     {
       id: 6,
       blockStyle: "stylecardnew6",
       icon: "fa fa-check-circle",
-      timer: totalCompletedBidsCount,
-      name: "Total Quotes Completed Properties",
+      timer: dashboardCount?.totalquotescompleted,
+      name: "Total Quotes Completed",
     },
     {
       id: 5,
       blockStyle: "stylecardnew5",
       icon: "fa fa-edit",
-      timer: totalPendingBidsCount,
-      name: " Total Cancelled Quotes",
+      timer: dashboardCount?.totalquotesinprogress,
+      name: " Total Quotes in Progress",
     },
   ];
 

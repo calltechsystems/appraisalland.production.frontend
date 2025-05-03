@@ -162,7 +162,7 @@ export default function Exemple({
                 <span className="btn btn-info">
                   {property?.planName == "Top Up"
                     ? `Will Be Active till ${formatDate(property.endDate)}`
-                    : `Will Be Active on ${formatDate(property.startDate)}}`}
+                    : `Will Be Active on ${formatDate(property.startDate)}`}
                 </span>
               )
             ) : (

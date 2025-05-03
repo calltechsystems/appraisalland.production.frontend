@@ -86,7 +86,7 @@ const headCells = [
   {
     id: "amount",
     numeric: false,
-    label: "Estimated Value / Purchase Price",
+    label: "Estimated Property Value ($)",
     width: 150,
     sortable: false,
   },

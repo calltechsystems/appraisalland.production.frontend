@@ -164,7 +164,7 @@ const Index = () => {
                   })
                   .catch((err) => {
                     toast.error(err?.response);
-                    setErrorMessage(err?.response);
+                    // setErrorMessage(err?.response);
                   });
               })
               .catch((err) => {});
@@ -393,7 +393,7 @@ const Index = () => {
 
   function generateMonthCountArray() {
     const monthCountArray = Array(12).fill(0);
-    allBids.map((obj, index) => {
+    allBids?.map((obj, index) => {
       const requestMonth = new Date(obj.requestTime).getMonth();
       if (
         checkIfIsOfAppraiserCompanyBid(obj.appraiserUserId) &&

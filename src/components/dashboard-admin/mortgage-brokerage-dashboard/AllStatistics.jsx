@@ -1,84 +1,68 @@
-const AllStatistics = ({
-  totalBids,
-  acceptedBids,
-  totalPropertiesCount,
-  totalCompletedPropertiesCount,
-  totalAcceptPropertiesCount,
-  totalPendingPropertiesCount,
-  planData,
-}) => {
-  console.log(totalBids, acceptedBids);
+const AllStatistics = ({ dashboardCount }) => {
   const allStatistics = [
     // New cards for Plans
     {
       id: 9,
       blockStyle: "stylecardnew9",
       icon: "fa fa-dollar",
-      timer: planData ? planData[2] : 0, // Ultimate Plan count
-      name: "Ultimate Plans",
+      timer: dashboardCount?.ultimatePlan, // Ultimate Plan count
+      name: "Ultimate Plan",
     },
     {
       id: 8,
       blockStyle: "stylecardnew8",
       icon: "fa fa-star-half",
-      timer: planData ? planData[1] : 0, // Pro Plan count
-      name: "Pro Plans",
+      timer: dashboardCount?.proPlan, // Pro Plan count
+      name: "Pro Plan",
     },
     {
       id: 7,
       blockStyle: "stylecardnew7",
       icon: "fa fa-star-o",
-      timer: planData ? planData[0] : 0, // Lite Plan count
-      name: "Lite Plans",
+      timer: dashboardCount?.litePlan, // Lite Plan count
+      name: "Lite Plan",
     },
     {
       id: 1,
       blockStyle: "stylecardnew1",
       icon: "fa fa-user",
-      timer: totalBids,
-      name: "Total Mortgage Brokerage",
+      timer: dashboardCount?.totalBroker,
+      name: "Total Brokers",
     },
     {
       id: 2,
       blockStyle: "stylecardnew2",
       icon: "fa fa-users",
-      timer: acceptedBids,
+      timer: dashboardCount?.totalActiveBrokers,
       name: "Total Active Mortgage Brokerage",
     },
     {
       id: 3,
       blockStyle: "stylecardnew3",
       icon: "fa fa-file",
-      timer: totalPropertiesCount,
-      name: "Total Submitted Properties",
+      timer: dashboardCount?.totalPropertiesSubmitted,
+      name: "Total Properties Submitted",
     },
     {
       id: 4,
       blockStyle: "stylecardnew4",
       icon: "fa fa-check",
-      timer: totalAcceptPropertiesCount,
-      name: "Total Accepted Properties",
+      timer: dashboardCount?.totalQuotesReceived,
+      name: "Total Quotes Received",
     },
-    // {
-    //   id: 5,
-    //   blockStyle: "stylecardnew5",
-    //   icon: "fa fa-edit",
-    //   timer: totalPendingPropertiesCount,
-    //   name: " Total Appraisals In Progress ",
-    // },
     {
       id: 6,
       blockStyle: "stylecardnew6",
       icon: "fa fa-check-circle",
-      timer: totalCompletedPropertiesCount,
-      name: "Total Completed Properties",
+      timer: dashboardCount?.totalQuotesCompleted,
+      name: "Total Quotes Completed",
     },
     {
       id: 5,
       blockStyle: "stylecardnew5",
       icon: "fa fa-edit",
-      timer: totalPendingPropertiesCount,
-      name: "Total Cancelled Properties ",
+      timer: dashboardCount?.totalquotesinprogress,
+      name: " Total Quotes in Progress",
     },
   ];
 

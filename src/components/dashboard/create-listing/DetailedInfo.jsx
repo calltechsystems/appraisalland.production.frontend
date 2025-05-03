@@ -79,7 +79,7 @@ const DetailedInfo = ({
     }
   };
 
-  const downloadAllAttachments = async () => {
+  const downloadAllAttachments = async (orderId) => {
     const zip = new JSZip();
 
     for (const fileItem of attachment) {
@@ -97,7 +97,7 @@ const DetailedInfo = ({
 
     // Generate the ZIP file and trigger download
     zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "attachments.zip"); // Download ZIP directly
+      saveAs(content, `${orderId}_attachments.zip`); // Download ZIP directly
     });
   };
 
@@ -518,7 +518,7 @@ const DetailedInfo = ({
                             {attachment.length > 0 && (
                               <button
                                 className="btn btn-success"
-                                onClick={downloadAllAttachments}
+                                onClick={() => downloadAllAttachments(propertyData.orderId)}
                               >
                                 {file.file.name}
                               </button>

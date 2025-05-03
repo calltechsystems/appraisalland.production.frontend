@@ -139,8 +139,9 @@ const ReviseSubscriptionModal = ({
               {onSuccess ? (
                 <div className="text-center" style={{ fontSize: "19px" }}>
                   <span className="text-dark">
-                    Your subscription has been upgraded successfully . Thank you
-                    for your time and it would reflect from your next cycle.
+                    Your subscription has been upgraded successfully. We
+                    appreciate your time, and the new changes will take effect
+                    from your next cycle.
                   </span>
                 </div>
               ) : (
@@ -175,8 +176,8 @@ const ReviseSubscriptionModal = ({
                         }}
                       >
                         ${price.price}{" "}
-                      </label>
-                      {" "}per month?
+                      </label>{" "}
+                      per month?
                     </span>
                     <br />
                     <span style={{ fontSize: "15px" }}>

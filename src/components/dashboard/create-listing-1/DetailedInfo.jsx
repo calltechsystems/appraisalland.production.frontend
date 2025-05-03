@@ -95,7 +95,7 @@ const DetailedInfo = ({
 
     // Generate the ZIP file and trigger download
     zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "attachments.zip"); // Download ZIP directly
+      saveAs(content, `${propertyData.orderId}_attachments.zip`); // Download ZIP directly
     });
   };
 

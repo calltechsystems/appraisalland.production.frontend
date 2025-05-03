@@ -1025,7 +1025,7 @@ export default function Exemple({
                           onClick={() =>
                             downloadZip(
                               property.attachment,
-                              property?.propertyId
+                              property?.orderId
                             )
                           }
                         >

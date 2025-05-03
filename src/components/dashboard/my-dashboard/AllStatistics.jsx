@@ -126,6 +126,15 @@ const AllStatistics = ({ dashboardCount }) => {
       },
       {
         section: "Property Details",
+        id: "CancelledQuotesCount",
+        blockStyle: "stylecardnew7",
+        icon: "fa fa-times-circle",
+        value: dashboardCount?.quotesOnCancelByAppriaser || 0,
+        name: "Properties Cancelled by Appraiser",
+        visibleFor: [1, 6],
+      },
+      {
+        section: "Property Details",
         id: "OnHoldPropertiesCount",
         blockStyle: "stylecardnew8",
         icon: "fa fa-pause",

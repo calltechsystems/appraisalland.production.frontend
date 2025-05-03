@@ -76,7 +76,7 @@ const headCells = [
   {
     id: "estimated_value",
     numeric: false,
-    label: "Estimated Value / Purchase Price($)",
+    label: "Estimated Property Value ($)",
     width: 200,
     sortable: false,
   },
@@ -474,11 +474,6 @@ export default function Exemple({
         const anotherBid = alreadyAccepted(property);
         const isAlreadyArchived = getisAlreadyArchived(property.propertyId);
         const haveSubscription = userData?.planLimitExceed;
-        // userActivePlans?.length > 0
-        //   ? userActivePlans[0]?.$id
-        //     ? true
-        //     : false
-        //   : false;
 
         const isWait = property.isonhold || property.isoncancel;
         const isArchive = false;
