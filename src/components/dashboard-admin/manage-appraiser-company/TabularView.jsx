@@ -4,7 +4,7 @@ import SVGArrowDown from "./icons/SVGArrowDown";
 import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
-import { FaDownload, FaRedo } from "react-icons/fa";
+import { FaDownload, FaInfoCircle, FaRedo } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import SearchUser from "./SearchUser";
@@ -64,11 +64,14 @@ function SmartTable(props) {
 
   const handlePrint = async () => {
     const headers = [
-      ["sno", "S.no"],
+      ["sno", "S. No"],
       ["appraisercompany", "Appraiser Company Name"],
-      ["bids", "No of Bids"],
-      ["pending_bids", "Pending Bids"],
-      ["completed_bids", "Completed Bids"],
+      ["currentsubscription", "Plan Name"],
+      ["expirydateofsubscirption", "Validity"],
+      ["bids", "Quote Provided"],
+      ["quote_accepted", "Quote Accepted"],
+      ["quote_pending", "Quote Pending"],
+      ["completed_bids", "Completed Quotes"],
       ["status", "Status"],
     ];
 
@@ -157,12 +160,13 @@ function SmartTable(props) {
   };
 
   const sortableColumns = [
-    "expiryDateOfSubscirption",
-    "quote_required_by",
-    "estimated_value",
-    "appraiser_company",
+    // "expiryDateOfSubscirption",
+    // "quote_required_by",
+    // "estimated_value",
+    "appraisercompany",
     "status",
-    "currentSubscription",
+    "currentsubscription",
+    "sno",
   ]; // Add allowed columns
 
   const sortData = (cell) => {
@@ -189,7 +193,8 @@ function SmartTable(props) {
       if (cell === "estimated_value") {
         return extractNumericValue(item[cell]) || 0;
       }
-      return extractTextContent(item[cell]) || "";
+      // For text fields like appraiser company
+      return (extractTextContent(item[cell]) || "").trim().toLowerCase();
     };
 
     // Sort the data
@@ -293,38 +298,53 @@ function SmartTable(props) {
                   <thead className="smartTable-thead">
                     <tr>
                       {props?.headCells.map((headCell) => {
+                        const isSortable =
+                          sortableColumns.includes(headCell.id) &&
+                          headCell.id !== "address";
+                        const isSorted = sortDesc[headCell.id] !== undefined;
+
                         return (
                           <th
                             id={headCell.id}
                             key={headCell.id}
                             scope="col"
                             style={{
-                              width: headCell.width,
+                              // width: headCell.width,
                               backgroundColor: "#2e008b",
-                              color: "white" ?? "auto",
+                              color: "white",
                             }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
-                            }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? sortData(headCell.id)
-                                : {}
-                            }
+                            className={isSortable ? "smartTable-pointer" : ""}
+                            onClick={() => isSortable && sortData(headCell.id)}
                           >
-                            {headCell.label}
-                            {sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : // <SVGArrowDown />
-                            sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                              // <SVGArrowUp />
-                            )}
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center", // Center horizontally
+                                gap: "6px",
+                                minHeight: "24px", // optional: to keep row height consistent
+                              }}
+                            >
+                              {headCell.label}
+
+                              {/* Info icon only for sortable columns */}
+                              {isSortable && (
+                                <span
+                                  title="This column is sortable. Click to sort ascending/descending."
+                                  style={{ cursor: "", fontSize: "14px" }}
+                                >
+                                  <FaInfoCircle />
+                                </span>
+                              )}
+
+                              {/* Sort direction icon */}
+                              {isSorted &&
+                                (sortDesc[headCell.id] ? (
+                                  <span>🔽</span> // Replace with <SVGArrowDown /> if needed
+                                ) : (
+                                  <span>🔼</span> // Replace with <SVGArrowUp /> if needed
+                                ))}
+                            </span>
                           </th>
                         );
                       })}

@@ -465,7 +465,7 @@ export default function Exemple({
               isBidded.orderStatus === 3 ? (
                 <span className="btn btn-completed w-100">Completed</span>
               ) : isBidded.status === 0 ? (
-                <span className="btn btn-primary  w-100">Quote Provided</span>
+                <span className="btn btn-primary  w-100">Quoted</span>
               ) : isBidded.status === 1 ? (
                 <span className="btn btn-success  w-100">Accepted</span>
               ) : (

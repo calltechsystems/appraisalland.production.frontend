@@ -76,7 +76,7 @@ function SmartTable(props) {
 
   const handlePrint = async () => {
     const headers = [
-      ["sno", "SNo"],
+      ["sno", "S. No"],
       ["appraiser_company", "Appraiser Company"],
       // ["plan", "Plan Info"],
       ["currentSubscription", "Plan Name"],

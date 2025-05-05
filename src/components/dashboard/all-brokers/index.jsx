@@ -55,7 +55,6 @@ const Index = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(currentViewBroker.userInformation);
-      // alert("Copied to clipboard!");
       toast.dismiss();
       toast.success("Copied To Clipboard");
     } catch (error) {

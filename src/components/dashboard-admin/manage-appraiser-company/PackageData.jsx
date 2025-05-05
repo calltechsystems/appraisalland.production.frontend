@@ -29,13 +29,13 @@ const SearchData = ({
       id: "appraisercompany",
       numeric: false,
       label: "Appraiser Company Name",
-      width: 250,
+      width: 230,
     },
     {
-      id: "currentSubscription",
+      id: "currentsubscription",
       numeric: false,
       label: "Plan Name",
-      width: 140,
+      width: 120,
     },
     {
       id: "plan",
@@ -43,27 +43,8 @@ const SearchData = ({
       label: "Transaction History",
       width: 180,
     },
-    // {
-    //   id: "firstname",
-    //   numeric: false,
-    //   label: "First Name",
-    //   width: 160,
-    // },
-    // {
-    //   id: "lastname",
-    //   numeric: false,
-    //   label: "Last Name",
-    //   width: 160,
-    // },
-    // {
-    //   id: "registeredUserId",
-    //   numeric: false,
-    //   label: "Registered User Id",
-    //   width: 220,
-    // },
-    
     {
-      id: "expiryDateOfSubscirption",
+      id: "expirydateofsubscirption",
       numeric: false,
       label: "Validity",
       width: 120,
@@ -74,7 +55,6 @@ const SearchData = ({
       label: "Quote Provided",
       width: 140,
     },
-
     {
       id: "quote_accepted",
       numeric: false,
@@ -182,12 +162,14 @@ const SearchData = ({
             </span>
           ),
           plan: (
-            <a style={{
-              border: "0px",
-              color: "#2e008b",
-              textDecoration: "underline",
-            }}
-            href={`/user-transaction-history/${row.userId}`}>
+            <a
+              style={{
+                border: "0px",
+                color: "#2e008b",
+                textDecoration: "underline",
+              }}
+              href={`/user-transaction-history/${row.userId}`}
+            >
               <span
                 style={{
                   textDecoration: "underline",
@@ -202,8 +184,8 @@ const SearchData = ({
           firstname: row.firstName ? row.firstName : "N.A.",
           lastname: row.lastName ? row.lastName : "N.A.",
           registeredUserId: row.emailId ? row.emailId : "N.A.",
-          currentSubscription: planName,
-          expiryDateOfSubscirption: expiryDate,
+          currentsubscription: planName,
+          expirydateofsubscirption: expiryDate,
           bids: totalBids,
           quote_accepted: acceptedBids,
           quote_pending: pendingBids,

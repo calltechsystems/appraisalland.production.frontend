@@ -61,7 +61,6 @@ function getFormattedDateTime() {
   return `${formattedDate} ${formattedTime}`;
 }
 
-
 function UserNameLinkData(element) {
   if (typeof element === "string") {
     return element;
@@ -138,6 +137,7 @@ export const getTheDownloadView = (
               th, td {
                 border: 1px solid #000;
                 padding: 8px;
+                text-align:center;
               }
 
               .header {
@@ -250,7 +250,9 @@ export const getTheDownloadView = (
                                     "brokerage",
                                     "appraiser_info",
                                     "appraiserCompany",
-                                    "appraisercompany"
+                                    "appraisercompany",
+                                    "currentsubscription",
+                                    "expirydateofsubscirption",
                                   ].includes(key)
                                 ) {
                                   const content = UserNameLinkData(value);

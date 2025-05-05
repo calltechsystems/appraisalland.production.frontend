@@ -301,8 +301,9 @@ export default function Exemple({
     const getData = () => {
       properties?.map((prop, index) => {
         const appraiserCompanyInfo = prop?.appraiserCompany;
-        prop?.properties?.$values.forEach((element) => {
-          const property = element?.property;
+        prop?.bids?.$values.forEach((bid) => {
+          const property = bid?.properties?.$values[0];
+          console.log("property", property);
           const allBids = getUniqueHighestStatusBids(prop) || [];
           allBids.forEach((bid) => {
             const isBidded = bid.bid;
@@ -336,7 +337,7 @@ export default function Exemple({
                     </span>
                   ) : isStatus === 1 ? (
                     <span className="btn bg-info w-100 text-light">
-                      Quote Provided
+                      Quoted
                     </span>
                   ) : (
                     <span className="btn bg-info w-100 text-light">
@@ -494,13 +495,63 @@ export default function Exemple({
     setPropertiesPerPage(updatedData.slice(start, end));
   }, [start, end, updatedData]);
 
+  // useEffect(() => {
+  //   const data = JSON.parse(localStorage.getItem("user"));
+  //   let tempProperties = [];
+
+  //   axios
+  //     .get("/api/getAppraiserCompanyProperties", {
+  //       headers: {
+  //         Authorization: `Bearer ${data?.token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       params: {
+  //         noOfDays: 1000,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       toast.dismiss();
+  //       setDataFetched(true);
+
+  //       const topLevelItems = res.data.data || {};
+
+  //       topLevelItems.forEach((item) => {
+  //         const bids = item.bids || {};
+
+  //         bids.forEach((bidItem) => {
+  //           const properties = bidItem.properties || {};
+
+  //           properties.forEach((property) => {
+  //             tempProperties.push(property);
+  //           });
+  //         });
+  //       });
+
+  //       setProperties(tempProperties); // ← FINAL properties array
+  //       console.log("prop", properties);
+  //     })
+  //     .catch((err) => {
+  //       toast.dismiss();
+  //       toast.error(err?.response?.data?.error || "Something went wrong");
+  //     });
+
+  //   setSearchInput("");
+  //   setFilterQuery("All");
+  //   setRefresh(false);
+  // }, [refresh]);
+
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
+    let tempBids = [];
+
     axios
-      .get("/api/getAllAppraiserCompanyProperties", {
+      .get("/api/getAppraiserCompanyProperties", {
         headers: {
           Authorization: `Bearer ${data?.token}`,
           "Content-Type": "application/json",
+        },
+        params: {
+          noOfDays: 1000, // Optional if default is set in API handler
         },
       })
       .then((res) => {
@@ -603,7 +654,9 @@ export default function Exemple({
             </div>
           </div>
         </div>
-      ) : ""}
+      ) : (
+        ""
+      )}
     </>
   );
 }

@@ -147,9 +147,9 @@ const Index = ({ propertyId }) => {
 
         return (
           String(property.orderId).toLowerCase().includes(searchTerm) ||
-            String(property.zipCode).toLowerCase().includes(searchTerm) ||
-            String(property.city).toLowerCase().includes(searchTerm) ||
-            String(property.province).toLowerCase().includes(searchTerm)
+          String(property.zipCode).toLowerCase().includes(searchTerm) ||
+          String(property.city).toLowerCase().includes(searchTerm) ||
+          String(property.province).toLowerCase().includes(searchTerm)
         );
       });
 
@@ -216,7 +216,7 @@ const Index = ({ propertyId }) => {
   console.log(appInfo);
 
   const formatPhoneNumber = (number) => {
-    if (!number) return ""; 
+    if (!number) return "";
     const digits = number.replace(/\D/g, "");
 
     if (digits.length <= 3) {
@@ -262,7 +262,6 @@ const Index = ({ propertyId }) => {
           <div className="row">
             <div className="col-lg-12 maxw100flex-992">
               <div className="row">
-
                 <div className="col-lg-12 col-xl-12 mt-3 mb-1 text-center">
                   <div className="style2 mb30-991">
                     <h3 className="heading-forms">
@@ -631,16 +630,6 @@ const Index = ({ propertyId }) => {
                     </table>
                   </div>
                   <div className="d-flex justify-content-center gap-2 mt-3">
-                    <button
-                      className="btn btn-color"
-                      style={{ width: "100px" }}
-                      // onClick={() =>
-                      //   PropertyInfoHandler(currentProperty.orderId)
-                      // }
-                      title="Download Pdf"
-                    >
-                      <FaDownload />
-                    </button>
                     <button
                       className="btn btn-color"
                       style={{ width: "100px" }}

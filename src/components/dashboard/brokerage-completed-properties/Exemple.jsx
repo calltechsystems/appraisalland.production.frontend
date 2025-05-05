@@ -329,7 +329,7 @@ export default function Exemple({
                 </span>
               ) : isStatus === 1 ? (
                 <span className="btn bg-info w-100 text-light">
-                  Quote Provided
+                  Quoted
                 </span>
               ) : isStatus === 3 ? (
                 <span className="btn btn-completed w-100 text-light">

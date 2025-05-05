@@ -270,7 +270,7 @@ export default function Exemple({
               <span
                 className="btn bg-info text-light  w-100"
               >
-                Quote Provided
+                Quoted
               </span>
             ) : isBidded.status === 1 ? (
               <span
@@ -290,7 +290,7 @@ export default function Exemple({
               <span
                 className="btn bg-info text-light  w-100"
               >
-                Quote Provided
+                Quoted
               </span>
             ) : isBidded.status === 1 ? (
               <span

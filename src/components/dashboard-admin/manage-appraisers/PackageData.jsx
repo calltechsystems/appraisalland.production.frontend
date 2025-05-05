@@ -21,7 +21,7 @@ const SearchData = ({
     {
       id: "sno",
       numeric: false,
-      label: "S.no",
+      label: "S. No",
       width: 80,
     },
 
@@ -32,7 +32,7 @@ const SearchData = ({
       width: 220,
     },
     {
-      id: "currentSubscription",
+      id: "currentsubscription",
       numeric: false,
       label: "Plan Name",
       width: 140,
@@ -61,9 +61,9 @@ const SearchData = ({
     //   label: "Registered User Id",
     //   width: 220,
     // },
-    
+
     {
-      id: "expiryDateOfSubscirption",
+      id: "expirydateofsubscirption",
       numeric: false,
       label: "Validity",
       width: 120,
@@ -121,7 +121,7 @@ const SearchData = ({
 
     return formattedDate;
   };
-  
+
   const getCurrentAppraiserSubscription = (userId) => {
     const activeSubscirption = allSubscriptionHistory.filter(
       (subscription) => subscription.isActive && subscription.userId == userId
@@ -168,28 +168,30 @@ const SearchData = ({
             </span>
           ),
           plan: (
-            <a style={{
-              border: "0px",
-              color: "#2e008b",
-              textDecoration: "underline",
-            }}
-            href={`/user-transaction-history/${row.userId}`}>
-                <span
-                  style={{
-                    textDecoration: "underline",
-                    color: "blueviolet",
-                    cursor: "pointer",
-                  }}
-                >
-                  View History
-                </span>
+            <a
+              style={{
+                border: "0px",
+                color: "#2e008b",
+                textDecoration: "underline",
+              }}
+              href={`/user-transaction-history/${row.userId}`}
+            >
+              <span
+                style={{
+                  textDecoration: "underline",
+                  color: "blueviolet",
+                  cursor: "pointer",
+                }}
+              >
+                View History
+              </span>
             </a>
           ),
           firstname: row.firstName ? row.firstName : "N.A.",
           lastname: row.lastName ? row.lastName : "N.A.",
           registeredUserId: row.emailId,
-          currentSubscription: planName,
-          expiryDateOfSubscirption: expiryDate,
+          currentsubscription: planName,
+          expirydateofsubscirption: expiryDate,
           bids: totalBids,
           quote_accepted: acceptedBids,
           quote_pending: pendingBids,

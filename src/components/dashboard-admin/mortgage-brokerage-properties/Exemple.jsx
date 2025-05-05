@@ -341,7 +341,7 @@ export default function Exemple({
 
   useEffect(() => {
     const getData = () => {
-      properties.map((prop, index) => {
+      properties?.map((prop, index) => {
         const brokerageInfo = prop?.brokerage;
         prop?.properties?.$values.forEach((element) => {
           const property = element?.property;
@@ -542,16 +542,19 @@ export default function Exemple({
     const data = JSON.parse(localStorage.getItem("user"));
 
     axios
-      .get("/api/getAllBrokerageProperties", {
+      .get("/api/getBrokerageProperies", {
         headers: {
           Authorization: `Bearer ${data?.token}`,
           "Content-Type": "application/json",
+        },
+         params: {
+          noOfDays: 1000, // Optional if default is set in API handler
         },
       })
       .then((res) => {
         toast.dismiss();
         setDataFetched(true);
-        const temp = res.data.data.result.$values;
+        const temp = res.data.data.result?.$values || {};
 
         axios
           .get("/api/getAllBids", {
@@ -560,7 +563,7 @@ export default function Exemple({
             },
           })
           .then((res) => {
-            tempBids = res.data.data.$values;
+            tempBids = res.data.data?.$values || {};
             setProperties(temp);
             setBids(tempBids);
           })

@@ -515,7 +515,7 @@ export default function Exemple({
                   <span className="btn btn-completed w-100">Completed</span>
                 ) : isBidded.status === 0 ? (
                   <span className="btn bg-info text-light  w-100">
-                    Quote Provided
+                    Quoted
                   </span>
                 ) : isBidded.status === 1 ? (
                   <span className="btn btn-success  w-100">Accepted</span>

@@ -4,7 +4,7 @@ import SVGArrowDown from "./icons/SVGArrowDown";
 import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
-import { FaDownload, FaRedo } from "react-icons/fa";
+import { FaDownload, FaInfoCircle, FaRedo } from "react-icons/fa";
 import SearchUser from "./SearchUser";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
@@ -64,11 +64,14 @@ function SmartTable(props) {
 
   const handlePrint = async () => {
     const headers = [
-      ["sno", "S.no"],
+      ["sno", "S. No"],
       ["appraiser", "Appraiser Name"],
-      ["bids", "No of Bids"],
-      ["pending_bids", "Pending Bids"],
-      ["completed_bids", "Completed Bids"],
+      ["currentsubscription", "Plan Name"],
+      ["expirydateofsubscirption", "Validity"],
+      ["bids", "Quote Provided"],
+      ["quote_accepted", "Quote Accepted"],
+      ["quote_pending", "Quote Pending"],
+      ["completed_bids", "Completed Quotes"],
       ["status", "Status"],
     ];
     getTheDownloadView(
@@ -155,40 +158,59 @@ function SmartTable(props) {
     return numericValue;
   };
 
+  const sortableColumns = [
+    // "expiryDateOfSubscirption",
+    // "quote_required_by",
+    // "estimated_value",
+    "appraiser",
+    "status",
+    "currentsubscription",
+    "sno",
+  ]; // Add allowed columns
+
   const sortData = (cell) => {
-    // Clone props.properties to avoid mutating the original data
+    // Allow sorting only if the column is in the sortable list
+    if (!sortableColumns.includes(cell)) {
+      return; // Do nothing if the column is not sortable
+    }
+
     let tempData = [...props.properties];
 
-    // Toggle sorting order for the current cell
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
+    // Toggle sorting order for the current column
+    setSortDesc((prevSortDesc) => ({
+      ...prevSortDesc,
+      [cell]: !prevSortDesc[cell],
+    }));
 
-    // Perform sorting
+    const newSortDesc = !sortDesc[cell];
+
+    // Define a function to extract sortable values
+    const getSortableValue = (item) => {
+      if (cell === "date" || cell === "quote_required_by") {
+        return new Date(extractTextContentFromDate(item[cell])).getTime() || 0;
+      }
+      if (cell === "estimated_value") {
+        return extractNumericValue(item[cell]) || 0;
+      }
+      // For text fields like appraiser company
+      return (extractTextContent(item[cell]) || "").trim().toLowerCase();
+    };
+
+    // Sort the data
     tempData.sort((a, b) => {
-      // Extract text content from cell value (React element or other type)
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
+      let valueA = getSortableValue(a);
+      let valueB = getSortableValue(b);
 
-      if (String(cell) === "date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "estimated_value") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-
-      // Perform comparison based on the sorting order
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
+      return newSortDesc
+        ? valueB > valueA
+          ? 1
+          : -1
+        : valueA > valueB
+        ? 1
+        : -1;
     });
 
-    // Update state with the new sorting order and sorted data
-    setSortDesc(newSortDesc);
+    // Update state with sorted data
     setData(tempData);
   };
 
@@ -237,38 +259,53 @@ function SmartTable(props) {
                   <thead className="smartTable-thead">
                     <tr>
                       {props?.headCells.map((headCell) => {
+                        const isSortable =
+                          sortableColumns.includes(headCell.id) &&
+                          headCell.id !== "address";
+                        const isSorted = sortDesc[headCell.id] !== undefined;
+
                         return (
                           <th
                             id={headCell.id}
                             key={headCell.id}
                             scope="col"
                             style={{
-                              width: headCell.width,
+                              // width: headCell.width,
                               backgroundColor: "#2e008b",
-                              color: "white" ?? "auto",
+                              color: "white",
                             }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
-                            }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? sortData(headCell.id)
-                                : {}
-                            }
+                            className={isSortable ? "smartTable-pointer" : ""}
+                            onClick={() => isSortable && sortData(headCell.id)}
                           >
-                            {headCell.label}
-                            {sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : // <SVGArrowDown />
-                            sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                              // <SVGArrowUp />
-                            )}
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center", // Center horizontally
+                                gap: "6px",
+                                minHeight: "24px", // optional: to keep row height consistent
+                              }}
+                            >
+                              {headCell.label}
+
+                              {/* Info icon only for sortable columns */}
+                              {isSortable && (
+                                <span
+                                  title="This column is sortable. Click to sort ascending/descending."
+                                  style={{ cursor: "", fontSize: "14px" }}
+                                >
+                                  <FaInfoCircle />
+                                </span>
+                              )}
+
+                              {/* Sort direction icon */}
+                              {isSorted &&
+                                (sortDesc[headCell.id] ? (
+                                  <span>🔽</span> // Replace with <SVGArrowDown /> if needed
+                                ) : (
+                                  <span>🔼</span> // Replace with <SVGArrowUp /> if needed
+                                ))}
+                            </span>
                           </th>
                         );
                       })}

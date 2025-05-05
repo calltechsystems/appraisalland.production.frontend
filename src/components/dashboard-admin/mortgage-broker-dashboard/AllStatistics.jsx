@@ -4,7 +4,7 @@ const AllStatistics = ({ dashboardCount }) => {
     {
       id: 9,
       blockStyle: "stylecardnew9",
-      icon: "fa fa-dollar",
+      icon: "fa fa-star",
       timer: dashboardCount?.ultimatePlan, // Ultimate Plan count
       name: "Ultimate Plan",
     },

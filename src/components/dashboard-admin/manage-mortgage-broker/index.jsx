@@ -29,9 +29,7 @@ const Index = () => {
   const [pieData, setPieData] = useState([]);
   const [openBrokerModal, setOpenBrokerModal] = useState(false);
   const [broker, setBroker] = useState({});
-
   const [disable, setDisable] = useState(false);
-
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
 
@@ -151,14 +149,14 @@ const Index = () => {
                 tempBids = res.data.data.$values;
 
                 setBids(tempBids);
-                axios
-                  .get("/api/appraiserWishlistedProperties", {
-                    headers: {
-                      Authorization: `Bearer ${data?.token}`,
-                      "Content-Type": "application/json",
-                    },
-                  })
-                  .then((res) => {
+                // axios
+                //   .get("/api/appraiserWishlistedProperties", {
+                //     headers: {
+                //       Authorization: `Bearer ${data?.token}`,
+                //       "Content-Type": "application/json",
+                //     },
+                //   })
+                //   .then((res) => {
                     const tempData = res.data.data.$values;
                     const responseData = tempData.filter((prop, index) => {
                       if (String(prop.userId) === String(data.userId)) {
@@ -167,14 +165,14 @@ const Index = () => {
                         return false;
                       }
                     });
-                    const tempId = responseData;
-                    setWishlist(responseData);
-                    setProperties(prop);
-                  })
-                  .catch((err) => {
-                    toast.error(err?.response);
-                    // setErrorMessage(err?.response);
-                  });
+                  //   const tempId = responseData;
+                  //   setWishlist(responseData);
+                  //   setProperties(prop);
+                  // })
+                  // .catch((err) => {
+                  //   toast.error(err?.response);
+                  //   // setErrorMessage(err?.response);
+                  // });
               })
               .catch((err) => {});
           })
@@ -245,7 +243,7 @@ const Index = () => {
           .includes(String(searchInput).toLowerCase()) ||
         String(appraiser.lastName)
           .toLowerCase()
-          .includes(String(searchInput).toLowerCase()) 
+          .includes(String(searchInput).toLowerCase())
       ) {
         filteredData.push(appraiser);
       }
@@ -284,54 +282,6 @@ const Index = () => {
     setOpenBrokerModal(false);
   };
 
-  const brokerInfoHandler = (orderId) => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(
-      "<html><head><title>Appraiser Information</title></head><body>"
-    );
-    printWindow.document.write("<h1>" + `Broker information` + "</h1>");
-    printWindow.document.write(
-      '<button style="display:none;" onclick="window.print()">Print</button>'
-    );
-
-    // Clone the table-container and remove the action column
-    const tableContainer = document.getElementById("broker-info-container");
-    const table = tableContainer.querySelector("table");
-    const clonedTable = table.cloneNode(true);
-    const rows = clonedTable.querySelectorAll("tr");
-    rows.forEach((row) => {
-      const lastCell = row.querySelector("td:last-child");
-    });
-
-    // Remove the action heading from the table
-    const tableHead = clonedTable.querySelector("thead");
-    const tableHeadRows = tableHead.querySelectorAll("tr");
-    tableHeadRows.forEach((row) => {
-      const lastCell = row.querySelector("th:last-child");
-    });
-
-    // Make the table responsive for all fields
-    const tableRows = clonedTable.querySelectorAll("tr");
-    tableRows.forEach((row) => {
-      const firstCell = row.querySelector("td:first-child");
-      if (firstCell) {
-        const columnHeading = tableHeadRows[0].querySelector(
-          "th:nth-child(" + (firstCell.cellIndex + 1) + ")"
-        ).innerText;
-        firstCell.setAttribute("data-th", columnHeading);
-      }
-    });
-
-    printWindow.document.write(clonedTable.outerHTML);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.onafterprint = () => {
-      printWindow.close();
-      toast.success("Saved the data");
-    };
-  };
-
   const getFormattedData = (users, transactions) => {
     let formattedUsers = [];
 
@@ -364,37 +314,36 @@ const Index = () => {
   };
 
   const handleStatusUpdateHandler = () => {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      setDisable(true);
-      const payload = {
-        id: selectedUser.userId,
-        IsActive: !selectedUser.isActive,
-      };
-      toast.loading("Updating the status");
-      axios
-        .put("/api/updateUserActiveStatus", payload, {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          toast.dismiss();
-          // setIsLoading(false);   
-          toast.success("Successfully Updated!!");
-          
-        })
-        .catch((err) => {
-          toast.dismiss();
-          // setIsLoading(false);
-          toast.error(err);
-        }).
-        finally(() => {
-          setOpenEditModal(false)
-          window.location.reload()
-        })
+    const userData = JSON.parse(localStorage.getItem("user"));
+    setDisable(true);
+    const payload = {
+      id: selectedUser.userId,
+      IsActive: !selectedUser.isActive,
+    };
+    toast.loading("Updating the status");
+    axios
+      .put("/api/updateUserActiveStatus", payload, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.success("Successfully Updated!!");
+      })
+      .catch((err) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.error(err);
+      })
+      .finally(() => {
+        setOpenEditModal(false);
+        window.location.reload();
+      });
 
-      setSelectedUser(-1);
+    setSelectedUser(-1);
   };
 
   const closeStatusUpdateHandler = () => {
@@ -499,34 +448,6 @@ const Index = () => {
                   </div>
                 </div>
                 {/* End Dashboard Navigation */}
-
-                {/* <div
-                  className="col-lg-12 mb10"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    backgroundColor: "#97d700",
-                    padding: "5px",
-                    borderRadius: "5px",
-                  }}
-                >
-                  <div className="breadcrumb_content">
-                    <h2
-                      className="breadcrumb_title text-color"
-                      style={{ marginLeft: "15px" }}
-                    >
-                      Admin Dashboard - Mortgage Broker
-                    </h2>
-                  </div>
-                  <div>
-                    <Filtering
-                      refreshHandler={refreshHandler}
-                      filterQuery={filterQuery}
-                      setFilterQuery={setFilterQuery}
-                    />
-                  </div>
-                </div> */}
               </div>
               {/* End .row */}
 
@@ -611,7 +532,9 @@ const Index = () => {
                           </tr>
                           <tr>
                             <td className="table-header">
-                              <span className="text-start">Regiatered UserId</span>
+                              <span className="text-start">
+                                Regiatered UserId
+                              </span>
                             </td>
                             <td className="table-value">
                               {broker.emailId || "N.A."}
@@ -669,7 +592,6 @@ const Index = () => {
                       </table>
                     </div>
                     <div className="d-flex justify-content-center gap-2 mt-3">
-                    
                       <button
                         className="btn btn-color"
                         style={{ width: "100px" }}
@@ -757,7 +679,6 @@ const Index = () => {
                         </option>
                       </select>
                     </div>
-                    {/* <p>Are you sure you want to delete the property: {property.area}?</p> */}
                     <div
                       className="mb-2 mt-3"
                       style={{ border: "2px solid #97d700" }}

@@ -24,6 +24,8 @@ async function handler(request, response) {
       }
     );
 
+    debugger;
+
     return response.status(200).json({ msg: "OK", data: userResponse.data });
   } catch (err) {
     console.error(err?.response?.data || err.message);

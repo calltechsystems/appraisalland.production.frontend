@@ -64,15 +64,18 @@ function SmartTable(props) {
 
     const handlePrint = async () => {
       const headers = [
-        ["sno", "S.no"],
+        ["sno", "S. No"],
         ["brokerage", "Brokerage Name"],
-        ["bids", "No of Bids"],
-        ["pending_bids", "Pending Bids"],
-        ["completed_bids", "Completed Bids"],
+        ["currentsubscription", "Plan Name"],
+        ["expirydateofsubscirption", "Validity"],
+        ["submitted_properties", "Properties Submitted"],
+        ["accepted_properties", "Accepted Properties"],
+        ["progress_properties", "Properties Inprogress"],
+        ["completed_properties", "Completed Properties"],
         ["status", "Status"],
       ];
       getTheDownloadView(
-        "appraiserCompany_Datails",
+        "brokerage_Details",
         props.properties,
         "Mortgage Brokerage",
         headers
@@ -156,40 +159,59 @@ function SmartTable(props) {
     return numericValue;
   };
 
+  const sortableColumns = [
+    // "expiryDateOfSubscirption",
+    // "quote_required_by",
+    // "estimated_value",
+    "brokerage",
+    "status",
+    "currentSubscription",
+    "sno",
+  ]; // Add allowed columns
+
   const sortData = (cell) => {
-    // Clone props.properties to avoid mutating the original data
+    // Allow sorting only if the column is in the sortable list
+    if (!sortableColumns.includes(cell)) {
+      return; // Do nothing if the column is not sortable
+    }
+
     let tempData = [...props.properties];
 
-    // Toggle sorting order for the current cell
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
+    // Toggle sorting order for the current column
+    setSortDesc((prevSortDesc) => ({
+      ...prevSortDesc,
+      [cell]: !prevSortDesc[cell],
+    }));
 
-    // Perform sorting
+    const newSortDesc = !sortDesc[cell];
+
+    // Define a function to extract sortable values
+    const getSortableValue = (item) => {
+      if (cell === "date" || cell === "quote_required_by") {
+        return new Date(extractTextContentFromDate(item[cell])).getTime() || 0;
+      }
+      if (cell === "estimated_value") {
+        return extractNumericValue(item[cell]) || 0;
+      }
+      // For text fields like appraiser company
+      return (extractTextContent(item[cell]) || "").trim().toLowerCase();
+    };
+
+    // Sort the data
     tempData.sort((a, b) => {
-      // Extract text content from cell value (React element or other type)
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
+      let valueA = getSortableValue(a);
+      let valueB = getSortableValue(b);
 
-      if (String(cell) === "date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "estimated_value") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-
-      // Perform comparison based on the sorting order
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
+      return newSortDesc
+        ? valueB > valueA
+          ? 1
+          : -1
+        : valueA > valueB
+        ? 1
+        : -1;
     });
 
-    // Update state with the new sorting order and sorted data
-    setSortDesc(newSortDesc);
+    // Update state with sorted data
     setData(tempData);
   };
 

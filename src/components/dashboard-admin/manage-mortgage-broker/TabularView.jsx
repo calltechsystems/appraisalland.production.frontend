@@ -17,9 +17,7 @@ function SmartTable(props) {
   const [sortDesc, setSortDesc] = useState({});
   const [tableWidth, setTableWidth] = useState(1000);
   const [data, setData] = useState(props.data);
-
   const componentRef = useRef();
-
   const [search, setSearch] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(props.rowsPerPage ?? 10);
   const [rowsPerPageOptions] = useState(
@@ -27,7 +25,6 @@ function SmartTable(props) {
   );
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(props.total ?? 0);
-
   const fetchData = useCallback(
     async (queryString) => {
       setLoading(true);
@@ -62,28 +59,31 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-const handlePrint = async () => {
-      const headers = [
-        ["sno", "S.no"],
-        ["broker", "Broker Name"],
-        ["bids", "No of Bids"],
-        ["pending_bids", "Pending Bids"],
-        ["completed_bids", "Completed Bids"],
-        ["status", "Status"],
-      ];
-      getTheDownloadView(
-        "appraiserCompany_Datails",
-        props.properties,
-        "Mortgage Broker",
-        headers
-      )
-        .then((message) => {
-          toast.success(message);
-        })
-        .catch((error) => {
-          toast.error(error.message);
-        });
-    };
+  const handlePrint = async () => {
+    const headers = [
+      ["sno", "S. No"],
+      ["broker", "Broker Name"],
+      ["currentsubscription", "Plan Name"],
+      ["expirydateofsubscirption", "Validity"],
+      ["submitted_properties", "Properties Submitted"],
+      ["accepted_properties", "Accepted Properties"],
+      ["progress_properties", "Properties Inprogress"],
+      ["completed_properties", "Completed Properties"],
+      ["status", "Status"],
+    ];
+    getTheDownloadView(
+      "broker_Details",
+      props.properties,
+      "Mortgage Broker",
+      headers
+    )
+      .then((message) => {
+        toast.success(message);
+      })
+      .catch((error) => {
+        toast.error(error.message);
+      });
+  };
 
   const tableWidthFunc = useCallback(() => {
     let tempTableWidth = 0;
@@ -155,40 +155,59 @@ const handlePrint = async () => {
     return numericValue;
   };
 
+  const sortableColumns = [
+    // "expiryDateOfSubscirption",
+    // "quote_required_by",
+    // "estimated_value",
+    "broker",
+    "status",
+    "currentSubscription",
+    "sno",
+  ]; // Add allowed columns
+
   const sortData = (cell) => {
-    // Clone props.properties to avoid mutating the original data
+    // Allow sorting only if the column is in the sortable list
+    if (!sortableColumns.includes(cell)) {
+      return; // Do nothing if the column is not sortable
+    }
+
     let tempData = [...props.properties];
 
-    // Toggle sorting order for the current cell
-    const newSortDesc = { ...sortDesc };
-    newSortDesc[cell] = !newSortDesc[cell];
+    // Toggle sorting order for the current column
+    setSortDesc((prevSortDesc) => ({
+      ...prevSortDesc,
+      [cell]: !prevSortDesc[cell],
+    }));
 
-    // Perform sorting
+    const newSortDesc = !sortDesc[cell];
+
+    // Define a function to extract sortable values
+    const getSortableValue = (item) => {
+      if (cell === "date" || cell === "quote_required_by") {
+        return new Date(extractTextContentFromDate(item[cell])).getTime() || 0;
+      }
+      if (cell === "estimated_value") {
+        return extractNumericValue(item[cell]) || 0;
+      }
+      // For text fields like appraiser company
+      return (extractTextContent(item[cell]) || "").trim().toLowerCase();
+    };
+
+    // Sort the data
     tempData.sort((a, b) => {
-      // Extract text content from cell value (React element or other type)
-      let valueA = extractTextContent(a[cell]);
-      let valueB = extractTextContent(b[cell]);
+      let valueA = getSortableValue(a);
+      let valueB = getSortableValue(b);
 
-      if (String(cell) === "date" || String(cell) === "quote_required_by") {
-        valueA = extractTextContentFromDate(a[cell]);
-        valueB = extractTextContentFromDate(b[cell]);
-      }
-
-      if (String(cell) === "estimated_value") {
-        valueA = extractNumericValue(a[cell]);
-        valueB = extractNumericValue(b[cell]);
-      }
-
-      // Perform comparison based on the sorting order
-      if (newSortDesc[cell]) {
-        return valueA < valueB ? 1 : -1;
-      } else {
-        return valueA > valueB ? 1 : -1;
-      }
+      return newSortDesc
+        ? valueB > valueA
+          ? 1
+          : -1
+        : valueA > valueB
+        ? 1
+        : -1;
     });
 
-    // Update state with the new sorting order and sorted data
-    setSortDesc(newSortDesc);
+    // Update state with sorted data
     setData(tempData);
   };
 

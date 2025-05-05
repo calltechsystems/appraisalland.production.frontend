@@ -2,8 +2,6 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenuAdmin";
 import PackageData from "./PackageData";
-import { useRouter } from "next/router";
-import SearchUser from "./SearchUser";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -227,7 +225,7 @@ const Index = () => {
           .includes(String(searchInput).toLowerCase()) ||
         String(appraiser.lastName)
           .toLowerCase()
-          .includes(String(searchInput).toLowerCase()) 
+          .includes(String(searchInput).toLowerCase())
       ) {
         filteredData.push(appraiser);
       }
@@ -252,38 +250,38 @@ const Index = () => {
   }, [filterQuery]);
 
   const handleStatusUpdateHandler = () => {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      setDisable(true);
-      const payload = {
-        id: selectedUser.userId,
-        IsActive: !selectedUser.isActive,
-      };
+    const userData = JSON.parse(localStorage.getItem("user"));
+    setDisable(true);
+    const payload = {
+      id: selectedUser.userId,
+      IsActive: !selectedUser.isActive,
+    };
 
-      // setIsLoading(true);
-      toast.loading("Updating the status");
-      axios
-        .put("/api/updateUserActiveStatus", payload, {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          toast.dismiss();
-          // setIsLoading(false);
-          toast.success("Successfully Updated!!");
-          window.location.reload();
-        })
-        .catch((err) => {
-          toast.dismiss();
-          // setIsLoading(false);
-          toast.error(err);
-        }).
-        finally(() => {
-          setOpenEditModal(false)
-        })
+    // setIsLoading(true);
+    toast.loading("Updating the status");
+    axios
+      .put("/api/updateUserActiveStatus", payload, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.success("Successfully Updated!!");
+        window.location.reload();
+      })
+      .catch((err) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.error(err);
+      })
+      .finally(() => {
+        setOpenEditModal(false);
+      });
 
-      setSelectedUser(-1);
+    setSelectedUser(-1);
   };
 
   const closeStatusUpdateHandler = () => {
@@ -566,7 +564,9 @@ const Index = () => {
                           </tr>
                           <tr>
                             <td className="table-header">
-                              <span className="text-start">Registered UserId</span>
+                              <span className="text-start">
+                                Registered UserId
+                              </span>
                             </td>
                             <td className="table-value">{broker.emailId}</td>
                           </tr>
@@ -586,7 +586,7 @@ const Index = () => {
                               {broker.cellNumber ? broker.cellNumber : "N.A."}
                             </td>
                           </tr>
-                          
+
                           <tr>
                             <td className="table-header">
                               <span className="text-start">Designation</span>

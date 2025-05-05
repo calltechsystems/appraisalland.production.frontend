@@ -209,7 +209,7 @@ export default function Exemple({
 
   const getBidOfProperty = (orderId) => {
     let Bid = {};
-    allBids.map((bid, index) => {
+    allBids?.map((bid, index) => {
       if (String(bid.orderId) === String(orderId)) {
         Bid = bid;
       }
@@ -317,7 +317,7 @@ export default function Exemple({
 
   useEffect(() => {
     const getData = () => {
-      properties.map((prop, index) => {
+      properties?.map((prop, index) => {
         const brokerInfo = prop?.broker;
         prop?.properties?.$values.forEach((element) => {
           const property = element?.property;
@@ -352,7 +352,7 @@ export default function Exemple({
                   </span>
                 ) : isStatus === 1 ? (
                   <span className="btn bg-info w-100 text-light">
-                    Quote Provided
+                    Quoted
                   </span>
                 ) : (
                   <span className="btn bg-info w-100 text-light">
@@ -516,17 +516,22 @@ export default function Exemple({
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
+    let tempBids = [];
+
     axios
-      .get("/api/getAllSubBrokerByCompany", {
+      .get("/api/getSubBrokerProperties", {
         headers: {
           Authorization: `Bearer ${data?.token}`,
           "Content-Type": "application/json",
+        },
+        params: {
+          noOfDays: 1000, // Optional if default is set in API handler
         },
       })
       .then((res) => {
         toast.dismiss();
         setDataFetched(true);
-        const temp = res.data.data.result.$values;
+        const temp = res.data.data.result?.$values || {};
         axios
           .get("/api/getAllBids", {
             headers: {
@@ -534,7 +539,7 @@ export default function Exemple({
             },
           })
           .then((res) => {
-            tempBids = res.data.data.$values;
+            tempBids = res.data.data?.$values || {};
             setProperties(temp);
             setBids(tempBids);
           })
@@ -545,16 +550,13 @@ export default function Exemple({
       })
       .catch((err) => {
         toast.dismiss();
-        toast.error(err?.response?.data?.error);
+        toast.error(err?.response?.data?.error || "Failed to fetch properties");
       });
 
     setSearchInput("");
     setFilterQuery("All");
     setProperties([]);
     setBids([]);
-
-    let tempBids = [];
-
     setRefresh(false);
   }, [refresh]);
   return (

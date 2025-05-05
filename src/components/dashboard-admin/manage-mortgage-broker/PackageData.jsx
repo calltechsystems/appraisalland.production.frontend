@@ -24,7 +24,7 @@ const SearchData = ({
     {
       id: "sno",
       numeric: false,
-      label: "S.no",
+      label: "S. No",
       width: 80,
     },
 
@@ -35,7 +35,7 @@ const SearchData = ({
       width: 200,
     },
     {
-      id: "currentSubscription",
+      id: "currentsubscription",
       numeric: false,
       label: "Plan Name",
       width: 150,
@@ -46,26 +46,9 @@ const SearchData = ({
       label: "Transaction History",
       width: 180,
     },
-    // {
-    //   id: "firstname",
-    //   numeric: false,
-    //   label: "First Name",
-    //   width: 160,
-    // },
-    // {
-    //   id: "lastname",
-    //   numeric: false,
-    //   label: "Last Name",
-    //   width: 160,
-    // },
-    // {
-    //   id: "registeredUserId",
-    //   numeric: false,
-    //   label: "Registered User Id",
-    //   width: 220,
-    // },
+   
     {
-      id: "expiryDateOfSubscirption",
+      id: "expirydateofsubscirption",
       numeric: false,
       label: "Validity",
       width: 150,
@@ -187,8 +170,8 @@ const SearchData = ({
           firstname: row.firstName ? row.firstName : "N.A.",
           lastname: row.lastName ? row.lastName : "N.A.",
           registeredUserId: row.emailId,
-          currentSubscription: planName,
-          expiryDateOfSubscirption: expiryDate,
+          currentsubscription: planName,
+          expirydateofsubscirption: expiryDate,
           submitted_properties: allProperties,
           accepted_properties: acceptedProperties,
           progress_properties: pendingProperties,

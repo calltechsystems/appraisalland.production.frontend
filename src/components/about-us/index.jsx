@@ -106,7 +106,6 @@ const Index = () => {
 
         <div className="container">
           <div className="row">
-            {/* <WhyChoose /> */}
             <div className="col-lg-12 col-xl-12">
               <div className="terms_condition_grid">
                 <div className="grids mb30">

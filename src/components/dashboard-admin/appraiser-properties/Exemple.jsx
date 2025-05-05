@@ -307,182 +307,179 @@ export default function Exemple({
     const getData = () => {
       properties.map((prop, index) => {
         const appraiserInfo = prop?.appraiser;
-        prop?.properties?.$values.forEach((element) => {
-          const property = element?.property;
-          const allBids = getUniqueHighestStatusBids(prop) || [];
-          allBids.forEach((bid) => {
-            const isBidded = bid.bid;
-            const isHold = property.isOnHold;
-            const isCancel = property.isOnCancel;
-            const isStatus = getPropertyStatusHandler(property, isBidded);
-            const isCorrect = isAccordingToStatus(isStatus, property);
-            const isAccordingToSelectedName =
-              isLikeUserSearchedType(appraiserInfo);
-            if (!property.isArchive && isAccordingToSelectedName && isCorrect) {
-              const updatedRow = {
-                order_id: property.orderId,
-                sub_date: formatDate(property.addedDatetime),
-                quote_required_by: property.quoteRequiredDate
-                  ? formatDateNew(property.quoteRequiredDate)
-                  : formatDateNew(property.addedDatetime),
-                status:
-                  isHold || isCancel ? (
-                    <span className="btn bg-danger text-light w-100">
-                      {isHold ? "On Hold" : "Cancelled"}
-                    </span>
-                  ) : isStatus === 3 ? (
-                    <span className="btn btn-completed w-100">Completed</span>
-                  ) : isStatus === 2 ? (
-                    <span className="btn bg-success w-100 text-light">
-                      Accepted
-                    </span>
-                  ) : isStatus === 0 ? (
-                    <span className="btn bg-primary w-100 text-light">
-                      In Progress
-                    </span>
-                  ) : isStatus === 1 ? (
-                    <span className="btn bg-info w-100 text-light">
-                      Quote Provided
-                    </span>
-                  ) : (
-                    <span className="btn bg-info w-100 text-light">
-                      Cancelled
-                    </span>
-                  ),
-                appraisal_status:
-                  isHold || isCancel ? (
-                    <button className="btn btn-warning w-100">
-                      {isHold ? "N.A." : "N.A."}
-                    </button>
-                  ) : isBidded.orderStatus !== 1 &&
-                    isBidded.orderStatus !== null &&
-                    isBidded.orderStatus !== undefined ? (
-                    <div className="hover-text">
-                      <div
-                        className="tooltip-text"
-                        style={{
-                          marginTop: "-60px",
-                          marginLeft: "-100px",
-                        }}
-                      >
-                        <ul>
-                          <li style={{ fontSize: "15px" }}>
-                            {getOrderValue(isBidded.orderStatus)}
-                          </li>
-                        </ul>
-                      </div>
-                      <span className="btn btn-status w-100">
-                        Current Status
-                        <span className="m-1">
-                          <i class="fa fa-info-circle" aria-hidden="true"></i>
-                        </span>
-                      </span>
-                    </div>
-                  ) : isBidded.$id &&
-                    isBidded.status === 1 &&
-                    isBidded.orderStatus === 1 &&
-                    isBidded.orderStatus !== undefined ? (
-                    <div className="hover-text">
-                      <div
-                        className="tooltip-text"
-                        style={{
-                          marginTop: "-60px",
-                          marginLeft: "-100px",
-                        }}
-                      >
-                        <ul>
-                          <li style={{ fontSize: "15px" }}>
-                            {getOrderValue(isBidded.orderStatus)} -
-                            {formatDate(isBidded.statusDate)}
-                          </li>
-                        </ul>
-                      </div>
-                      <span className="btn btn-status w-100">
-                        Current Status
-                        <span className="m-1">
-                          <i class="fa fa-info-circle" aria-hidden="true"></i>
-                        </span>
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="btn btn-warning w-100">N.A.</span>
-                  ),
-                address: `${property.streetNumber} ${property.streetName}, ${property.city}, ${property.province}, ${property.zipCode}`,
-                remark: isBidded.remark ? isBidded.remark : "N.A.",
-                remarkButton: (
-                  <li
-                    className="list-inline-item"
-                    data-toggle="tooltip"
-                    data-placement="top"
-                    title="View Remark"
-                  >
+        prop?.bids?.$values.forEach((bid) => {
+          const property = bid?.properties?.$values[0];
+          const isBidded = bid.bid;
+          const isHold = property.isOnHold;
+          const isCancel = property.isOnCancel;
+          const isStatus = getPropertyStatusHandler(property, isBidded);
+          const isCorrect = isAccordingToStatus(isStatus, property);
+          const isAccordingToSelectedName =
+            isLikeUserSearchedType(appraiserInfo);
+          if (!property.isArchive && isAccordingToSelectedName && isCorrect) {
+            const updatedRow = {
+              order_id: property.orderId,
+              sub_date: formatDate(property.addedDatetime),
+              quote_required_by: property.quoteRequiredDate
+                ? formatDateNew(property.quoteRequiredDate)
+                : formatDateNew(property.addedDatetime),
+              status:
+                isHold || isCancel ? (
+                  <span className="btn bg-danger text-light w-100">
+                    {isHold ? "On Hold" : "Cancelled"}
+                  </span>
+                ) : isStatus === 3 ? (
+                  <span className="btn btn-completed w-100">Completed</span>
+                ) : isStatus === 2 ? (
+                  <span className="btn bg-success w-100 text-light">
+                    Accepted
+                  </span>
+                ) : isStatus === 0 ? (
+                  <span className="btn bg-primary w-100 text-light">
+                    In Progress
+                  </span>
+                ) : isStatus === 1 ? (
+                  <span className="btn bg-info w-100 text-light">
+                    Quote Provided
+                  </span>
+                ) : (
+                  <span className="btn bg-info w-100 text-light">
+                    Cancelled
+                  </span>
+                ),
+              appraisal_status:
+                isHold || isCancel ? (
+                  <button className="btn btn-warning w-100">
+                    {isHold ? "N.A." : "N.A."}
+                  </button>
+                ) : isBidded.orderStatus !== 1 &&
+                  isBidded.orderStatus !== null &&
+                  isBidded.orderStatus !== undefined ? (
+                  <div className="hover-text">
                     <div
-                      className="w-100"
-                      onClick={() => openRemarkModal(property, isBidded)}
-                    >
-                      <button
-                        href="#"
-                        className="btn btn-color"
-                        style={{ width: "120px" }}
-                      >
-                        <Link href="#">
-                          <span className="text-light"> View</span>
-                        </Link>
-                      </button>
-                    </div>
-                  </li>
-                ),
-                type_of_building: property.typeOfBuilding,
-                amount: `$ ${addCommasToNumber(property.estimatedValue)}`,
-                purpose: property.purpose,
-                type_of_appraisal: property.typeOfAppraisal,
-                lender_information: property.lenderInformation
-                  ? property.lenderInformation
-                  : "N.A.",
-                urgency: property.urgency === 0 ? "Rush" : "Regular",
-                appraiser: (
-                  <a href="#">
-                    <button
-                      className="list-inline-item"
+                      className="tooltip-text"
                       style={{
-                        border: "0px",
-                        color: "#2e008b",
-                        textDecoration: "underline",
-                        backgroundColor: "transparent",
+                        marginTop: "-60px",
+                        marginLeft: "-100px",
                       }}
-                      onClick={() => openAppraiserViewModal(appraiserInfo)}
                     >
-                      {appraiserInfo?.firstName} {appraiserInfo.lastName}
+                      <ul>
+                        <li style={{ fontSize: "15px" }}>
+                          {getOrderValue(isBidded.orderStatus)}
+                        </li>
+                      </ul>
+                    </div>
+                    <span className="btn btn-status w-100">
+                      Current Status
+                      <span className="m-1">
+                        <i class="fa fa-info-circle" aria-hidden="true"></i>
+                      </span>
+                    </span>
+                  </div>
+                ) : isBidded.$id &&
+                  isBidded.status === 1 &&
+                  isBidded.orderStatus === 1 &&
+                  isBidded.orderStatus !== undefined ? (
+                  <div className="hover-text">
+                    <div
+                      className="tooltip-text"
+                      style={{
+                        marginTop: "-60px",
+                        marginLeft: "-100px",
+                      }}
+                    >
+                      <ul>
+                        <li style={{ fontSize: "15px" }}>
+                          {getOrderValue(isBidded.orderStatus)} -
+                          {formatDate(isBidded.statusDate)}
+                        </li>
+                      </ul>
+                    </div>
+                    <span className="btn btn-status w-100">
+                      Current Status
+                      <span className="m-1">
+                        <i class="fa fa-info-circle" aria-hidden="true"></i>
+                      </span>
+                    </span>
+                  </div>
+                ) : (
+                  <span className="btn btn-warning w-100">N.A.</span>
+                ),
+              address: `${property.streetNumber} ${property.streetName}, ${property.city}, ${property.province}, ${property.zipCode}`,
+              remark: isBidded.remark ? isBidded.remark : "N.A.",
+              remarkButton: (
+                <li
+                  className="list-inline-item"
+                  data-toggle="tooltip"
+                  data-placement="top"
+                  title="View Remark"
+                >
+                  <div
+                    className="w-100"
+                    onClick={() => openRemarkModal(property, isBidded)}
+                  >
+                    <button
+                      href="#"
+                      className="btn btn-color"
+                      style={{ width: "120px" }}
+                    >
+                      <Link href="#">
+                        <span className="text-light"> View</span>
+                      </Link>
                     </button>
-                  </a>
-                ),
-                actions_01: (
-                  <ul>
-                    {isBidded.status >= 0 ? (
-                      <li title="Quotes">
-                        <Link
-                          className="btn btn-color-table"
-                          href={`/admin-property-quotes/${property.orderId}`}
-                        >
-                          <span className="flaticon-invoice"></span>
-                        </Link>
-                      </li>
-                    ) : (
-                      <li title="No Quotes Found">
-                        <button
-                          className="btn btn-color-table cursor-not-allowed opacity-50"
-                          disabled
-                        >
-                          <span className="flaticon-invoice"></span>
-                        </button>
-                      </li>
-                    )}
-                  </ul>
-                ),
-              };
-              tempData.push(updatedRow);
-            }
-          });
+                  </div>
+                </li>
+              ),
+              type_of_building: property.typeOfBuilding,
+              amount: `$ ${addCommasToNumber(property.estimatedValue)}`,
+              purpose: property.purpose,
+              type_of_appraisal: property.typeOfAppraisal,
+              lender_information: property.lenderInformation
+                ? property.lenderInformation
+                : "N.A.",
+              urgency: property.urgency === 0 ? "Rush" : "Regular",
+              appraiser: (
+                <a href="#">
+                  <button
+                    className="list-inline-item"
+                    style={{
+                      border: "0px",
+                      color: "#2e008b",
+                      textDecoration: "underline",
+                      backgroundColor: "transparent",
+                    }}
+                    onClick={() => openAppraiserViewModal(appraiserInfo)}
+                  >
+                    {appraiserInfo?.firstName} {appraiserInfo.lastName}
+                  </button>
+                </a>
+              ),
+              actions_01: (
+                <ul>
+                  {isBidded.status >= 0 ? (
+                    <li title="Quotes">
+                      <Link
+                        className="btn btn-color-table"
+                        href={`/admin-property-quotes/${property.orderId}`}
+                      >
+                        <span className="flaticon-invoice"></span>
+                      </Link>
+                    </li>
+                  ) : (
+                    <li title="No Quotes Found">
+                      <button
+                        className="btn btn-color-table cursor-not-allowed opacity-50"
+                        disabled
+                      >
+                        <span className="flaticon-invoice"></span>
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              ),
+            };
+            tempData.push(updatedRow);
+          }
         });
       });
       setIsEdited(false);
@@ -507,17 +504,20 @@ export default function Exemple({
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
     axios
-      .get("/api/getAllAppraiserProperties", {
+      .get("/api/getAppraiserProperties", {
         headers: {
           Authorization: `Bearer ${data?.token}`,
           "Content-Type": "application/json",
+        },
+        params: {
+          noOfDays: 1000, // Optional if default is set in API handler
         },
       })
       .then((res) => {
         toast.dismiss();
         setDataFetched(true);
-        const temp = res.data.data.$values;
-        setProperties(temp);
+        const allPropertiesData = res.data.data.$values || [];
+        setProperties(allPropertiesData);
       })
       .catch((err) => {
         toast.dismiss();

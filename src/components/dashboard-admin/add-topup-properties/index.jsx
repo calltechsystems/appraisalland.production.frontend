@@ -2,68 +2,56 @@ import Header from "../../common/header/dashboard/HeaderAdmin";
 import SidebarMenu from "../../common/header/dashboard/SidebarMenuAdmin";
 import MobileMenu from "../../common/header/MobileMenuAdmin";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import axios from "axios";
 import { Router, useRouter } from "next/router";
-import DetailedInfo from "./DetailedInfo";
 import AddTopUp from "./AddTopUp";
 import Image from "next/image";
 import Link from "next/link";
-// import Modal_01 from "./YearlyModal";
 
 const Index = () => {
-  const [data, setData] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [dataFetched, setDataFetched] = useState(false);
-  const [planData, setPlanData] = useState([]);
-  const [editPlan, setEditPlan] = useState({});
+  // const [data, setData] = useState([]);
+  // const [modalOpen, setModalOpen] = useState(false);
+  // const [dataFetched, setDataFetched] = useState(false);
+  // const [planData, setPlanData] = useState([]);
+  // const [editPlan, setEditPlan] = useState({});
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get("/api/getAllPlans", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const tempPlans = res.data.data.$values;
-        let selectivePlansAccordingToUser = [];
-        tempPlans.map((plan, index) => {
-          if (String(plan.userType) === "4") {
-            selectivePlansAccordingToUser.push(plan);
-          }
-        });
-        setPlanData(selectivePlansAccordingToUser);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const res = await axios.get("/api/getAllPlans", {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       });
+  //       const tempPlans = res.data.data.$values;
+  //       let selectivePlansAccordingToUser = [];
+  //       tempPlans.map((plan, index) => {
+  //         if (String(plan.userType) === "4") {
+  //           selectivePlansAccordingToUser.push(plan);
+  //         }
+  //       });
+  //       setPlanData(selectivePlansAccordingToUser);
+  //     } catch (err) {
+  //       toast.error(err.message);
+  //     }
+  //   };
 
-    if (typeof window !== "undefined") {
-      fetchData();
-    }
-  }, [Router]);
-  const openModal = () => {
-    setModalOpen(true);
-  };
+  //   if (typeof window !== "undefined") {
+  //     fetchData();
+  //   }
+  // }, [Router]);
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
-  // const [modalOpen_01, setModalOpen_01] = useState(false);
-
-  // const openModal_01 = () => {
-  //   setModalOpen_01(true);
+  // const openModal = () => {
+  //   setModalOpen(true);
   // };
 
-  // const closeModal_01 = () => {
-  //   setModalOpen_01(false);
+  // const closeModal = () => {
+  //   setModalOpen(false);
   // };
+
   return (
     <>
       {/* <!-- Main Header Nav --> */}

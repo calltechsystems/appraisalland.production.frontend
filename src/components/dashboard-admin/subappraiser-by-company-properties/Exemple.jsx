@@ -306,8 +306,8 @@ export default function Exemple({
     const getData = () => {
       properties?.map((prop, index) => {
         const appraiserInfo = prop?.appraiser;
-        prop?.properties?.$values.forEach((element) => {
-          const property = element?.property;
+        prop?.bids?.$values.forEach((bid) => {
+          const property = bid?.properties?.$values[0];
           const allBids = getUniqueHighestStatusBids(prop) || [];
           allBids.forEach((bid) => {
             const isBidded = bid.bid;
@@ -498,11 +498,15 @@ export default function Exemple({
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("user"));
+    let tempBids = [];
     axios
-      .get("/api/getAllAppraiserProperties", {
+      .get("/api/getSubAppraiserProperties", {
         headers: {
           Authorization: `Bearer ${data?.token}`,
           "Content-Type": "application/json",
+        },
+        params: {
+          noOfDays: 1000, // Optional if default is set in API handler
         },
       })
       .then((res) => {
@@ -519,9 +523,6 @@ export default function Exemple({
     setSearchInput("");
     setFilterQuery("All");
     setProperties([]);
-
-    let tempBids = [];
-
     setRefresh(false);
   }, [refresh]);
   return (
