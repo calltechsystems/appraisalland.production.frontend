@@ -140,30 +140,30 @@ const Index = () => {
                 tempBids = res.data.data.$values;
 
                 setBids(tempBids);
-                axios
-                  .get("/api/appraiserWishlistedProperties", {
-                    headers: {
-                      Authorization: `Bearer ${data?.token}`,
-                      "Content-Type": "application/json",
-                    },
-                  })
-                  .then((res) => {
-                    const tempData = res.data.data.$values;
-                    const responseData = tempData.filter((prop, index) => {
-                      if (String(prop.userId) === String(data.userId)) {
-                        return true;
-                      } else {
-                        return false;
-                      }
-                    });
-                    const tempId = responseData;
-                    setWishlist(responseData);
-                    setProperties(prop);
-                  })
-                  .catch((err) => {
-                    toast.error(err?.response);
-                    // setErrorMessage(err?.response);
-                  });
+                // axios
+                //   .get("/api/appraiserWishlistedProperties", {
+                //     headers: {
+                //       Authorization: `Bearer ${data?.token}`,
+                //       "Content-Type": "application/json",
+                //     },
+                //   })
+                //   .then((res) => {
+                const tempData = res.data.data.$values;
+                const responseData = tempData.filter((prop, index) => {
+                  if (String(prop.userId) === String(data.userId)) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                });
+                const tempId = responseData;
+                setWishlist(responseData);
+                setProperties(prop);
+                // })
+                // .catch((err) => {
+                //   toast.error(err?.response);
+                //   // setErrorMessage(err?.response);
+                // });
               })
               .catch((err) => {});
           })
@@ -567,6 +567,14 @@ const Index = () => {
                               <span className="text-start">
                                 Registered UserId
                               </span>
+                            </td>
+                            <td className="table-value">
+                              {broker.registerEmailId}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-header">
+                              <span className="text-start">Email Id</span>
                             </td>
                             <td className="table-value">{broker.emailId}</td>
                           </tr>

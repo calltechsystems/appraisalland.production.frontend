@@ -4,7 +4,7 @@ import SVGArrowDown from "./icons/SVGArrowDown";
 import SVGArrowUp from "./icons/SVGArrowUp";
 import SVGChevronLeft from "./icons/SVGChevronLeft";
 import SVGChevronRight from "./icons/SVGChevronRight";
-import { FaDownload, FaRedo } from "react-icons/fa";
+import { FaDownload, FaInfoCircle, FaRedo } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import SearchUser from "./SearchUser";
 import toast from "react-hot-toast";
@@ -62,32 +62,31 @@ function SmartTable(props) {
     }
   }, [props.dataFetched, props.properties]);
 
-    const handlePrint = async () => {
-      const headers = [
-        ["sno", "S. No"],
-        ["brokerage", "Brokerage Name"],
-        ["currentsubscription", "Plan Name"],
-        ["expirydateofsubscirption", "Validity"],
-        ["submitted_properties", "Properties Submitted"],
-        ["accepted_properties", "Accepted Properties"],
-        ["progress_properties", "Properties Inprogress"],
-        ["completed_properties", "Completed Properties"],
-        ["status", "Status"],
-      ];
-      getTheDownloadView(
-        "brokerage_Details",
-        props.properties,
-        "Mortgage Brokerage",
-        headers
-      )
-        .then((message) => {
-          toast.success(message);
-        })
-        .catch((error) => {
-          toast.error(error.message);
-        });
-    };
-
+  const handlePrint = async () => {
+    const headers = [
+      ["sno", "S. No"],
+      ["brokerage", "Brokerage Name"],
+      ["currentsubscription", "Plan Name"],
+      ["expirydateofsubscirption", "Validity"],
+      ["submitted_properties", "Properties Submitted"],
+      ["accepted_properties", "Accepted Properties"],
+      ["progress_properties", "Properties Inprogress"],
+      ["completed_properties", "Completed Properties"],
+      ["status", "Status"],
+    ];
+    getTheDownloadView(
+      "brokerage_Details",
+      props.properties,
+      "Mortgage Brokerage",
+      headers
+    )
+      .then((message) => {
+        toast.success(message);
+      })
+      .catch((error) => {
+        toast.error(error.message);
+      });
+  };
 
   const tableWidthFunc = useCallback(() => {
     let tempTableWidth = 0;
@@ -165,7 +164,7 @@ function SmartTable(props) {
     // "estimated_value",
     "brokerage",
     "status",
-    "currentSubscription",
+    "currentsubscription",
     "sno",
   ]; // Add allowed columns
 
@@ -260,38 +259,53 @@ function SmartTable(props) {
                   <thead className="smartTable-thead">
                     <tr>
                       {props?.headCells.map((headCell) => {
+                        const isSortable =
+                          sortableColumns.includes(headCell.id) &&
+                          headCell.id !== "address";
+                        const isSorted = sortDesc[headCell.id] !== undefined;
+
                         return (
                           <th
                             id={headCell.id}
                             key={headCell.id}
                             scope="col"
                             style={{
-                              width: headCell.width,
+                              // width: headCell.width,
                               backgroundColor: "#2e008b",
-                              color: "white" ?? "auto",
+                              color: "white",
                             }}
-                            className={
-                              headCell.sortable !== false
-                                ? "smartTable-pointer"
-                                : ""
-                            }
-                            onClick={() =>
-                              headCell.sortable !== false &&
-                              headCell.id !== "address"
-                                ? sortData(headCell.id)
-                                : {}
-                            }
+                            className={isSortable ? "smartTable-pointer" : ""}
+                            onClick={() => isSortable && sortData(headCell.id)}
                           >
-                            {headCell.label}
-                            {sortDesc[headCell.id] ? (
-                              <div></div>
-                            ) : // <SVGArrowDown />
-                            sortDesc[headCell.id] === undefined ? (
-                              ""
-                            ) : (
-                              <div></div>
-                              // <SVGArrowUp />
-                            )}
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center", // Center horizontally
+                                gap: "6px",
+                                minHeight: "24px", // optional: to keep row height consistent
+                              }}
+                            >
+                              {headCell.label}
+
+                              {/* Info icon only for sortable columns */}
+                              {isSortable && (
+                                <span
+                                  title="This column is sortable. Click to sort ascending/descending."
+                                  style={{ cursor: "", fontSize: "14px" }}
+                                >
+                                  <FaInfoCircle />
+                                </span>
+                              )}
+
+                              {/* Sort direction icon */}
+                              {isSorted &&
+                                (sortDesc[headCell.id] ? (
+                                  <span>🔽</span> // Replace with <SVGArrowDown /> if needed
+                                ) : (
+                                  <span>🔼</span> // Replace with <SVGArrowUp /> if needed
+                                ))}
+                            </span>
                           </th>
                         );
                       })}

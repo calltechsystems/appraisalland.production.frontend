@@ -1006,7 +1006,7 @@ const Index = () => {
                               <div className="row">
                                 <div className="col-lg-12 text-center">
                                   <h1 className=" text-color mt-1">
-                                    Brokerage Details
+                                    Mortgage Brokerage Details
                                   </h1>
                                 </div>
                               </div>
@@ -1057,7 +1057,7 @@ const Index = () => {
                                     <tr>
                                       <td className="table-header">
                                         <span className="text-start">
-                                          Brokerage Name
+                                          Mortgage Brokerage Name
                                         </span>
                                       </td>
                                       <td className="table-value">

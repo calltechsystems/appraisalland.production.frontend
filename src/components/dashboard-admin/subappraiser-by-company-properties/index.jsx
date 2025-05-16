@@ -214,7 +214,7 @@ const Index = () => {
       }
 
       const filteredProperties = propertys.filter((prop) => {
-        return prop.properties.$values.some((element) => {
+        return prop.properties?.$values.some((element) => {
           const property = element.property;
           const searchTerm = searchInput.toLowerCase();
 
@@ -229,6 +229,48 @@ const Index = () => {
             );
         });
       });
+
+      return filteredProperties;
+    };
+    const filteredData = filterProperties(properties, searchInput);
+    setFilterProperty(filteredData);
+  }, [searchInput]);
+
+    useEffect(() => {
+    const filterProperties = (propertys, searchInput) => {
+      if (searchInput === "") {
+        return propertys;
+      }
+
+      const filteredProperties = propertys
+        .map((prop) => {
+          const matchingValues = (prop.properties?.$values || []).filter(
+            (element) => {
+              const property = element.property;
+
+              return (
+                String(property?.orderId) === String(searchInput) ||
+                String(property?.orderId).toLowerCase().includes(searchInput) ||
+                String(property?.zipCode).toLowerCase().includes(searchInput) ||
+                String(property?.city).toLowerCase().includes(searchInput) ||
+                String(property?.province).toLowerCase().includes(searchInput)
+              );
+            }
+          );
+
+          if (matchingValues.length > 0) {
+            return {
+              ...prop,
+              properties: {
+                ...prop.properties,
+                $values: matchingValues,
+              },
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
 
       return filteredProperties;
     };
@@ -339,48 +381,6 @@ const Index = () => {
     const formattedDate = new Date(dateString).toLocaleString("en-US", options);
     return formattedDate;
   };
-
-  useEffect(() => {
-    const filterProperties = (propertys, searchInput) => {
-      if (searchInput === "") {
-        return propertys;
-      }
-
-      const filteredProperties = propertys
-        .map((prop) => {
-          const matchingValues = (prop.properties?.$values || []).filter(
-            (element) => {
-              const property = element.property;
-
-              return (
-                String(property?.orderId) === String(searchInput) ||
-                String(property?.orderId).toLowerCase().includes(searchInput) ||
-                String(property?.zipCode).toLowerCase().includes(searchInput) ||
-                String(property?.city).toLowerCase().includes(searchInput) ||
-                String(property?.province).toLowerCase().includes(searchInput)
-              );
-            }
-          );
-
-          if (matchingValues.length > 0) {
-            return {
-              ...prop,
-              properties: {
-                ...prop.properties,
-                $values: matchingValues,
-              },
-            };
-          }
-
-          return null;
-        })
-        .filter(Boolean);
-
-      return filteredProperties;
-    };
-    const filteredData = filterProperties(properties, searchInput);
-    setFilterProperty(filteredData);
-  }, [searchInput]);
 
   const closePlanModal = () => {
     setOpenPlanModal(false);
@@ -952,7 +952,7 @@ const Index = () => {
                               <div className="row">
                                 <div className="col-lg-12 text-center">
                                   <h1 className=" text-color mt-1">
-                                    Appraiser Details
+                                    Sub Appraiser Details
                                   </h1>
                                 </div>
                               </div>
@@ -1003,7 +1003,7 @@ const Index = () => {
                                     <tr>
                                       <td className="table-header">
                                         <span className="text-start">
-                                          Broker Name
+                                          Sub Appraiser Name
                                         </span>
                                       </td>
                                       <td className="table-value">

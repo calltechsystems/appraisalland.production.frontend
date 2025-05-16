@@ -999,7 +999,7 @@ const Index = () => {
                                     <tr>
                                       <td className="table-header">
                                         <span className="text-start">
-                                          Broker Name
+                                          Appraiser Company Name
                                         </span>
                                       </td>
                                       <td className="table-value">

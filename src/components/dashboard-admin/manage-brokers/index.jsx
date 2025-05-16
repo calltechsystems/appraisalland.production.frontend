@@ -381,11 +381,11 @@ const Index = () => {
         IsActive: !selectedUser.isActive,
       };
 
-      const encryptedData = encryptionData(payload);
+      // const encryptedData = encryptionData(payload);
       setIsLoading(true);
       toast.loading("Updating the status");
       axios
-        .put("/api/updateUserActiveStatus", encryptedData, {
+        .put("/api/updateUserActiveStatus", payload, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
             "Content-Type": "application/json",

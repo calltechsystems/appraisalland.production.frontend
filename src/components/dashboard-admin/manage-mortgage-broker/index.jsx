@@ -532,8 +532,14 @@ const Index = () => {
                           </tr>
                           <tr>
                             <td className="table-header">
+                              <span className="text-start">Registered UserId</span>
+                            </td>
+                            <td className="table-value">{broker.registerEmailId}</td>
+                          </tr>
+                          <tr>
+                            <td className="table-header">
                               <span className="text-start">
-                                Regiatered UserId
+                                Email Id
                               </span>
                             </td>
                             <td className="table-value">

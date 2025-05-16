@@ -233,15 +233,15 @@ export default function Exemple({
     let isAccepted = false;
     if (
       bid.status === 1 &&
-      bid.orderStatus === 3 &&
-      !property.isOnCancel &&
-      !property.isOnHold
+      bid.orderstatus === 3 &&
+      !property.isoncancel &&
+      !property.isonhold
     ) {
       isCompleted = true;
     }
-    if (bid.status === 1 && !property.isOnCancel && !property.isOnHold) {
+    if (bid.status === 1 && !property.isoncancel && !property.isonhold) {
       isAccepted = true;
-    } else if (!property.isOnCancel && !property.isOnHold) {
+    } else if (!property.isoncancel && !property.isonhold) {
       isQuoteProvided = true;
     }
 
@@ -264,9 +264,9 @@ export default function Exemple({
 
   const isAccordingToStatus = (bidStatus, property) => {
     if (String(statusSearch) === "0") return true;
-    else if (Boolean(property.isOnHold) && String(statusSearch) === "6") {
+    else if (Boolean(property.isonhold) && String(statusSearch) === "6") {
       return true;
-    } else if (Boolean(property.isOnCancel) && String(statusSearch) === "5") {
+    } else if (Boolean(property.isoncancel) && String(statusSearch) === "5") {
       return true;
     } else if (String(bidStatus) === "2" && String(statusSearch) === "1") {
       return true;
@@ -310,8 +310,8 @@ export default function Exemple({
         prop?.bids?.$values.forEach((bid) => {
           const property = bid?.properties?.$values[0];
           const isBidded = bid.bid;
-          const isHold = property.isOnHold;
-          const isCancel = property.isOnCancel;
+          const isHold = property.isonhold;
+          const isCancel = property.isoncancel;
           const isStatus = getPropertyStatusHandler(property, isBidded);
           const isCorrect = isAccordingToStatus(isStatus, property);
           const isAccordingToSelectedName =
@@ -340,7 +340,7 @@ export default function Exemple({
                   </span>
                 ) : isStatus === 1 ? (
                   <span className="btn bg-info w-100 text-light">
-                    Quote Provided
+                    Quoted
                   </span>
                 ) : (
                   <span className="btn bg-info w-100 text-light">
@@ -352,9 +352,9 @@ export default function Exemple({
                   <button className="btn btn-warning w-100">
                     {isHold ? "N.A." : "N.A."}
                   </button>
-                ) : isBidded.orderStatus !== 1 &&
-                  isBidded.orderStatus !== null &&
-                  isBidded.orderStatus !== undefined ? (
+                ) : isBidded.orderstatus !== 1 &&
+                  isBidded.orderstatus !== null &&
+                  isBidded.orderstatus !== undefined ? (
                   <div className="hover-text">
                     <div
                       className="tooltip-text"
@@ -365,7 +365,7 @@ export default function Exemple({
                     >
                       <ul>
                         <li style={{ fontSize: "15px" }}>
-                          {getOrderValue(isBidded.orderStatus)}
+                          {getOrderValue(isBidded.orderstatus)}
                         </li>
                       </ul>
                     </div>
@@ -378,8 +378,8 @@ export default function Exemple({
                   </div>
                 ) : isBidded.$id &&
                   isBidded.status === 1 &&
-                  isBidded.orderStatus === 1 &&
-                  isBidded.orderStatus !== undefined ? (
+                  isBidded.orderstatus === 1 &&
+                  isBidded.orderstatus !== undefined ? (
                   <div className="hover-text">
                     <div
                       className="tooltip-text"
@@ -390,7 +390,7 @@ export default function Exemple({
                     >
                       <ul>
                         <li style={{ fontSize: "15px" }}>
-                          {getOrderValue(isBidded.orderStatus)} -
+                          {getOrderValue(isBidded.orderstatus)} -
                           {formatDate(isBidded.statusDate)}
                         </li>
                       </ul>
