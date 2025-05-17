@@ -139,30 +139,30 @@ const Index = () => {
                 tempBids = res.data.data.$values;
 
                 setBids(tempBids);
-                axios
-                  .get("/api/appraiserWishlistedProperties", {
-                    headers: {
-                      Authorization: `Bearer ${data?.token}`,
-                      "Content-Type": "application/json",
-                    },
-                  })
-                  .then((res) => {
-                    const tempData = res.data.data.$values;
-                    const responseData = tempData.filter((prop, index) => {
-                      if (String(prop.userId) === String(data.userId)) {
-                        return true;
-                      } else {
-                        return false;
-                      }
-                    });
-                    const tempId = responseData;
-                    setWishlist(responseData);
-                    setProperties(prop);
-                  })
-                  .catch((err) => {
-                    toast.error(err?.response);
-                    // setErrorMessage(err?.response);
-                  });
+                // axios
+                //   .get("/api/appraiserWishlistedProperties", {
+                //     headers: {
+                //       Authorization: `Bearer ${data?.token}`,
+                //       "Content-Type": "application/json",
+                //     },
+                //   })
+                //   .then((res) => {
+                const tempData = res.data.data.$values;
+                const responseData = tempData.filter((prop, index) => {
+                  if (String(prop.userId) === String(data.userId)) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                });
+                const tempId = responseData;
+                setWishlist(responseData);
+                setProperties(prop);
+                // })
+                // .catch((err) => {
+                //   toast.error(err?.response);
+                //   // setErrorMessage(err?.response);
+                // });
               })
               .catch((err) => {});
           })
@@ -332,38 +332,38 @@ const Index = () => {
   }
 
   const handleStatusUpdateHandler = () => {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      setDisable(true);
-      const payload = {
-        id: selectedUser.userId,
-        IsActive: !selectedUser.isActive,
-      };
+    const userData = JSON.parse(localStorage.getItem("user"));
+    setDisable(true);
+    const payload = {
+      id: selectedUser.userId,
+      IsActive: !selectedUser.isActive,
+    };
 
-      // setIsLoading(true);
-      toast.loading("Updating the status");
-      axios
-        .put("/api/updateUserActiveStatus", payload, {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          toast.dismiss();
-          // setIsLoading(false);
-          toast.success("Successfully Updated!!");
-          window.location.reload();
-        })
-        .catch((err) => {
-          toast.dismiss();
-          // setIsLoading(false);
-          toast.error(err);
-        }).
-        finally(() => {
-          setOpenEditModal(false)
-        })
+    // setIsLoading(true);
+    toast.loading("Updating the status");
+    axios
+      .put("/api/updateUserActiveStatus", payload, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.success("Successfully Updated!!");
+        window.location.reload();
+      })
+      .catch((err) => {
+        toast.dismiss();
+        // setIsLoading(false);
+        toast.error(err);
+      })
+      .finally(() => {
+        setOpenEditModal(false);
+      });
 
-      setSelectedUser(-1);
+    setSelectedUser(-1);
   };
 
   const closeStatusUpdateHandler = () => {
@@ -552,7 +552,9 @@ const Index = () => {
 
                           <tr>
                             <td className="table-header">
-                              <span className="text-start">Company Name</span>
+                              <span className="text-start">
+                                Appraiser Company Name
+                              </span>
                             </td>
                             <td className="table-value">
                               {broker.appraiserCompanyName
@@ -562,7 +564,17 @@ const Index = () => {
                           </tr>
                           <tr>
                             <td className="table-header">
-                              <span className="text-start">Registered UserId</span>
+                              <span className="text-start">
+                                Registered UserId
+                              </span>
+                            </td>
+                            <td className="table-value">
+                              {broker.registerEmailId}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-header">
+                              <span className="text-start">Email Id</span>
                             </td>
                             <td className="table-value">{broker.emailId}</td>
                           </tr>
@@ -606,7 +618,6 @@ const Index = () => {
                       </table>
                     </div>
                     <div className="d-flex justify-content-center gap-2 mt-3">
-                     
                       <button
                         className="btn btn-color"
                         style={{ width: "100px" }}

@@ -61,7 +61,7 @@ const AllStatistics = ({ dashboardCount }) => {
       id: 5,
       blockStyle: "stylecardnew5",
       icon: "fa fa-edit",
-      timer: dashboardCount?.totalquotesinprogress,
+      timer: dashboardCount?.totalQuotesInprogress,
       name: " Total Quotes in Progress",
     },
   ];

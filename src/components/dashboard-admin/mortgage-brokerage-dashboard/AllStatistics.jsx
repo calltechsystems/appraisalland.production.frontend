@@ -26,14 +26,14 @@ const AllStatistics = ({ dashboardCount }) => {
       id: 1,
       blockStyle: "stylecardnew1",
       icon: "fa fa-user",
-      timer: dashboardCount?.totalBroker,
+      timer: dashboardCount?.totalbrokerage,
       name: "Total Brokers",
     },
     {
       id: 2,
       blockStyle: "stylecardnew2",
       icon: "fa fa-users",
-      timer: dashboardCount?.totalActiveBrokers,
+      timer: dashboardCount?.totalActiveBrokerageMortage,
       name: "Total Active Mortgage Brokerage",
     },
     {
@@ -47,7 +47,7 @@ const AllStatistics = ({ dashboardCount }) => {
       id: 4,
       blockStyle: "stylecardnew4",
       icon: "fa fa-check",
-      timer: dashboardCount?.totalQuotesReceived,
+      timer: dashboardCount?.totalQuotesRecieved,
       name: "Total Quotes Received",
     },
     {
@@ -61,7 +61,7 @@ const AllStatistics = ({ dashboardCount }) => {
       id: 5,
       blockStyle: "stylecardnew5",
       icon: "fa fa-edit",
-      timer: dashboardCount?.totalquotesinprogress,
+      timer: dashboardCount?.totalQuotesInprogress,
       name: " Total Quotes in Progress",
     },
   ];

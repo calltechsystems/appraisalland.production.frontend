@@ -336,9 +336,7 @@ export default function Exemple({
                       In Progress
                     </span>
                   ) : isStatus === 1 ? (
-                    <span className="btn bg-info w-100 text-light">
-                      Quoted
-                    </span>
+                    <span className="btn bg-info w-100 text-light">Quoted</span>
                   ) : (
                     <span className="btn bg-info w-100 text-light">
                       Cancelled

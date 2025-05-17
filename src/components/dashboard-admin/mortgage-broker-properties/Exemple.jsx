@@ -177,6 +177,13 @@ export default function Exemple({
     return title;
   };
 
+  const getStatusButtonClass = (orderStatus) => {
+    if (orderStatus === 4 || orderStatus === 5) {
+      return "btn btn-status-na w-100"; // Orange color class
+    }
+    return "btn btn-status w-100"; // Default color
+  };
+
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -223,7 +230,9 @@ export default function Exemple({
   };
 
   const openRemarkModal = (property, isBidded) => {
-    setRemark(isBidded && isBidded.remark ? isBidded.remark : "N.A.");
+    setRemark(
+      isBidded && isBidded.appraiserRemark ? isBidded.appraiserRemark : "N.A."
+    );
     setSelectedProperty(property);
     setRemarkModal(true);
   };
@@ -247,8 +256,8 @@ export default function Exemple({
     allBids.map((bid, index) => {
       if (
         bid.orderId === property.orderId &&
-        bid.status === 1 &&
-        bid.orderstatus === 3 &&
+        bid.orderStatus === 1 &&
+        bid.appraisalStatus === 3 &&
         !property.isoncancel &&
         !property.isonhold
       ) {
@@ -256,7 +265,8 @@ export default function Exemple({
       }
       if (
         bid.orderId === property.orderId &&
-        bid.status === 1 &&
+        bid.orderStatus === 1 &&
+        // bid.appraisalStatus === null &&
         !property.isoncancel &&
         !property.isonhold
       ) {
@@ -348,9 +358,7 @@ export default function Exemple({
                     In Progress
                   </span>
                 ) : isStatus === 1 ? (
-                  <span className="btn bg-info w-100 text-light">
-                    Quoted
-                  </span>
+                  <span className="btn bg-info w-100 text-light">Quoted</span>
                 ) : (
                   <span className="btn bg-info w-100 text-light">
                     Cancelled
@@ -361,9 +369,9 @@ export default function Exemple({
                   <button className="btn btn-warning w-100">
                     {isHold ? "N.A." : "N.A."}
                   </button>
-                ) : isBidded.orderstatus !== 1 &&
-                  isBidded.orderstatus !== null &&
-                  isBidded.orderstatus !== undefined ? (
+                ) : isBidded.appraisalStatus !== 1 &&
+                  isBidded.appraisalStatus !== null &&
+                  isBidded.appraisalStatus !== undefined ? (
                   <div className="hover-text">
                     <div
                       className="tooltip-text"
@@ -374,21 +382,23 @@ export default function Exemple({
                     >
                       <ul>
                         <li style={{ fontSize: "15px" }}>
-                          {getOrderValue(isBidded.orderstatus)}
+                          {getOrderValue(isBidded.appraisalStatus)}
                         </li>
                       </ul>
                     </div>
-                    <span className="btn btn-status w-100">
-                      Current Status
+                    <span
+                      className={getStatusButtonClass(isBidded.appraisalStatus)}
+                    >
+                      Status
                       <span className="m-1">
                         <i class="fa fa-info-circle" aria-hidden="true"></i>
                       </span>
                     </span>
                   </div>
                 ) : isBidded.$id &&
-                  isBidded.status === 1 &&
-                  isBidded.orderstatus === 1 &&
-                  isBidded.orderstatus !== undefined ? (
+                  isBidded.orderStatus === 1 &&
+                  isBidded.appraisalStatus === 1 &&
+                  isBidded.appraisalStatus !== undefined ? (
                   <div className="hover-text">
                     <div
                       className="tooltip-text"
@@ -399,13 +409,13 @@ export default function Exemple({
                     >
                       <ul>
                         <li style={{ fontSize: "15px" }}>
-                          {getOrderValue(isBidded.orderstatus)} -
+                          {getOrderValue(isBidded.appraisalStatus)} -
                           {formatDate(isBidded.statusDate)}
                         </li>
                       </ul>
                     </div>
-                    <span className="btn btn-status w-100">
-                      Current Status
+                    <span  className={getStatusButtonClass(isBidded.appraisalStatus)}>
+                      Status
                       <span className="m-1">
                         <i class="fa fa-info-circle" aria-hidden="true"></i>
                       </span>
@@ -415,7 +425,9 @@ export default function Exemple({
                   <span className="btn btn-warning w-100">N.A.</span>
                 ),
               address: `${property.streetNumber} ${property.streetName}, ${property.city}, ${property.province}, ${property.zipCode}`,
-              remark: isBidded.remark ? isBidded.remark : "N.A.",
+              remark: isBidded.appraiserRemark
+                ? isBidded.appraiserRemark
+                : "N.A.",
               remarkButton: (
                 <li
                   className="list-inline-item"
@@ -465,7 +477,7 @@ export default function Exemple({
               ),
               actions_01: (
                 <ul>
-                  {isBidded.status >= 0 ? (
+                  {isBidded.orderStatus >= 0 ? (
                     <li title="Quotes">
                       <Link
                         className="btn btn-color-table"
@@ -533,13 +545,13 @@ export default function Exemple({
         const temp = res.data.data.$values || {};
 
         axios
-          .get("/api/getAllBids", {
+          .get("/api/getAllBidsforAdmin", {
             headers: {
               Authorization: `Bearer ${data.token}`,
             },
           })
           .then((res) => {
-            tempBids = res.data.data?.$values || {};
+            tempBids = res.data.data?.result?.$values || {};
             setProperties(temp);
             setBids(tempBids);
           })
