@@ -408,7 +408,6 @@ const ProfileInfo = ({
       toast.dismiss();
       onUpdatHandler(updatedList);
     } catch (err) {
-      console.log({err})
       if (TimesTrigerredSubmission == 2) {
         setIsSubmitInProgress(false);
         setTimesTrigerredSubmission(0);
@@ -486,22 +485,6 @@ const ProfileInfo = ({
       emailNotification: emailNotification,
       smsNotification: smsNotification,
     };
-    // if (
-    //   !payload.lastName ||
-    //   !payload.firstName ||
-    //   !payload.designation ||
-    //   !payload.phoneNumber ||
-    //   !payload.emailId ||
-    //   // !payload.companyName ||
-    //   // !payload.lenderListUrl ||
-    //   !payload.streetName ||
-    //   !payload.streetNumber ||
-    //   !payload.city ||
-    //   !payload.province ||
-    //   !payload.postalCode
-    // ) {
-    //   toast.error("Please fill all the required fields!");
-    // }
     const fields = [
       { key: "lastName", message: "Last Name is required!" },
       { key: "firstName", message: "First Name is required!" },
@@ -537,12 +520,10 @@ const ProfileInfo = ({
       return;
     }
 
-    const phoneNumberRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
     const cellNumberRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
     const nameRegex = /^[A-Za-z ]+$/;
     const nameCityRegex = /^[A-Za-z ]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
     const alphanumericWithSpacesRegex = /^[a-zA-Z0-9 ]+$/;
 
     if (
@@ -705,53 +686,10 @@ const ProfileInfo = ({
         toast.dismiss();
       }
     }
-    // Validate fields individually
-
-    const isFirstNameValid = validateField(firstNameRef, setFirstNameError);
-    // const isCompanyeNameValid = validateField(
-    //   companyNameRef,
-    //   setCompanyNameError
-    // );
-    const isLastNameValid = validateField(lastNameRef, setLastNameError);
-    // const isPhoneNumberValid = validateFieldNumber(
-    //   phoneNumberRef,
-    //   setPhoneNumberError
-    // );
-    const isEmailValid = validateEmailField(emailId, setEmailError);
-
-    const isStreetNumberValid = validateFieldStreetNumber(
-      streetNumber,
-      setStreetNumberError
-    );
-    const isStreetNameValid = validateField(streetName, setStreetNameError);
-    const isCityValid = validateField(cityRef, setCityError);
-    const isZipCodeValid = validateField(zipcodeRef, setZipCodeError);
-
-    // Validate dropdown
-
-    // if (selectedOption === "") {
-    //   setDropdownError(true);
-    //   dropdownRef.current.scrollIntoView({
-    //     behavior: "smooth",
-    //     block: "center",
-    //   });
-    //   dropdownRef.current.focus();
-    // }
   };
 
   // for names
   const validateField = (value, setError, inputRef) => {
-    // Check if the value contains only alphabets
-    // const isAlphabetic = /^[A-Za-z]+$/.test(value.trim());
-
-    // if (!isAlphabetic) {
-    //   setError(true); // Set error if value contains non-alphabetic characters
-    //   window.scrollTo({
-    //     top: 0,
-    //     behavior: "smooth",
-    //   });
-    //   return false;
-    // }
 
     // Check the length constraints
     if (value.trim().length < 1 || value.trim().length > 30) {
@@ -780,34 +718,6 @@ const ProfileInfo = ({
     setError(!isValid);
   };
 
-  // const handleInputChange = (value, setRef, setValid, setError) => {
-  //   console.log("setError function:", setError); // Debug log
-  //   if (typeof setError !== "function") {
-  //     console.error("setError is not a function!");
-  //     return;
-  //   }
-
-  //   // Your validation logic
-  //   const isValid = /^[2-9]\d{2} \d{3}-\d{4}$/.test(value);
-  //   setRef(value); // Update value
-  //   setValid(isValid); // Update validation state
-  //   setError(!isValid); // Update error state
-  // };
-
-  // const handleInputChange = (value, setValue, setValid, setError) => {
-  //   if (value.length <= 10) {
-  //     setValue(value);
-
-  //     // Validate: Check if length is between 3 and 10
-  //     if (value.trim().length >= 10) {
-  //       setValid(true);
-  //       setError(false);
-  //     } else {
-  //       setValid(false);
-  //       setError(true);
-  //     }
-  //   }
-  // };
 
   const handleInputChangeStreet = (value, setValue, setValid, setError) => {
     if (value.length <= 30) {
@@ -824,40 +734,6 @@ const ProfileInfo = ({
     }
   };
 
-  // for phone number
-  const validateFieldNumber = (value, setError, inputRef) => {
-    // Check if value contains only digits
-    const isNumeric = /^[0-9]*$/.test(value.trim());
-    if (!isNumeric) {
-      setError(true);
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-      return false;
-    }
-
-    // Check if length is exactly 10
-    if (value.trim().length !== 10) {
-      setError(true); // Set error if field length is invalid
-      // Scroll to the top of the page
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-      // if (inputRef && inputRef.current) {
-      //   inputRef.current.scrollIntoView({
-      //     behavior: "smooth",
-      //     block: "center",
-      //   });
-      //   inputRef.current.focus();
-      // }
-      return false;
-    }
-
-    setError(false); // Clear error if valid
-    return true;
-  };
 
   // for valid mail
   const validateEmailField = (value, setError, inputRef) => {
@@ -891,117 +767,6 @@ const ProfileInfo = ({
     return true;
   };
 
-  const handleDropdownChange = (e) => {
-    const value = e.target.value;
-    setSelectedOption(value);
-
-    // Validate: Ensure a valid option is selected
-    if (value === "") {
-      setDropdownError(true);
-    } else {
-      setDropdownError(false);
-    }
-  };
-
-  const changeEditHandler = () => {
-    setEdit(true);
-  };
-  const uploadInputRef = useRef(null);
-
-  const openWidget = () => {
-    if (uploadInputRef.current) {
-      uploadInputRef.current.click(); // Trigger the hidden file input
-    }
-  };
-
-  // const handleUpload = (result) => {
-  //   // Handle the image upload result here
-  //   console.log("handleUpload called");
-  //   if (result.info.secure_url) {
-  //     setSelectedImage(result.info.secure_url);
-  //     setProfilePhoto(result.info.secure_url);
-  //     // You can also save the URL to your state or do other operations here
-  //   } else {
-  //     // Handle the case when the upload failed
-  //     console.error("Image upload failed");
-  //   }
-  // };
-
-  const handleZipCodeChange = async (val) => {
-    setZipcodeRef(val);
-
-    try {
-      const response = await axios.get(
-        `https://api.zippopotam.us/us/${zipcodeRef}`
-      );
-      const data = response.data;
-
-      console.log(response);
-
-      setStateRef(data.places[0]["state"]);
-      setCityRef(data.places[0]["place name"]);
-    } catch (error) {
-      console.error("Error fetching location data:", error);
-    }
-  };
-
-  // const handleFileChange = async (e, type) => {
-  //   const allowedImageTypes = ["image/jpeg", "image/png", "image/gif"];
-  //   const allowedPdfTypes = ["application/pdf"];
-  //   const file = e.target.files[0];
-
-  //   if (String(type) === "1") {
-  //     const fileTemp = e.target.files[0];
-  //     if (!allowedImageTypes.includes(fileTemp?.type)) {
-  //       toast.error("Please select a valid image file (JPEG, PNG, GIF).");
-  //       return;
-  //     }
-  //     const file = e.target.files[0];
-  //     toast.loading("Uploading..");
-  //     try {
-  //       const generatedUrl = await uploadFile(file);
-  //       toast.dismiss();
-  //       toast.success("Uploaded Successfully");
-  //       console.log("generatedUrl", generatedUrl);
-
-  //       setSelectedImage(generatedUrl);
-  //     } catch (err) {
-  //       toast.dismiss();
-  //       toast.error("Try Again!");
-  //     }
-  //   } else if (String(type) === "2") {
-  //     if (!allowedPdfTypes.includes(file?.type)) {
-  //       toast.error("Please select a valid PDF file.");
-  //       return;
-  //     }
-
-  //     toast.loading("Uploading..");
-  //     try {
-  //       const generatedUrl = await uploadFile(file);
-  //       toast.dismiss();
-  //       toast.success("Uploaded Successfully");
-  //       console.log("generatedUrl", generatedUrl);
-  //       setSelectedImage2({
-  //         name: file.name,
-  //         url: generatedUrl,
-  //       });
-  //     } catch (err) {
-  //       toast.dismiss();
-  //       toast.error("Try Again!");
-  //     }
-  //   }
-  // };
-
-  const getLenderListName = () => {
-    const lenderlistUrl = userData?.appraiser_Details?.lenderListUrl;
-    if (lenderlistUrl === "") {
-      return "";
-    } else {
-      const name2 = selectedImage2.name;
-      const name = lenderlistUrl.split("amazonaws.com/")[1];
-      return lenderlistUrl !== selectedImage2.url ? name2 : name;
-    }
-  };
 
   const downloadAllAttachments = async (fileItem) => {
     if (fileItem?.uploadedUrl) {
@@ -1036,7 +801,7 @@ const ProfileInfo = ({
                   <img
                     style={{ borderRadius: "50%" }}
                     // src={SelectedImage}
-                    src={uploadingFiles["profileImage"]?.previewUrl}
+                    src={uploadingFiles?.["profileImage"]?.previewUrl}
                     alt="Uploaded Image"
                   />
                   {edit && (
@@ -1570,13 +1335,13 @@ const ProfileInfo = ({
                           Upload File
                         </button>
                         <p className="mt-2" style={{ marginLeft: "10px" }}>
-                          {uploadingFiles["LenderList"]?.file?.name !== "" &&
+                          {uploadingFiles?.["LenderList"]?.file?.name !== "" &&
                             "Note:Upload pdf only."}
                         </p>
                       </div>
                     </div>
                     <div className="col-lg-6">
-                      {uploadingFiles["LenderList"]?.file ? (
+                      {uploadingFiles?.["LenderList"]?.file ? (
                         <div key={1} className="position-relative">
                           {/* <img
                             src={uploadingFiles["LenderList"]?.previewUrl}
@@ -1589,17 +1354,17 @@ const ProfileInfo = ({
                             }}
                           /> */}
 
-                          {uploadingFiles["LenderList"] && (
+                          {uploadingFiles?.["LenderList"] && (
                             <button
                               type="button"
                               className="btn btn-success btn-sm m-1"
                               onClick={() =>
                                 downloadAllAttachments(
-                                  uploadingFiles["LenderList"]
+                                  uploadingFiles?.["LenderList"]
                                 )
                               }
                             >
-                              {uploadingFiles["LenderList"]?.file?.name}
+                              {uploadingFiles?.["LenderList"]?.file?.name}
                             </button>
                           )}
                           <button

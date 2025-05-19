@@ -829,7 +829,7 @@ const ProfileInfo = ({
                 <div className="wrap-custom-file">
                   <img
                     style={{ borderRadius: "50%" }}
-                    src={uploadingFiles["profileImage"]?.previewUrl}
+                    src={uploadingFiles?.["profileImage"]?.previewUrl}
                     alt="Uploaded Image"
                   />
                   {edit && (
@@ -1329,13 +1329,13 @@ const ProfileInfo = ({
                           Upload File
                         </button>
                         <p className="mt-2" style={{ marginLeft: "10px" }}>
-                          {uploadingFiles["LenderList"]?.file?.name !== "" &&
+                          {uploadingFiles?.["LenderList"]?.file?.name !== "" &&
                             "Note:Upload pdf only."}
                         </p>
                       </div>
                     </div>
                     <div className="col-lg-6">
-                      {uploadingFiles["LenderList"]?.file ? (
+                      {uploadingFiles?.["LenderList"]?.file ? (
                         <div key={1} className="position-relative">
                           {/* <img
                             src={uploadingFiles["LenderList"]?.previewUrl}
@@ -1348,17 +1348,17 @@ const ProfileInfo = ({
                             }}
                           /> */}
 
-                          {uploadingFiles["LenderList"] && (
+                          {uploadingFiles?.["LenderList"] && (
                             <button
                               type="button"
                               className="btn btn-success btn-sm m-1"
                               onClick={() =>
                                 downloadAllAttachments(
-                                  uploadingFiles["LenderList"]
+                                  uploadingFiles?.["LenderList"]
                                 )
                               }
                             >
-                              {uploadingFiles["LenderList"]?.file?.name}
+                              {uploadingFiles?.["LenderList"]?.file?.name}
                             </button>
                           )}
                           <button

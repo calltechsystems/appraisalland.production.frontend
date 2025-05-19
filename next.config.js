@@ -19,9 +19,7 @@ const nextConfig = {
   },
   images: {
     domains: [
-      // "res.cloudinary.com",
-      "appraisalfile.s3.us-east-1.amazonaws.com",
-      "appraisallandfiless.s3.amazonaws.com",
+      "appraisal-prod-files.s3.ca-central-1.amazonaws.com",
       "avatars.githubusercontent.com",
       "lh3.googleusercontent.com",
       "https://www.paypalobjects.com/webstatic/mktg/logo/",
