@@ -23,7 +23,7 @@ const Pagination = ({
   const updateDisplayedProperties = (page) => {
     const indexOfLastProperty = page * propertiesPerPage;
     const indexOfFirstProperty = indexOfLastProperty - propertiesPerPage;
-    setStart(1);
+    setStart(indexOfFirstProperty);
     setEnd(indexOfLastProperty);
   };
 
