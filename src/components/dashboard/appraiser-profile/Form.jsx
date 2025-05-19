@@ -13,6 +13,15 @@ const Form = ({ userData, chnageShowCardHandler }) => {
     }
   };
 
+    const getFileNameFromS3Url = (url) => {
+    if (!url) return null;
+
+    const urlParts = url.split("/");
+    const fileName = urlParts[urlParts.length - 1].split("?")[0];
+
+    return fileName;
+  };
+
   const formatPhoneNumber = (number) => {
     if (!number) return ""; // Handle empty input
 
@@ -39,7 +48,10 @@ const Form = ({ userData, chnageShowCardHandler }) => {
           <div className="wrap-custom-file mt-5 mb-5">
             <img
               style={{ borderRadius: "50%" }}
-              src={userData?.appraiser_Details?.profileImage}
+              src={
+                userData?.appraiser_Details?.profileImage ||
+                "/assets/images/home/placeholder_01.jpg"
+              }
               alt="Uploaded Image"
             />
           </div>
@@ -167,34 +179,44 @@ const Form = ({ userData, chnageShowCardHandler }) => {
                           <span className="text-start">Lender List</span>
                         </td>
                         <td className="table-value">
-                          {" "}
-                          {
-                            <span className="text-start text-dark fw-bold">
-                              <a
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href={
-                                  userData?.appraiser_Details?.lenderListUrl !==
-                                  ""
-                                    ? userData?.appraiser_Details?.lenderListUrl
-                                    : ""
-                                }
-                                onClick={(event) =>
-                                  handleDownloadClick(
-                                    event,
-                                    userData?.appraiser_Details?.lenderListUrl,
-                                    `${userData?.appraiser_Details?.firstName}_lenderlist.pdf`
+                          <span className="text-start">
+                            <span
+                              className="text-decoration-underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(event) =>
+                                userData?.appraiser_Details?.lenderListUrl &&
+                                handleDownloadClick(
+                                  event,
+                                  userData?.appraiser_Details.lenderListUrl,
+                                  getFileNameFromS3Url(
+                                    userData?.appraiser_Details.lenderListUrl
                                   )
-                                }
-                                style={{
-                                  cursor: "pointer",
-                                  textDecoration: "underline",
-                                }}
-                              >
-                                Lender List Pdf
-                              </a>
+                                )
+                              }
+                              style={{
+                                cursor: userData?.appraiser_Details
+                                  ?.lenderListUrl
+                                  ? "pointer"
+                                  : "default",
+                                textDecoration: "underline",
+                                color: userData?.appraiser_Details
+                                  ?.lenderListUrl
+                                  ? "blue"
+                                  : "black",
+                                pointerEvents: userData?.appraiser_Details
+                                  ?.lenderListUrl
+                                  ? "auto"
+                                  : "none",
+                              }}
+                            >
+                              {userData?.appraiser_Details?.lenderListUrl
+                                ? getFileNameFromS3Url(
+                                    userData?.appraiser_Details.lenderListUrl
+                                  )
+                                : "N.A."}
                             </span>
-                          }{" "}
+                          </span>
                         </td>
                       </tr>
                     </tbody>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { encryptionData } from "../../../utils/dataEncryption";
@@ -12,6 +11,7 @@ import Link from "next/link";
 import { uploadFile } from "./functions";
 import { handleDownloadClick } from "./downloadFunction";
 import ReactInputMask from "react-input-mask";
+import { saveAs } from "file-saver";
 import CommonLoader from "../../common/CommonLoader/page";
 
 const ProfileInfo = ({
@@ -19,10 +19,69 @@ const ProfileInfo = ({
   setShowCard,
   setModalIsOpenError,
   setModalIsOpenError_01,
+  setUploadingFiles,
+  uploadingFiles,
 }) => {
   const [profilePhoto, setProfilePhoto] = useState(null);
   let userData = JSON.parse(localStorage.getItem("user")) || {};
   const router = useRouter();
+
+  useEffect(() => {
+    let updatedList = { ...uploadingFiles };
+    if (userData?.appraiser_Details?.profileImage) {
+      const name =
+        userData?.appraiser_Details?.profileImage
+          .split("/")
+          .pop()
+          .split("?")[0] || "";
+      const updatedDoc = {
+        file: { name },
+        previewUrl:
+          name == ""
+            ? "/assets/images/home/placeholder_01.jpg"
+            : userData?.appraiser_Details?.profileImage,
+        uploadedUrl: userData?.appraiser_Details?.profileImage || "",
+        fieldType: "profileImage",
+      };
+
+      updatedList = {
+        ...updatedList,
+        ["profileImage"]: updatedDoc,
+      };
+    }
+    if (userData?.appraiser_Details?.lenderListUrl) {
+      const name = userData?.appraiser_Details?.lenderListUrl
+        .split("/")
+        .pop()
+        .split("?")[0];
+      const updatedDoc = {
+        file: { name },
+        previewUrl: name.includes("zip")
+          ? "/assets/Attachments/zipIcon.png"
+          : name.includes("pdf")
+          ? "/assets/Attachments/pdfIcon.png"
+          : userData?.appraiser_Details?.lenderListUrl,
+        uploadedUrl: userData?.appraiser_Details?.lenderListUrl,
+        fieldType: "LenderList",
+      };
+      updatedList = {
+        ...updatedList,
+        ["LenderList"]: updatedDoc,
+      };
+    }
+    setUploadingFiles({ ...updatedList });
+  }, []);
+
+  const [selectedImage2, setSelectedImage2] = useState({
+    name:
+      userData?.appraiser_Details?.lenderListUrl !== null
+        ? "uploaded_lenderlist"
+        : "",
+    url:
+      userData?.appraiser_Details?.lenderListUrl !== null
+        ? userData?.appraiser_Details?.lenderListUrl
+        : "",
+  });
 
   const [SelectedImage, setSelectedImage] = useState(
     userData?.appraiser_Details?.profileImage ||
@@ -104,10 +163,10 @@ const ProfileInfo = ({
   // const [setODesignation, setSetODesignation] = useState(false);
   const [oDesignation, setODesignation] = useState(false); // Toggle for "Other" input
 
-  const [selectedImage2, setSelectedImage2] = useState({
-    name: userData?.appraiser_Details?.lenderListUrl ? "" : "",
-    url: userData?.appraiser_Details?.lenderListUrl || "",
-  });
+  // const [selectedImage2, setSelectedImage2] = useState({
+  //   name: userData?.appraiser_Details?.lenderListUrl ? "" : "",
+  //   url: userData?.appraiser_Details?.lenderListUrl || "",
+  // });
 
   useEffect(() => {
     if (smsNotification === null || smsNotification === false) {
@@ -116,19 +175,6 @@ const ProfileInfo = ({
       setModalIsOpenError_01(true);
     }
   }, [smsNotification, emailNotification]);
-
-  // const handleInputChange = (e) => {
-  //   const inputValue = e.target.value;
-
-  //   const numericValue = inputValue.replace(/\D/g, "");
-
-  //   const truncatedValue = numericValue.slice(0, 10);
-  //   if (truncatedValue.length === 10) {
-  //     setPhoneNumberRef(truncatedValue);
-  //   }
-
-  //   setPhoneNumberRef(truncatedValue);
-  // };
 
   const handleInputCellChange = (value) => {
     // Remove all non-numeric characters
@@ -140,19 +186,6 @@ const ProfileInfo = ({
     // Update state
     setCellNumber(truncatedValue);
   };
-
-  // const handleInputCellChange = (e) => {
-  //   const inputValue = e.target.value;
-
-  //   const numericValue = inputValue.replace(/\D/g, "");
-
-  //   const truncatedValue = numericValue.slice(0, 10);
-  //   if (truncatedValue.length === 10) {
-  //     setCellNumber(truncatedValue);
-  //   }
-
-  //   setCellNumber(truncatedValue);
-  // };
 
   const [streetName, setStreetName] = useState(
     userData?.appraiser_Details?.streetName || ""
@@ -223,6 +256,18 @@ const ProfileInfo = ({
   const [dropdownValid, setDropdownValid] = useState(false);
   const [designationValid, setDesignationValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [TimesTrigerredSubmission, setTimesTrigerredSubmission] = useState(0);
+  const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
+
+  useEffect(() => {
+    if (
+      TimesTrigerredSubmission <= 2 &&
+      TimesTrigerredSubmission >= 1 &&
+      isSubmitInProgress == true
+    ) {
+      submissionHandler();
+    }
+  }, [TimesTrigerredSubmission, isSubmitInProgress]);
 
   const handleInputChangeName = (value, setValue, setValid, setError) => {
     if (value.length <= 30) {
@@ -239,7 +284,12 @@ const ProfileInfo = ({
     }
   };
 
-  const handleInputChangeCompanyName = (value, setValue, setValid, setError) => {
+  const handleInputChangeCompanyName = (
+    value,
+    setValue,
+    setValid,
+    setError
+  ) => {
     if (value.length <= 100) {
       setValue(value);
 
@@ -269,9 +319,120 @@ const ProfileInfo = ({
     }
   };
 
+  const getPreviewUrl = (file) => {
+    if (file.type.startsWith("image/")) {
+      return URL.createObjectURL(file);
+    } else if (file.type === "application/pdf") {
+      return "/assets/Attachments/pdfIcon.png";
+    } else if (
+      file.type === "application/zip" ||
+      file.type === "application/x-zip-compressed"
+    ) {
+      return "/assets/Attachments/zipIcon.png";
+    } else {
+      return "/assets/Attachments/fileIcon.png";
+    }
+  };
+
+  const handleUpload = async (e, type) => {
+    const file = e.target.files[0];
+
+    // Check file type and size
+    if (type === "LenderList") {
+      if (file.type !== "application/pdf") {
+        toast.error("Only PDF files are allowed for Lender List.");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size should be less than 10MB.");
+        return;
+      }
+    }
+
+    if (type === "profileImage") {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Only image files are allowed for Profile Image.");
+        return;
+      }
+    }
+
+    const updatedFiles = {
+      ...uploadingFiles,
+      [type]: {
+        file,
+        type: file.type,
+        fieldType: type,
+        previewUrl: getPreviewUrl(file),
+        uploadedUrl: "",
+      },
+    };
+    setUploadingFiles(updatedFiles);
+  };
+
+  const initiateTheSubmit = () => {
+    setIsSubmitInProgress(true);
+    setTimesTrigerredSubmission(1);
+  };
+
+  const submissionHandler = async () => {
+    try {
+      toast.loading("Updating the profile");
+      setIsLoading(true);
+
+      // Create an array of promises only for files that need uploading
+      const uploadPromises = Object.values(uploadingFiles).map(async (file) => {
+        if (file.uploadedUrl === "" && file.file instanceof File) {
+          const generatedURL = await uploadFile(file.file);
+          return {
+            ...file,
+            uploadedUrl: generatedURL,
+          };
+        } else {
+          return file;
+        }
+      });
+
+      // Wait for all the necessary uploads to complete
+      const updatedAttachments = await Promise.all(uploadPromises);
+
+      const updatedList = {};
+      updatedAttachments.map((file) => {
+        updatedList[file.fieldType] = {
+          ...file,
+        };
+      });
+
+      setUploadingFiles({ ...updatedList });
+      // Finally call the main function
+      setIsLoading(false);
+      toast.dismiss();
+      onUpdatHandler(updatedList);
+    } catch (err) {
+      console.log({err})
+      if (TimesTrigerredSubmission == 2) {
+        setIsSubmitInProgress(false);
+        setTimesTrigerredSubmission(0);
+        setIsLoading(false);
+        toast.dismiss();
+        toast.error("Got error while saving, trying again.", err);
+        console.error({ profileError: err });
+      } else {
+        setTimesTrigerredSubmission(TimesTrigerredSubmission + 1);
+      }
+    }
+  };
+
+  //resetting the feilds
+  const resetTriggeredValues = () => {
+    setIsSubmitInProgress(false);
+    setTimesTrigerredSubmission(0);
+    setdisable(false);
+    setIsLoading(false);
+  };
+
   let finalDesignation = designation;
 
-  const onUpdatHandler = () => {
+  const onUpdatHandler = (updatedList) => {
     if (designation === "Other" && otherDesignation.trim()) {
       finalDesignation = otherDesignation; // Use "Other Designation" value
     }
@@ -307,7 +468,7 @@ const ProfileInfo = ({
       middleName: middleNameRef,
       lastName: lastNameRef,
       companyName: companyName,
-      lenderListUrl: selectedImage2.url,
+      lenderListUrl: updatedList["LenderList"]?.uploadedUrl,
       streetNumber: streetNumber,
       apartmentNo: apartmentNo,
       cellNumber: cellNumber,
@@ -320,7 +481,7 @@ const ProfileInfo = ({
       postalCode: zipCode,
       area: "",
       phoneNumber: phoneNumberRef,
-      profileImage: SelectedImage,
+      profileImage: updatedList["profileImage"]?.uploadedUrl,
       emailId: emailId,
       emailNotification: emailNotification,
       smsNotification: smsNotification,
@@ -359,6 +520,7 @@ const ProfileInfo = ({
     if (missingFields.length === 1) {
       // Show specific error for a single missing field
       toast.error(missingFields[0].message);
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -367,6 +529,7 @@ const ProfileInfo = ({
     } else if (missingFields.length > 1) {
       // Show generic error for multiple missing fields
       toast.error("Please fill all required fields!");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -389,6 +552,7 @@ const ProfileInfo = ({
     ) {
       setFirstNameError(true);
       toast.error("Please enter a valid first name");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -404,6 +568,7 @@ const ProfileInfo = ({
       toast.error(
         "Please enter a valid middle name (3-30 characters, letters and spaces only)."
       );
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -416,6 +581,7 @@ const ProfileInfo = ({
     ) {
       setLastNameError(true);
       toast.error("Please enter a valid last name");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -428,6 +594,7 @@ const ProfileInfo = ({
     ) {
       setStreetNameError(true); // Set error state to true
       toast.error("Please enter a valid street name");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -440,6 +607,7 @@ const ProfileInfo = ({
     ) {
       setCityError(true); // Set error state to true
       toast.error("Please enter a valid city name");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -448,6 +616,7 @@ const ProfileInfo = ({
     } else if (cellNumberRegex.test(phoneNumber) === false || !phoneNumber) {
       setPhoneNumberError(true);
       toast.error("Please enter a valid phone number");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -458,9 +627,11 @@ const ProfileInfo = ({
       cellNumber.trim() !== ""
     ) {
       toast.error("Please enter a valid cell number");
+      resetTriggeredValues();
     } else if (emailRegex.test(emailIdRef) === false) {
       setEmailError(true);
       toast.error("Please enter a valid email address");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -469,6 +640,7 @@ const ProfileInfo = ({
     } else if (alphanumericWithSpacesRegex.test(zipCode) === false) {
       setZipCodeError(true);
       toast.error("Please enter a valid postal code");
+      resetTriggeredValues();
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -485,22 +657,24 @@ const ProfileInfo = ({
         !province ||
         !streetName ||
         !streetName ||
-        !selectedImage2.name ||
+        !selectedImage2.url ||
         !emailId ||
         !phoneNumber) &&
       !userData
     ) {
       toast.error("All required fields are not filled !!");
+      resetTriggeredValues();
     } else {
       if (SMSAlert && !phoneNumber) {
         toast.error(
           "As SMS Alert is selected but phone number is not provided so SMS Alert will not work properly!"
         );
+        resetTriggeredValues();
       } else {
         toast.loading("Updating ...");
-        const encryptedData = encryptionData(payload);
+        setIsLoading(true);
         axios
-          .put("/api/updateAppraiserProfile", encryptedData)
+          .put("/api/updateAppraiserProfile", payload)
           .then((res) => {
             toast.success("Successfully Updated !");
             console.log(res.data.userData);
@@ -512,9 +686,20 @@ const ProfileInfo = ({
             localStorage.setItem("user", JSON.stringify(data));
             setShowCard(true);
             router.push("/appraiser-dashboard");
+            setIsSubmitInProgress(false);
           })
           .catch((err) => {
-            toast.error(err.message);
+            if (TimesTrigerredSubmission < 2) {
+              setTimesTrigerredSubmission(TimesTrigerredSubmission + 1);
+            } else {
+              toast.error(
+                err.message || "Got error while saving the profile data to db "
+              );
+              setIsSubmitInProgress(false);
+              setTimesTrigerredSubmission(0);
+              setIsLoading(false);
+              toast.dismiss();
+            }
           })
           .finally(() => {});
         toast.dismiss();
@@ -729,18 +914,18 @@ const ProfileInfo = ({
     }
   };
 
-  const handleUpload = (result) => {
-    // Handle the image upload result here
-    console.log("handleUpload called");
-    if (result.info.secure_url) {
-      setSelectedImage(result.info.secure_url);
-      setProfilePhoto(result.info.secure_url);
-      // You can also save the URL to your state or do other operations here
-    } else {
-      // Handle the case when the upload failed
-      console.error("Image upload failed");
-    }
-  };
+  // const handleUpload = (result) => {
+  //   // Handle the image upload result here
+  //   console.log("handleUpload called");
+  //   if (result.info.secure_url) {
+  //     setSelectedImage(result.info.secure_url);
+  //     setProfilePhoto(result.info.secure_url);
+  //     // You can also save the URL to your state or do other operations here
+  //   } else {
+  //     // Handle the case when the upload failed
+  //     console.error("Image upload failed");
+  //   }
+  // };
 
   const handleZipCodeChange = async (val) => {
     setZipcodeRef(val);
@@ -760,52 +945,52 @@ const ProfileInfo = ({
     }
   };
 
-  const handleFileChange = async (e, type) => {
-    const allowedImageTypes = ["image/jpeg", "image/png", "image/gif"];
-    const allowedPdfTypes = ["application/pdf"];
-    const file = e.target.files[0];
+  // const handleFileChange = async (e, type) => {
+  //   const allowedImageTypes = ["image/jpeg", "image/png", "image/gif"];
+  //   const allowedPdfTypes = ["application/pdf"];
+  //   const file = e.target.files[0];
 
-    if (String(type) === "1") {
-      const fileTemp = e.target.files[0];
-      if (!allowedImageTypes.includes(fileTemp?.type)) {
-        toast.error("Please select a valid image file (JPEG, PNG, GIF).");
-        return;
-      }
-      const file = e.target.files[0];
-      toast.loading("Uploading..");
-      try {
-        const generatedUrl = await uploadFile(file);
-        toast.dismiss();
-        toast.success("Uploaded Successfully");
-        console.log("generatedUrl", generatedUrl);
+  //   if (String(type) === "1") {
+  //     const fileTemp = e.target.files[0];
+  //     if (!allowedImageTypes.includes(fileTemp?.type)) {
+  //       toast.error("Please select a valid image file (JPEG, PNG, GIF).");
+  //       return;
+  //     }
+  //     const file = e.target.files[0];
+  //     toast.loading("Uploading..");
+  //     try {
+  //       const generatedUrl = await uploadFile(file);
+  //       toast.dismiss();
+  //       toast.success("Uploaded Successfully");
+  //       console.log("generatedUrl", generatedUrl);
 
-        setSelectedImage(generatedUrl);
-      } catch (err) {
-        toast.dismiss();
-        toast.error("Try Again!");
-      }
-    } else if (String(type) === "2") {
-      if (!allowedPdfTypes.includes(file?.type)) {
-        toast.error("Please select a valid PDF file.");
-        return;
-      }
+  //       setSelectedImage(generatedUrl);
+  //     } catch (err) {
+  //       toast.dismiss();
+  //       toast.error("Try Again!");
+  //     }
+  //   } else if (String(type) === "2") {
+  //     if (!allowedPdfTypes.includes(file?.type)) {
+  //       toast.error("Please select a valid PDF file.");
+  //       return;
+  //     }
 
-      toast.loading("Uploading..");
-      try {
-        const generatedUrl = await uploadFile(file);
-        toast.dismiss();
-        toast.success("Uploaded Successfully");
-        console.log("generatedUrl", generatedUrl);
-        setSelectedImage2({
-          name: file.name,
-          url: generatedUrl,
-        });
-      } catch (err) {
-        toast.dismiss();
-        toast.error("Try Again!");
-      }
-    }
-  };
+  //     toast.loading("Uploading..");
+  //     try {
+  //       const generatedUrl = await uploadFile(file);
+  //       toast.dismiss();
+  //       toast.success("Uploaded Successfully");
+  //       console.log("generatedUrl", generatedUrl);
+  //       setSelectedImage2({
+  //         name: file.name,
+  //         url: generatedUrl,
+  //       });
+  //     } catch (err) {
+  //       toast.dismiss();
+  //       toast.error("Try Again!");
+  //     }
+  //   }
+  // };
 
   const getLenderListName = () => {
     const lenderlistUrl = userData?.appraiser_Details?.lenderListUrl;
@@ -818,28 +1003,31 @@ const ProfileInfo = ({
     }
   };
 
+  const downloadAllAttachments = async (fileItem) => {
+    if (fileItem?.uploadedUrl) {
+      const response = await fetch(fileItem.uploadedUrl);
+      const blob = await response.blob();
+      const fileName = fileItem?.file?.name || "LenderList.pdf";
+
+      saveAs(blob, fileName);
+    } else if (fileItem?.file) {
+      const fileName = fileItem?.file?.name || "LenderList.pdf";
+      saveAs(fileItem.file, fileName);
+    }
+  };
+
+  const deleteFile = (type) => {
+    setUploadingFiles({
+      ...uploadingFiles,
+      [type]: {},
+    });
+  };
+
   return (
     <>
       <div className="row">
-        {/* <h4 className="mb-3">Personal Information</h4> */}
         <div className="col-lg-12"></div>
         {isLoading && <CommonLoader />}
-
-        {!edit && (
-          <div>
-            <button
-              className="btn btn2 btn-color profile_edit_button"
-              onClick={changeEditHandler}
-            >
-              <span
-                className="flaticon-edit"
-                data-toggle="tooltip"
-                data-placement="top"
-                title="Edit Profile"
-              ></span>
-            </button>
-          </div>
-        )}
         <div className="col-lg-12 col-xl-12 mt-2">
           <div className="my_profile_setting_input form-group">
             <div className="row">
@@ -847,7 +1035,8 @@ const ProfileInfo = ({
                 <div className="wrap-custom-file">
                   <img
                     style={{ borderRadius: "50%" }}
-                    src={SelectedImage}
+                    // src={SelectedImage}
+                    src={uploadingFiles["profileImage"]?.previewUrl}
                     alt="Uploaded Image"
                   />
                   {edit && (
@@ -855,11 +1044,11 @@ const ProfileInfo = ({
                       <div>
                         <input
                           type="file"
+                          accept=".jpeg, .png, .jpg"
                           id="fileInput"
-                          onChange={(e) => handleFileChange(e, 1)}
-                          style={{ display: "none" }} // Hide the actual input element
+                          onChange={(e) => handleUpload(e, "profileImage")}
+                          style={{ display: "none" }}
                         />
-                        {/* You can add a button or any other element to trigger file selection */}
                         <button
                           className="btn btn-color mt-2"
                           onClick={() =>
@@ -869,34 +1058,11 @@ const ProfileInfo = ({
                           Browse
                         </button>
                         <p className="mt-2">
-                          {SelectedImage !== "" &&
-                            "Note -: JPG, PNG formats only"}
+                          {SelectedImage !== "" && "Note - Image Only"}
                         </p>
                       </div>
                     </div>
                   )}
-                  {/*edit && (
-                    <CldUploadWidget
-                      onUpload={handleUpload}
-                      uploadPreset="mpbjdclg"
-                      options={{
-                        cloudName: "dcrq3m6dx", // Your Cloudinary upload preset
-                        maxFiles: 1,
-                      }}
-                    >
-                      {({ open }) => (
-                        <div>
-                          <button
-                            className="btn btn-color profile_edit_button mb-5"
-                            style={{}}
-                            onClick={open} // This will open the upload widget
-                          >
-                            Upload Photo
-                          </button>
-                        </div>
-                      )}
-                    </CldUploadWidget>
-                      )*/}
                 </div>
               </div>
               <div className="col-lg-9">
@@ -1385,15 +1551,15 @@ const ProfileInfo = ({
                         Add Lender List
                       </label>
                     </div>
-                    <div className="col-lg-3">
+                    <div className="col-lg-2">
                       <div>
                         <input
                           type="file"
+                          accept=".pdf"
                           id="fileInput_01"
-                          onChange={(e) => handleFileChange(e, 2)}
+                          onChange={(e) => handleUpload(e, "LenderList")}
                           style={{ display: "none" }} // Hide the actual input element
                         />
-                        {/* You can add a button or any other element to trigger file selection */}
                         <button
                           className="btn btn-color"
                           style={{ marginLeft: "10px" }}
@@ -1401,18 +1567,61 @@ const ProfileInfo = ({
                             document.getElementById("fileInput_01").click()
                           }
                         >
-                          Browse
+                          Upload File
                         </button>
                         <p className="mt-2" style={{ marginLeft: "10px" }}>
-                          {selectedImage2.name !== "" && "Upload pdf only"}
+                          {uploadingFiles["LenderList"]?.file?.name !== "" &&
+                            "Note:Upload pdf only."}
                         </p>
                       </div>
                     </div>
-                    <div className="col-lg-5 mt-1 text-start">
-                      <Link
+                    <div className="col-lg-6">
+                      {uploadingFiles["LenderList"]?.file ? (
+                        <div key={1} className="position-relative">
+                          {/* <img
+                            src={uploadingFiles["LenderList"]?.previewUrl}
+                            alt="preview"
+                            className="img-thumbnail"
+                            style={{
+                              width: "120px",
+                              height: "120px",
+                              objectFit: "cover",
+                            }}
+                          /> */}
+
+                          {uploadingFiles["LenderList"] && (
+                            <button
+                              type="button"
+                              className="btn btn-success btn-sm m-1"
+                              onClick={() =>
+                                downloadAllAttachments(
+                                  uploadingFiles["LenderList"]
+                                )
+                              }
+                            >
+                              {uploadingFiles["LenderList"]?.file?.name}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => deleteFile("LenderList")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                      {/* <Link
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ textDecoration: "underline" }}
+                        href={
+                          selectedImage2.url !== null ||
+                          selectedImage2.url !== "undefined"
+                            ? selectedImage2.url
+                            : ""
+                        }
                         onClick={(event) =>
                           handleDownloadClick(
                             event,
@@ -1420,10 +1629,10 @@ const ProfileInfo = ({
                             `${firstNameRef}_lenderlist.pdf`
                           )
                         }
-                        href={selectedImage2.url}
+                        style={{ cursor: "pointer" }}
                       >
                         {selectedImage2.name}
-                      </Link>
+                      </Link> */}
                     </div>{" "}
                   </div>
                   <div className="col-lg-12 mb-2 mt-3">
@@ -1794,7 +2003,7 @@ const ProfileInfo = ({
                           </button>
                           <button
                             className="btn btn2 btn-dark"
-                            onClick={onUpdatHandler}
+                            onClick={initiateTheSubmit}
                           >
                             {userData?.appraiser_Details
                               ? "Update Profile"
