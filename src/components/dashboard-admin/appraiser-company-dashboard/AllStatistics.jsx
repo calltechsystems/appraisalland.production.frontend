@@ -64,6 +64,20 @@ const AllStatistics = ({ dashboardCount }) => {
       timer: dashboardCount?.totalQuotesInprogress,
       name: " Total Quotes in Progress",
     },
+    {
+      id: 10,
+      blockStyle: "stylecardnew6",
+      icon: "fa fa-pause",
+      timer: dashboardCount?.totalQuotesOnHold,
+      name: "Total Quotes On Hold",
+    },
+    {
+      id: 11,
+      blockStyle: "stylecardnew5",
+      icon: "fa fa-times-circle",
+      timer: dashboardCount?.totalQuotesCancelled,
+      name: " Total Quotes Cancelled",
+    },
   ];
 
   return (
